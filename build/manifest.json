@@ -1,0 +1,66 @@
+{
+  "logo.jpeg": {
+    "file": "assets/logo-D4e6ppla.jpeg",
+    "src": "logo.jpeg"
+  },
+  "logo.svg": {
+    "file": "assets/logo-CWYCaVRp.svg",
+    "src": "logo.svg"
+  },
+  "resources/css/app.css": {
+    "file": "assets/app-CoTbxjHQ.css",
+    "src": "resources/css/app.css",
+    "isEntry": true
+  },
+  "resources/js/main.ts": {
+    "file": "assets/main-2AJgrOHF.js",
+    "name": "main",
+    "src": "resources/js/main.ts",
+    "isEntry": true,
+    "dynamicImports": [
+      "resources/js/views/AllOffersPage.vue",
+      "resources/js/views/ProjectStudyPage.vue",
+      "resources/js/views/GateMachineStudyPage.vue"
+    ],
+    "css": [
+      "assets/main-DHsVv_DK.css"
+    ],
+    "assets": [
+      "assets/logo-D4e6ppla.jpeg",
+      "assets/logo-CWYCaVRp.svg"
+    ]
+  },
+  "resources/js/views/AllOffersPage.vue": {
+    "file": "assets/AllOffersPage-Dp7kcK5k.js",
+    "name": "AllOffersPage",
+    "src": "resources/js/views/AllOffersPage.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/main.ts"
+    ]
+  },
+  "resources/js/views/GateMachineStudyPage.vue": {
+    "file": "assets/GateMachineStudyPage-L4aZeaf8.js",
+    "name": "GateMachineStudyPage",
+    "src": "resources/js/views/GateMachineStudyPage.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/main.ts"
+    ],
+    "css": [
+      "assets/GateMachineStudyPage-Wr73wnx4.css"
+    ]
+  },
+  "resources/js/views/ProjectStudyPage.vue": {
+    "file": "assets/ProjectStudyPage-I3yklv_E.js",
+    "name": "ProjectStudyPage",
+    "src": "resources/js/views/ProjectStudyPage.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/main.ts"
+    ],
+    "css": [
+      "assets/ProjectStudyPage-CbCfF_3a.css"
+    ]
+  }
+}

@@ -1,5 +1,5 @@
-# Push SmartFlow to GitHub — https://github.com/eng-lina-ghojan/smartflow
-# Run from project root: .\scripts\push-to-github.ps1
+# Push SmartFlow to GitHub — run from project root: .\scripts\push-to-github.ps1
+# Set: $env:GITHUB_TOKEN = "ghp_..."  (never commit tokens)
 
 $ErrorActionPreference = "Stop"
 Set-Location (Split-Path $PSScriptRoot -Parent)
@@ -7,26 +7,23 @@ Set-Location (Split-Path $PSScriptRoot -Parent)
 $git = "C:\Program Files\Git\cmd\git.exe"
 if (-not (Test-Path $git)) { $git = "git" }
 
-& $git remote set-url origin https://github.com/eng-lina-ghojan/smartflow.git
+$repo = if ($env:GITHUB_REPO) { $env:GITHUB_REPO } else { "https://github.com/LinaAhmadGhojan/smart-flow.git" }
+$branch = if ($env:GITHUB_BRANCH) { $env:GITHUB_BRANCH } else { "main" }
 
-Write-Host ""
-Write-Host "Pushing to: https://github.com/eng-lina-ghojan/smartflow (branch: master)" -ForegroundColor Cyan
-Write-Host "Username: eng-lina-ghojan" -ForegroundColor Yellow
-Write-Host "Password: GitHub Personal Access Token (https://github.com/settings/tokens)" -ForegroundColor Yellow
-Write-Host ""
+& $git remote set-url origin $repo
+
+Write-Host "Pushing to $repo (branch: $branch)" -ForegroundColor Cyan
 
 if ($env:GITHUB_TOKEN) {
     $b64 = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("x-access-token:$env:GITHUB_TOKEN"))
-    & $git -c "http.extraHeader=Authorization: Basic $b64" push origin cursor/migrate-to-laravel-vue:master
+    & $git -c "http.extraHeader=Authorization: Basic $b64" push origin "${branch}:${branch}"
 } else {
-    & $git push origin cursor/migrate-to-laravel-vue:master
+    & $git push origin "${branch}:${branch}"
 }
 
 if ($LASTEXITCODE -eq 0) {
-    Write-Host ""
-    Write-Host "Success! Check: https://github.com/eng-lina-ghojan/smartflow" -ForegroundColor Green
+    Write-Host "Success!" -ForegroundColor Green
 } else {
-    Write-Host ""
-    Write-Host "Failed. Create a token with 'repo' scope and retry." -ForegroundColor Red
+    Write-Host "Failed. Use GITHUB_TOKEN env var or sign in to GitHub." -ForegroundColor Red
     exit 1
 }

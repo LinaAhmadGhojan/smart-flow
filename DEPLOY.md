@@ -1,44 +1,39 @@
-# رفع التحديثات على Hostinger — smartflowuae.com
+# Deploy SmartFlow to Hostinger
 
-## 1) على جهازك (تم ✓)
+## 1) Push code (local)
 
 ```bash
 npm run build
-git push origin cursor/migrate-to-laravel-vue
-git push origin cursor/migrate-to-laravel-vue:master
+# Set token only in your shell — never commit it
+export GITHUB_TOKEN=ghp_xxxx
+python scripts/push-to-github.ps1   # or: git push origin main
 ```
 
-> إذا `Repository not found`: سجّل دخول GitHub:
-> ```bash
-> gh auth login
-> ```
-> أو استخدم Personal Access Token.
+## 2) Pull on server (SSH)
 
----
-
-## 2) على Hostinger — SSH
+Use credentials from **Hostinger → SSH Access** (do not store in repo).
 
 ```bash
-ssh -p 65002 u696702336@92.113.18.71
-```
-
-```bash
+ssh -p YOUR_PORT YOUR_USER@YOUR_HOST
 cd ~/domains/smartflowuae.com/public_html
-# أو: cd ~/public_html
-
-git pull origin master
+git pull origin main
 bash deploy.sh
 ```
 
----
+Or from your PC with env vars (no passwords in files):
 
-## 3) `.env` على السيرفر (مرة واحدة)
+```powershell
+$env:HOSTINGER_SSH_HOST = "your-server-ip"
+$env:HOSTINGER_SSH_PORT = "65002"
+$env:HOSTINGER_SSH_USER = "your-ssh-user"
+$env:HOSTINGER_SSH_PASS = "your-ssh-password"
+python scripts/deploy-hostinger.py
+```
 
-تأكد أن `.env` موجود على السيرفر (لم يُرفع مع Git):
+## 3) Server `.env` (never in Git)
 
 ```env
 CHAT_AI_ENABLED=true
-CHAT_AI_PROVIDER=groq
 CHAT_AI_API_KEY=your_groq_key
 CHAT_AI_MODEL=allam-2-7b
 ```
@@ -47,22 +42,8 @@ CHAT_AI_MODEL=allam-2-7b
 php artisan config:clear
 ```
 
----
+## Security
 
-## 4) تنظيف البيانات (اختياري — على السيرفر فقط)
-
-```bash
-php artisan db:purge-except-core --force
-```
-
-يحذف كل شيء **ما عدا**: products, reviews, admins.
-
----
-
-## بديل: Git من لوحة Hostinger
-
-**Websites → smartflowuae.com → Advanced → GIT**
-
-- Repository: `https://github.com/eng-lina-ghojan/smartflow.git`
-- Branch: `master`
-- Deploy بعد كل push
+- Never commit `.env`, SSH passwords, or API keys.
+- Rotate any credential that was shared in chat or logs.
+- Keep `APP_DEBUG=false` on production.

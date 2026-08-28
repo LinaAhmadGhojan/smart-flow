@@ -7,7 +7,16 @@ vite.config.ts.*
 vendor
 .env
 .env.backup
+.env.local
+.env.production
+!.env.example
 storage/logs/*
 storage/framework/sessions/*
 storage/framework/views/*
 !.gitkeep
+*.pem
+*.key
+id_rsa
+id_rsa.pub
+scripts/*.local
+scripts/.hostinger.env

@@ -18,7 +18,9 @@ class ProductController extends Controller
             $query->visibleToPublic();
         }
 
-        return response()->json(['products' => $query->get()]);
+        $products = $query->get()->map(fn (Product $product) => $this->productPayload($product));
+
+        return response()->json(['products' => $products]);
     }
 
     public function store(Request $request)
@@ -72,7 +74,7 @@ class ProductController extends Controller
             'whatsapp_message' => $request->whatsapp_message,
         ]);
 
-        return response()->json($product, 201);
+        return response()->json($this->productPayload($product->fresh(['category', 'group'])), 201);
     }
 
     public function show(Request $request, $id)
@@ -83,7 +85,16 @@ class ProductController extends Controller
             abort(404);
         }
 
-        return response()->json($product);
+        return response()->json($this->productPayload($product));
+    }
+
+    /** @return array<string, mixed> */
+    private function productPayload(Product $product): array
+    {
+        $data = $product->toArray();
+        $data['image'] = StorageUrl::toPublicUrl($product->getRawOriginal('image'));
+
+        return $data;
     }
 
     public function update(Request $request, $id)
@@ -105,7 +116,7 @@ class ProductController extends Controller
             'whatsapp_message' => 'nullable|string',
         ]);
 
-        $imagePath = $product->image;
+        $imagePath = $product->getRawOriginal('image');
         if ($request->hasFile('image')) {
             // Delete old image
             if ($product->getRawOriginal('image')) {
@@ -145,7 +156,7 @@ class ProductController extends Controller
             'whatsapp_message' => $request->whatsapp_message??'',
         ]);
 
-        return response()->json($product);
+        return response()->json($this->productPayload($product->fresh(['category', 'group'])));
     }
 
     private function isAdminRequest(Request $request): bool
@@ -189,7 +200,7 @@ class ProductController extends Controller
             $image->move($destinationPath, $filename);
 
             return response()->json([
-                'image' => '/storage/products/' . $filename
+                'image' => StorageUrl::toPublicUrl('/storage/products/' . $filename),
             ]);
         }
 

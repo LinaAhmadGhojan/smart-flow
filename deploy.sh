@@ -10,7 +10,14 @@ mkdir -p storage/framework/sessions
 mkdir -p storage/framework/cache/data
 mkdir -p storage/logs
 mkdir -p bootstrap/cache
-mkdir -p public/build build
+mkdir -p public/storage/products
+mkdir -p public/storage/groups
+mkdir -p public/storage/reviews
+mkdir -p public/storage/branding
+mkdir -p public/storage/reports
+mkdir -p public/storage/projects
+mkdir -p public/storage/study-plans
+mkdir -p public/storage/offers
 
 chmod -R 775 storage bootstrap/cache 2>/dev/null || true
 

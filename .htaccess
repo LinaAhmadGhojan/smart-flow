@@ -5,6 +5,9 @@
 
     RewriteEngine On
 
+    # Hostinger docroot: uploaded files are under public/storage/
+    RewriteRule ^storage/(products|groups|reviews|branding|reports|projects|study-plans|offers)/(.+)$ public/storage/$1/$2 [L]
+
     # Protect sensitive directories
     RewriteRule ^(app|bootstrap|config|database|resources|routes|storage/(?!app/public)|vendor)/(.*)$ - [F,L]
 

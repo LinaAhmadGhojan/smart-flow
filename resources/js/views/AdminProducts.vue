@@ -43,9 +43,10 @@
             <div class="shrink-0">
               <img
                 v-if="product.image"
-                :src="product.image"
+                :src="mediaUrl(product.image)"
                 :alt="product.name"
                 class="h-16 w-16 object-cover rounded-lg border border-gray-100"
+                @error="handleMediaError"
               />
               <div v-else class="h-16 w-16 bg-gray-200 rounded-lg flex items-center justify-center text-gray-400 text-xs">No Image</div>
             </div>
@@ -105,7 +106,7 @@
           <tbody class="bg-white divide-y divide-gray-200">
             <tr v-for="product in paginatedProducts" :key="product.id" class="hover:bg-gray-50">
               <td class="px-6 py-4 whitespace-nowrap">
-                <img v-if="product.image" :src="product.image" :alt="product.name" class="h-12 w-12 object-cover rounded" />
+                <img v-if="product.image" :src="mediaUrl(product.image)" :alt="product.name" class="h-12 w-12 object-cover rounded" @error="handleMediaError" />
                 <div v-else class="h-12 w-12 bg-gray-200 rounded flex items-center justify-center text-gray-400">No Image</div>
               </td>
               <td class="px-6 py-4">
@@ -242,6 +243,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { RouterLink } from 'vue-router'
 import api from '@/lib/api'
+import { mediaUrl, handleMediaError } from '@/lib/media'
 import { filterProducts as filterProductList, type SearchableProduct } from '@/lib/productSearch'
 
 interface Category {

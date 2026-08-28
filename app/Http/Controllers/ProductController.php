@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Support\StorageUrl;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -107,9 +108,9 @@ class ProductController extends Controller
         $imagePath = $product->image;
         if ($request->hasFile('image')) {
             // Delete old image
-            if ($product->image) {
-                $oldImagePath = public_path(str_replace('/storage/', 'storage/', $product->image));
-                if (file_exists($oldImagePath)) {
+            if ($product->getRawOriginal('image')) {
+                $oldImagePath = StorageUrl::toFilesystemPath($product->getRawOriginal('image'));
+                if ($oldImagePath && file_exists($oldImagePath)) {
                     @unlink($oldImagePath);
                 }
             }
@@ -157,9 +158,9 @@ class ProductController extends Controller
         $product = Product::findOrFail($id);
         
         // Delete image if exists
-        if ($product->image) {
-            $imagePath = public_path(str_replace('/storage/', 'storage/', $product->image));
-            if (file_exists($imagePath)) {
+        if ($product->getRawOriginal('image')) {
+            $imagePath = StorageUrl::toFilesystemPath($product->getRawOriginal('image'));
+            if ($imagePath && file_exists($imagePath)) {
                 @unlink($imagePath);
             }
         }

@@ -58,13 +58,6 @@ class Product extends Model
 
     public function getImageAttribute(?string $value): ?string
     {
-        if (!$value) {
-            return null;
-        }
-
-        $value = preg_replace('#^/public/storage/#', '/storage/', $value) ?? $value;
-        $value = preg_replace('#^/uploads/#', '/storage/', $value) ?? $value;
-
-        return $value;
+        return \App\Support\StorageUrl::toPublicUrl($value);
     }
 }

@@ -109,7 +109,7 @@
           <label class="sf-label">Product Image | صورة المنتج</label>
           <div class="rounded-xl border border-dashed border-gray-300 bg-gray-50 p-4 text-center">
             <div v-if="imagePreview" class="mb-3 flex justify-center">
-              <img :src="imagePreview" alt="Preview" class="h-40 w-40 object-cover rounded-lg border border-gray-200" />
+              <img :src="imagePreview" alt="Preview" class="h-40 w-40 object-cover rounded-lg border border-gray-200" @error="handleMediaError" />
             </div>
             <div v-else class="mb-3 h-40 flex items-center justify-center text-sm text-gray-400">
               لا توجد صورة
@@ -171,6 +171,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter, RouterLink } from 'vue-router'
 import api from '@/lib/api'
+import { mediaUrl, handleMediaError } from '@/lib/media'
 
 const route = useRoute()
 const router = useRouter()
@@ -249,7 +250,7 @@ const fetchData = async () => {
       
       // Set image preview if exists
       if (product.image) {
-        imagePreview.value = product.image
+        imagePreview.value = mediaUrl(product.image)
       }
     }
   } catch (err: any) {

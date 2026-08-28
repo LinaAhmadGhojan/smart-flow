@@ -43,6 +43,8 @@ else
   done
 fi
 pwd
+mkdir -p storage/framework/views storage/framework/sessions storage/framework/cache/data storage/logs bootstrap/cache
+chmod -R 775 storage bootstrap/cache 2>/dev/null || true
 git remote set-url origin {REPO} 2>/dev/null || true
 git fetch origin
 git pull origin {BRANCH}

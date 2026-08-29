@@ -2,98 +2,25 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\CompanySettings;
+use App\Support\StorageUrl;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 
 class SettingsController extends Controller
 {
-    /**
-     * Get the correct path for company-info.json
-     */
-    private function getSettingsPath()
-    {
-        // جرب المسار العادي أولاً
-        $path = public_path('company-info.json');
-        
-        // إذا لم يوجد، جرب المسار البديل للاستضافة
-        if (!File::exists($path)) {
-            $path = base_path('../company-info.json');
-        }
-        
-        // إذا لم يوجد، جرب في public_html مباشرة
-        if (!File::exists($path)) {
-            $path = base_path('../public_html/company-info.json');
-        }
-        
-        return $path;
-    }
-
-    /**
-     * Get company settings
-     */
     public function index()
     {
-        $filePath = $this->getSettingsPath();
-        
-        if (!File::exists($filePath)) {
-            // أرجع قيم افتراضية إذا لم يوجد الملف
-            return response()->json([
-                'companyName' => 'SMARTFLOW',
-                'companyNameAr' => 'سمارت فلو',
-                'tagline' => 'Your Home is Safe With Us',
-                'taglineAr' => 'منزلك آمن معنا',
-                'description' => 'Smart Home Solutions Provider in Dubai, UAE',
-                'descriptionAr' => 'مزود الحلول المنزلية الذكية في دبي، الإمارات',
-                'footerDescAr' => 'مزود الحلول المنزلية الذكية في دبي، الإمارات',
-                'contact' => [
-                    'email' => 'info@smartflow.ae',
-                    'phone' => '+971 50 123 4567',
-                    'whatsapp' => '971501234567',
-                    'address' => [
-                        'en' => 'Dubai, United Arab Emirates',
-                        'ar' => 'دبي، الإمارات العربية المتحدة'
-                    ]
-                ],
-                'workingHours' => [
-                    'en' => 'Sunday - Thursday: 9:00 AM - 6:00 PM',
-                    'ar' => 'الأحد - الخميس: 9:00 صباحاً - 6:00 مساءً'
-                ],
-                'social' => [
-                    'facebook' => '',
-                    'twitter' => '',
-                    'instagram' => '',
-                    'linkedin' => ''
-                ],
-                'about' => [
-                    'en' => 'SmartFlow provides innovative smart home solutions.',
-                    'ar' => 'تقدم سمارت فلو حلول منزلية ذكية مبتكرة.'
-                ],
-                'seo' => [
-                    'keywords' => 'smart home, Dubai, UAE',
-                    'location' => [
-                        'city' => 'Dubai',
-                        'cityAr' => 'دبي',
-                        'country' => 'United Arab Emirates',
-                        'countryAr' => 'الإمارات العربية المتحدة',
-                        'countryCode' => 'AE',
-                        'region' => 'Middle East'
-                    ]
-                ],
-                'logo' => null,
-                'signature' => null,
-                'signatureName' => null,
-            ]);
+        $settings = CompanySettings::read();
+
+        if ($settings === []) {
+            return response()->json($this->defaultSettings());
         }
 
-        $settings = json_decode(File::get($filePath), true);
-        
         return response()->json($settings);
     }
 
-    /**
-     * Update company settings
-     */
     public function update(Request $request)
     {
         try {
@@ -120,43 +47,16 @@ class SettingsController extends Controller
                 'about.ar' => 'required|string',
             ]);
 
-            // جرب المسارات المختلفة للحفظ
-            $possiblePaths = [
-                public_path('company-info.json'),
-                base_path('../company-info.json'),
-                base_path('../public_html/company-info.json'),
-            ];
-
-            $filePath = null;
-            foreach ($possiblePaths as $path) {
-                // تحقق إذا كان المسار قابل للكتابة أو إذا كان المجلد موجود
-                $dir = dirname($path);
-                if (File::exists($path) || (File::isDirectory($dir) && is_writable($dir))) {
-                    $filePath = $path;
-                    break;
-                }
-            }
-
-            if (!$filePath) {
-                // استخدم المسار الأول كافتراضي
-                $filePath = $possiblePaths[0];
-            }
-
-            // Add footer description for backward compatibility
             $validated['footerDescAr'] = $validated['descriptionAr'];
 
-            // Preserve branding fields (logo/signature) managed via updateBranding()
-            $existing = File::exists($this->getSettingsPath())
-                ? json_decode(File::get($this->getSettingsPath()), true)
-                : [];
+            $existing = CompanySettings::read();
             foreach (['logo', 'signature', 'signatureName'] as $brandingKey) {
-                if (isset($existing[$brandingKey])) {
+                if (array_key_exists($brandingKey, $existing)) {
                     $validated[$brandingKey] = $existing[$brandingKey];
                 }
             }
 
-            // Preserve or add SEO data
-            $seoData = $request->input('seo', [
+            $validated['seo'] = $request->input('seo', $existing['seo'] ?? [
                 'keywords' => 'smart home, automation, Dubai, UAE, الإمارات, دبي, منزل ذكي, أتمتة',
                 'location' => [
                     'city' => 'Dubai',
@@ -164,42 +64,27 @@ class SettingsController extends Controller
                     'country' => 'United Arab Emirates',
                     'countryAr' => 'الإمارات العربية المتحدة',
                     'countryCode' => 'AE',
-                    'region' => 'Middle East'
-                ]
+                    'region' => 'Middle East',
+                ],
             ]);
-            $validated['seo'] = $seoData;
 
-            // Save to file with pretty formatting
-            $json = json_encode($validated, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-            
-            $result = File::put($filePath, $json);
+            CompanySettings::write($validated);
 
-            if ($result === false) {
-                Log::error('Failed to write settings file', ['path' => $filePath]);
-                return response()->json([
-                    'error' => 'فشل في حفظ الملف - تحقق من صلاحيات الكتابة',
-                    'path' => $filePath
-                ], 500);
-            }
-
-            Log::info('Settings saved successfully', ['path' => $filePath]);
+            Log::info('Settings saved successfully');
 
             return response()->json([
                 'message' => 'Settings updated successfully',
-                'data' => $validated
+                'data' => $validated,
             ]);
-
         } catch (\Exception $e) {
             Log::error('Error saving settings', ['error' => $e->getMessage()]);
+
             return response()->json([
-                'error' => 'خطأ في حفظ الإعدادات: ' . $e->getMessage()
+                'error' => 'خطأ في حفظ الإعدادات: ' . $e->getMessage(),
             ], 500);
         }
     }
 
-    /**
-     * Upload/update the company logo and signature used on exported PDF reports.
-     */
     public function updateBranding(Request $request)
     {
         try {
@@ -209,18 +94,17 @@ class SettingsController extends Controller
                 'signature_name' => 'nullable|string|max:255',
             ]);
 
-            $filePath = $this->getSettingsPath();
-            $settings = File::exists($filePath) ? json_decode(File::get($filePath), true) : [];
-            if (!is_array($settings)) {
-                $settings = [];
+            if (!$request->hasFile('logo') && !$request->hasFile('signature') && !$request->filled('signature_name')) {
+                return response()->json([
+                    'error' => 'اختر شعاراً أو توقيعاً للرفع، أو أدخل اسم التوقيع.',
+                ], 422);
             }
 
-            $destinationPath = public_path('storage/branding');
-            if (!File::isDirectory($destinationPath)) {
-                File::makeDirectory($destinationPath, 0755, true);
-            }
+            $settings = CompanySettings::read();
+            $destinationPath = CompanySettings::brandingDir();
 
             if ($request->hasFile('logo')) {
+                self::deleteBrandingFile($settings['logo'] ?? null);
                 $file = $request->file('logo');
                 $filename = 'logo-' . time() . '-' . uniqid() . '.' . $file->getClientOriginalExtension();
                 $file->move($destinationPath, $filename);
@@ -228,6 +112,7 @@ class SettingsController extends Controller
             }
 
             if ($request->hasFile('signature')) {
+                self::deleteBrandingFile($settings['signature'] ?? null);
                 $file = $request->file('signature');
                 $filename = 'signature-' . time() . '-' . uniqid() . '.' . $file->getClientOriginalExtension();
                 $file->move($destinationPath, $filename);
@@ -238,20 +123,79 @@ class SettingsController extends Controller
                 $settings['signatureName'] = $request->input('signature_name');
             }
 
-            $json = json_encode($settings, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-            File::put($filePath, $json);
+            CompanySettings::write($settings);
 
             return response()->json([
                 'message' => 'تم تحديث الشعار/التوقيع بنجاح',
-                'logo' => $settings['logo'] ?? null,
-                'signature' => $settings['signature'] ?? null,
+                'logo' => isset($settings['logo']) ? StorageUrl::toPublicUrl($settings['logo']) : null,
+                'signature' => isset($settings['signature']) ? StorageUrl::toPublicUrl($settings['signature']) : null,
                 'signatureName' => $settings['signatureName'] ?? null,
             ]);
         } catch (\Exception $e) {
             Log::error('Error saving branding', ['error' => $e->getMessage()]);
+
             return response()->json([
-                'error' => 'خطأ في حفظ الشعار/التوقيع: ' . $e->getMessage()
+                'error' => 'خطأ في حفظ الشعار/التوقيع: ' . $e->getMessage(),
             ], 500);
         }
+    }
+
+    private static function deleteBrandingFile(?string $webPath): void
+    {
+        $absolute = StorageUrl::toFilesystemPath($webPath);
+        if ($absolute && File::exists($absolute)) {
+            @unlink($absolute);
+        }
+    }
+
+    /** @return array<string, mixed> */
+    private function defaultSettings(): array
+    {
+        return [
+            'companyName' => 'SMARTFLOW',
+            'companyNameAr' => 'سمارت فلو',
+            'tagline' => 'Your Home is Safe With Us',
+            'taglineAr' => 'منزلك آمن معنا',
+            'description' => 'Smart Home Solutions Provider in Dubai, UAE',
+            'descriptionAr' => 'مزود الحلول المنزلية الذكية في دبي، الإمارات',
+            'footerDescAr' => 'مزود الحلول المنزلية الذكية في دبي، الإمارات',
+            'contact' => [
+                'email' => 'info@smartflow.ae',
+                'phone' => '+971 50 123 4567',
+                'whatsapp' => '971501234567',
+                'address' => [
+                    'en' => 'Dubai, United Arab Emirates',
+                    'ar' => 'دبي، الإمارات العربية المتحدة',
+                ],
+            ],
+            'workingHours' => [
+                'en' => 'Sunday - Thursday: 9:00 AM - 6:00 PM',
+                'ar' => 'الأحد - الخميس: 9:00 صباحاً - 6:00 مساءً',
+            ],
+            'social' => [
+                'facebook' => '',
+                'twitter' => '',
+                'instagram' => '',
+                'linkedin' => '',
+            ],
+            'about' => [
+                'en' => 'SmartFlow provides innovative smart home solutions.',
+                'ar' => 'تقدم سمارت فلو حلول منزلية ذكية مبتكرة.',
+            ],
+            'seo' => [
+                'keywords' => 'smart home, Dubai, UAE',
+                'location' => [
+                    'city' => 'Dubai',
+                    'cityAr' => 'دبي',
+                    'country' => 'United Arab Emirates',
+                    'countryAr' => 'الإمارات العربية المتحدة',
+                    'countryCode' => 'AE',
+                    'region' => 'Middle East',
+                ],
+            ],
+            'logo' => null,
+            'signature' => null,
+            'signatureName' => null,
+        ];
     }
 }

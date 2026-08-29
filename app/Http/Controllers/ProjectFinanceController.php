@@ -9,6 +9,7 @@ use App\Models\ProjectExpense;
 use App\Models\ProjectPayment;
 use App\Models\ProjectProfitShare;
 use App\Support\ArabicPdfText;
+use App\Support\CompanySettings;
 use App\Support\BrowserPdf;
 use App\Support\DompdfFontCache;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -891,9 +892,7 @@ class ProjectFinanceController extends Controller
 
     private function companySettings(): array
     {
-        $path = public_path('company-info.json');
-        $data = File::exists($path) ? json_decode(File::get($path), true) : [];
-        return is_array($data) ? $data : [];
+        return CompanySettings::read();
     }
 
     private function absoluteAssetPath(?string $webPath): ?string

@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\Quotation;
 use App\Models\QuotationItem;
 use App\Support\ArabicPdfText;
+use App\Support\CompanySettings;
 use App\Support\DompdfFontCache;
 use App\Support\ProductDescription;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -371,17 +372,21 @@ class QuotationController extends Controller
 
     private function companySettings(): array
     {
-        $path = public_path('company-info.json');
-        $data = File::exists($path) ? json_decode(File::get($path), true) : [];
-        return is_array($data) ? $data : [];
+        return CompanySettings::read();
     }
 
     private function absoluteAssetPath(?string $webPath): ?string
     {
-        if (!$webPath) return null;
-        if (preg_match('/^https?:\/\//i', $webPath)) return $webPath;
-        $absolute = public_path(ltrim($webPath, '/'));
-        return File::exists($absolute) ? $absolute : null;
+        if (!$webPath) {
+            return null;
+        }
+        if (preg_match('/^https?:\/\//i', $webPath)) {
+            return $webPath;
+        }
+
+        $absolute = StorageUrl::toFilesystemPath($webPath);
+
+        return ($absolute && File::exists($absolute)) ? $absolute : null;
     }
 
     private function toDataUri(?string $absolutePath, int $maxSide = 0): ?string

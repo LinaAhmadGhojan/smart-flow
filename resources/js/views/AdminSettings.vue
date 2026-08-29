@@ -528,11 +528,8 @@ const errorMessage = ref('')
 
 const loadSettings = async () => {
   try {
-    const response = await fetch('/company-info.json')
-    if (!response.ok) {
-      throw new Error('Failed to load settings')
-    }
-    const data = await response.json()
+    const response = await api.get('/settings')
+    const data = response.data
     
     // دمج البيانات مع القيم الافتراضية للتأكد من وجود جميع الحقول
     settings.value = {
@@ -645,38 +642,13 @@ const saveSettings = async () => {
   errorMessage.value = ''
 
   try {
-    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
-    
-    const response = await fetch('/api/settings', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRF-TOKEN': csrfToken || '',
-        'Accept': 'application/json'
-      },
-      credentials: 'same-origin',
-      body: JSON.stringify(settings.value)
-    })
-
-    const data = await response.json()
-
-    if (!response.ok) {
-      // عرض رسالة الخطأ من السيرفر
-      const errorMsg = data.error || data.message || 'فشل في حفظ الإعدادات'
-      throw new Error(errorMsg)
-    }
-
+    await api.post('/settings', settings.value)
     successMessage.value = '✅ تم حفظ الإعدادات بنجاح!'
-    
-    // Scroll to top to show success message
     window.scrollTo({ top: 0, behavior: 'smooth' })
-    
-    // Reload settings to confirm
     await loadSettings()
-    
   } catch (error: any) {
-    console.error('Error saving settings:', error)
-    errorMessage.value = `❌ ${error.message || 'حدث خطأ أثناء حفظ الإعدادات'}`
+    errorMessage.value = error.response?.data?.error || error.message || 'فشل في حفظ الإعدادات'
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   } finally {
     saving.value = false
   }

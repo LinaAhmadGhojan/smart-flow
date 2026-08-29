@@ -14,6 +14,8 @@ use App\Support\ArabicPdfText;
 
 use App\Support\BrowserPdf;
 
+use App\Support\CompanySettings;
+
 use App\Support\DompdfFontCache;
 
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -685,13 +687,7 @@ class ReportController extends Controller
 
     {
 
-        $path = public_path('company-info.json');
-
-        $data = File::exists($path) ? json_decode(File::get($path), true) : [];
-
-
-
-        return is_array($data) ? $data : [];
+        return CompanySettings::read();
 
     }
 

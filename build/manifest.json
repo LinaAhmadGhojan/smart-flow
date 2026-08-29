@@ -13,7 +13,7 @@
     "isEntry": true
   },
   "resources/js/main.ts": {
-    "file": "assets/main-XDZTvsb6.js",
+    "file": "assets/main-DhR5KDji.js",
     "name": "main",
     "src": "resources/js/main.ts",
     "isEntry": true,
@@ -23,7 +23,7 @@
       "resources/js/views/GateMachineStudyPage.vue"
     ],
     "css": [
-      "assets/main-DHsVv_DK.css"
+      "assets/main-CST4heoT.css"
     ],
     "assets": [
       "assets/logo-D4e6ppla.jpeg",
@@ -31,7 +31,7 @@
     ]
   },
   "resources/js/views/AllOffersPage.vue": {
-    "file": "assets/AllOffersPage-DqlPjx2v.js",
+    "file": "assets/AllOffersPage-Izw3VX-s.js",
     "name": "AllOffersPage",
     "src": "resources/js/views/AllOffersPage.vue",
     "isDynamicEntry": true,
@@ -40,7 +40,7 @@
     ]
   },
   "resources/js/views/GateMachineStudyPage.vue": {
-    "file": "assets/GateMachineStudyPage-Dj548xZN.js",
+    "file": "assets/GateMachineStudyPage-CBVk-yzd.js",
     "name": "GateMachineStudyPage",
     "src": "resources/js/views/GateMachineStudyPage.vue",
     "isDynamicEntry": true,
@@ -52,7 +52,7 @@
     ]
   },
   "resources/js/views/ProjectStudyPage.vue": {
-    "file": "assets/ProjectStudyPage-av44-frx.js",
+    "file": "assets/ProjectStudyPage-B2TBXy9C.js",
     "name": "ProjectStudyPage",
     "src": "resources/js/views/ProjectStudyPage.vue",
     "isDynamicEntry": true,

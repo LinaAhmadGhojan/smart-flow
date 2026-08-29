@@ -39,6 +39,23 @@ class BrowserPdf
             // Exact paper size (e.g. A5) requires CDP. Do NOT fall back to CLI:
             // Chrome --print-to-pdf defaults to A4 and breaks hosting receipts.
             if ($paper !== null) {
+                // php artisan serve on Windows cannot open Chrome DevTools sockets
+                // (Winsock 0x277A). Skip the slow failed attempts and let the
+                // controller fall back to Dompdf (or the UI use screen capture).
+                if (PHP_OS_FAMILY === 'Windows' && PHP_SAPI === 'cli-server') {
+                    Log::info('BrowserPdf: skip Chrome under php built-in server (DevTools Winsock)');
+
+                    return null;
+                }
+
+                // Windows Apache/FPM: try a detached CLI child first.
+                if (PHP_OS_FAMILY === 'Windows') {
+                    $viaChild = self::renderViaPhpCliChild($htmlFile, $pdfFile, $waitMs, $paper);
+                    if ($viaChild !== null) {
+                        return $viaChild;
+                    }
+                }
+
                 $cdp = self::renderViaCdp($binary, $htmlFile, $profileDir, $waitMs, $paper);
                 if ($cdp !== null) {
                     return $cdp;
@@ -61,6 +78,96 @@ class BrowserPdf
         }
     }
 
+    /**
+     * CDP render used by `php artisan pdf:chrome-render` (must not recurse into itself).
+     *
+     * @param  array{width?: float, height?: float, landscape?: bool}  $paper
+     */
+    public static function renderDirectCdp(string $html, int $waitMs, array $paper): ?string
+    {
+        $binary = self::binary();
+        if ($binary === null) {
+            return null;
+        }
+
+        $dir = storage_path('app/pdf-tmp');
+        File::ensureDirectoryExists($dir);
+
+        $id = bin2hex(random_bytes(8));
+        $htmlFile = $dir . DIRECTORY_SEPARATOR . 'direct-' . $id . '.html';
+        $profileDir = $dir . DIRECTORY_SEPARATOR . 'profile-direct-' . $id;
+
+        file_put_contents($htmlFile, $html);
+
+        try {
+            return self::renderViaCdp($binary, $htmlFile, $profileDir, $waitMs, $paper);
+        } finally {
+            File::delete($htmlFile);
+            File::deleteDirectory($profileDir);
+        }
+    }
+
+    /**
+     * @param  array{width?: float, height?: float, landscape?: bool}  $paper
+     */
+    private static function renderViaPhpCliChild(
+        string $htmlFile,
+        string $pdfFile,
+        int $waitMs,
+        array $paper
+    ): ?string {
+        @unlink($pdfFile);
+
+        $width = (float) ($paper['width'] ?? 8.27);
+        $height = (float) ($paper['height'] ?? 5.83);
+        $wait = max(400, $waitMs);
+        $portrait = !($paper['landscape'] ?? true) ? ' --portrait' : '';
+
+        $dir = storage_path('app/pdf-tmp');
+        File::ensureDirectoryExists($dir);
+        $jobId = bin2hex(random_bytes(4));
+        $batFile = $dir . DIRECTORY_SEPARATOR . 'run-' . $jobId . '.cmd';
+
+        $lines = [
+            '@echo off',
+            'cd /d ' . base_path(),
+            escapeshellarg(PHP_BINARY)
+                . ' ' . escapeshellarg(base_path('artisan'))
+                . ' pdf:chrome-render'
+                . ' ' . escapeshellarg($htmlFile)
+                . ' ' . escapeshellarg($pdfFile)
+                . ' --width=' . $width
+                . ' --height=' . $height
+                . ' --wait=' . $wait
+                . $portrait,
+        ];
+        file_put_contents($batFile, implode("\r\n", $lines) . "\r\n");
+
+        try {
+            // `start /WAIT` creates a new console process tree that is not bound to
+            // artisan serve's broken Winsock job object (Chrome DevTools 0x277A).
+            $launcher = Process::fromShellCommandline(
+                'start "sf-pdf" /WAIT /MIN cmd /c ' . escapeshellarg($batFile),
+                base_path()
+            );
+            $launcher->setTimeout((int) config('pdf.chrome_timeout', 60));
+            $launcher->run();
+
+            if (is_file($pdfFile) && filesize($pdfFile) >= 1000) {
+                return (string) file_get_contents($pdfFile);
+            }
+
+            Log::warning('BrowserPdf: detached chrome render failed', [
+                'exit' => $launcher->getExitCode(),
+                'out' => mb_substr($launcher->getOutput() . "\n" . $launcher->getErrorOutput(), 0, 1500),
+            ]);
+
+            return null;
+        } finally {
+            File::delete($batFile);
+        }
+    }
+
     public static function available(): bool
     {
         return self::binary() !== null;
@@ -74,7 +181,11 @@ class BrowserPdf
         int $waitMs,
         array $paper
     ): ?string {
+        File::ensureDirectoryExists($profileDir);
+
         $port = self::freePort();
+        // Start on about:blank so the debugging port opens before a heavy file:// load.
+        // --remote-allow-origins=* is required on Chrome 111+.
         $chrome = new Process([
             $binary,
             '--headless=new',
@@ -84,28 +195,57 @@ class BrowserPdf
             '--no-default-browser-check',
             '--disable-extensions',
             '--disable-dev-shm-usage',
+            '--disable-background-networking',
+            '--disable-sync',
+            '--disable-translate',
             '--hide-scrollbars',
             '--allow-file-access-from-files',
+            '--remote-allow-origins=*',
+            '--remote-debugging-address=127.0.0.1',
             '--remote-debugging-port=' . $port,
             '--user-data-dir=' . $profileDir,
-            self::fileUrl($htmlFile),
+            'about:blank',
         ]);
-        $chrome->setTimeout(15);
+        $chrome->setTimeout((int) config('pdf.chrome_timeout', 60));
         $chrome->start();
 
         try {
-            self::waitForChromePort($port, 4);
+            self::waitForChromePort($port, 12);
 
-            $wsUrl = self::waitForDebuggerUrl($port, 4);
+            $wsUrl = self::waitForDebuggerUrl($port, 8);
             if ($wsUrl === null) {
+                Log::warning('BrowserPdf CDP: no debugger websocket on port ' . $port);
+
                 return null;
             }
 
             $client = new ChromeDevtools($wsUrl);
             $client->call('Page.enable');
+            $client->call('Runtime.enable');
 
-            // Fonts are embedded as data-URIs; a short settle is enough.
-            usleep(max(250000, min(900000, $waitMs * 200)));
+            $fileUrl = self::fileUrl($htmlFile);
+            $client->call('Page.navigate', ['url' => $fileUrl]);
+
+            // Wait until the receipt HTML has loaded (events are flaky across Chrome builds).
+            $readyDeadline = microtime(true) + 8;
+            while (microtime(true) < $readyDeadline) {
+                try {
+                    $ready = $client->call('Runtime.evaluate', [
+                        'expression' => 'document.readyState',
+                        'returnByValue' => true,
+                    ]);
+                    $state = $ready['result']['result']['value'] ?? '';
+                    if ($state === 'complete' || $state === 'interactive') {
+                        break;
+                    }
+                } catch (\Throwable) {
+                    // keep waiting
+                }
+                usleep(150000);
+            }
+
+            // Fonts are embedded as data-URIs; give layout a moment to settle.
+            usleep(max(400000, min(1500000, $waitMs * 300)));
 
             try {
                 $client->call('Runtime.evaluate', [
@@ -143,7 +283,19 @@ class BrowserPdf
 
             return $pdf;
         } catch (\Throwable $e) {
-            Log::warning('BrowserPdf CDP: ' . $e->getMessage());
+            $stderr = '';
+            try {
+                $stderr = mb_substr($chrome->getErrorOutput() . "\n" . $chrome->getOutput(), 0, 2000);
+            } catch (\Throwable) {
+                // ignore
+            }
+            Log::warning('BrowserPdf CDP: ' . $e->getMessage(), [
+                'running' => $chrome->isRunning(),
+                'exit' => $chrome->getExitCode(),
+                'stderr' => $stderr,
+                'port' => $port,
+                'binary' => $binary,
+            ]);
 
             return null;
         } finally {
@@ -266,19 +418,10 @@ class BrowserPdf
 
     private static function freePort(): int
     {
-        $socket = @stream_socket_server('tcp://127.0.0.1:0', $errno, $errstr);
-        if ($socket === false) {
-            return random_int(20000, 60000);
-        }
-
-        $address = stream_socket_get_name($socket, false);
-        fclose($socket);
-
-        if (!is_string($address) || !str_contains($address, ':')) {
-            return random_int(20000, 60000);
-        }
-
-        return (int) substr($address, strrpos($address, ':') + 1);
+        // Do NOT bind+release a socket to "find" a free port on Windows:
+        // TIME_WAIT often prevents Chrome from binding the same port afterwards,
+        // which surfaces as "Chrome remote debugging port did not open."
+        return random_int(32000, 42000);
     }
 
     private static function waitForChromePort(int $port, int $seconds): void

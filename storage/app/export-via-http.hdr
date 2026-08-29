@@ -1,0 +1,11 @@
+HTTP/1.1 200 OK
+Host: 127.0.0.1:8000
+Connection: close
+X-Powered-By: PHP/8.2.12
+Content-Type: application/pdf
+Content-Disposition: attachment; filename=RCP-1-001.pdf
+Content-Length: 39983
+Cache-Control: no-cache, private
+Date: Sat, 29 Aug 2026 14:08:33 GMT
+Vary: Origin
+

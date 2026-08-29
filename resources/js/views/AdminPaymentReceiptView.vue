@@ -89,7 +89,10 @@ const loadHtml = async () => {
   }
 }
 
-/** Export exactly what is painted in the receipt iframe (same as on screen). */
+/**
+ * Prefer capturing the on-screen iframe (exact layout).
+ * Fall back to server PDF if capture fails.
+ */
 const exportPdf = async () => {
   pdfLoading.value = true
   const filename = paymentReceiptFilename(projectId.value, paymentId.value)

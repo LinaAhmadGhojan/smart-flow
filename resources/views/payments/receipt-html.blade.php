@@ -214,13 +214,15 @@
         transform: translate(-50%, -50%);
         background: #1a437f;
         color: #fff;
-        font-size: 11px;
+        font-size: 12px;
         font-weight: 700;
-        padding: 3px 18px;
-        border-radius: 3px;
+        padding: 5px 22px;
+        border-radius: 4px;
         white-space: nowrap;
-        line-height: 1.3;
+        line-height: 1.35;
         z-index: 2;
+        letter-spacing: 0;
+        font-family: 'Cairo', 'CairoFallback', 'Segoe UI', sans-serif;
     }
     .pay-grid { width: 100%; border-collapse: collapse; table-layout: fixed; }
     .pay-grid td {
@@ -336,9 +338,9 @@
         text-align: center;
         direction: ltr;
         unicode-bidi: isolate;
-        margin: 2px 0 0;
-        padding: 0 4px 2px;
-        font-size: 10px;
+        margin: 4px 0 0;
+        padding: 0 4px 4px;
+        font-size: 11px;
         font-weight: 600;
         color: #1a437f;
         line-height: 1.5;
@@ -346,17 +348,18 @@
     }
     .contact .c-item {
         display: inline-block;
-        margin: 0 12px;
+        margin: 0 14px;
         white-space: nowrap;
         vertical-align: middle;
         direction: ltr;
         unicode-bidi: isolate;
     }
     .contact img {
-        height: 11px;
-        width: 11px;
+        height: 16px;
+        width: 16px;
         vertical-align: middle;
-        margin-right: 4px;
+        margin-right: 6px;
+        object-fit: contain;
     }
     .contact .en,
     .contact b {

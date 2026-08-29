@@ -449,7 +449,7 @@ class ProjectFinanceController extends Controller
         };
 
         $svg = static fn (string $body, int $w = 36, int $h = 36) => 'data:image/svg+xml;base64,' . base64_encode(
-            '<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" width="' . $w . '" height="' . $h . '" viewBox="0 0 36 36" fill="none">' . $body . '</svg>'
+            '<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" width="' . $w . '" height="' . $h . '" viewBox="0 0 ' . $w . ' ' . $h . '" fill="none">' . $body . '</svg>'
         );
 
         return [
@@ -476,18 +476,18 @@ class ProjectFinanceController extends Controller
                 . '<line x1="31.5" y1="13.5" x2="33.8" y2="11" stroke="' . $blue . '" stroke-width="1.4" stroke-linecap="round"/>'
             ),
             'phone' => $svg(
-                '<path d="M9.5 3.5 C8.2 3.5 7.2 4.6 7.4 5.9 C7.9 9.4 9.6 12.6 12.2 15.2 C14.8 17.8 18 19.5 21.5 20 C22.8 20.2 23.9 19.2 23.9 17.9 V15.8 C23.9 15.2 23.5 14.7 22.9 14.5 L20.3 13.7 C19.8 13.5 19.2 13.7 18.9 14.1 L17.7 15.6 C15.6 14.6 13.8 12.8 12.8 10.7 L14.3 9.5 C14.7 9.2 14.9 8.6 14.7 8.1 L13.9 5.5 C13.7 4.9 13.2 4.5 12.6 4.5 Z" fill="' . $blue . '"/>',
-                12, 12
+                '<path d="M11 4 C9.4 4 8.2 5.3 8.4 6.9 C9 11.2 11.1 15.1 14.3 18.3 C17.5 21.5 21.4 23.6 25.7 24.2 C27.3 24.4 28.6 23.2 28.6 21.6 V19.1 C28.6 18.3 28.1 17.7 27.3 17.4 L24.1 16.4 C23.5 16.2 22.8 16.4 22.4 16.9 L20.9 18.7 C18.3 17.5 16.1 15.3 14.9 12.7 L16.7 11.2 C17.2 10.8 17.4 10.1 17.2 9.5 L16.2 6.3 C16 5.5 15.4 5 14.6 5 Z" fill="' . $blue . '"/>',
+                32, 32
             ),
             'email' => $svg(
-                '<rect x="2.2" y="3.6" width="11.6" height="8.6" rx="1.1" stroke="' . $blue . '" stroke-width="1.3"/>'
-                . '<path d="M3 4.6 L8 8.2 L13 4.6" stroke="' . $blue . '" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>',
-                12, 12
+                '<rect x="4" y="8" width="24" height="18" rx="2.2" stroke="' . $blue . '" stroke-width="2" fill="none"/>'
+                . '<path d="M5.5 10.5 L16 18 L26.5 10.5" stroke="' . $blue . '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>',
+                32, 32
             ),
             'location' => $svg(
-                '<path d="M8 1.8 C5.4 1.8 3.3 4 3.3 6.7 C3.3 10.4 8 15.4 8 15.4 C8 15.4 12.7 10.4 12.7 6.7 C12.7 4 10.6 1.8 8 1.8 Z" fill="' . $blue . '"/>'
-                . '<circle cx="8" cy="6.6" r="1.7" fill="#fff"/>',
-                12, 12
+                '<path d="M16 3 C11.6 3 8 6.7 8 11.2 C8 17.4 16 26 16 26 C16 26 24 17.4 24 11.2 C24 6.7 20.4 3 16 3 Z" fill="' . $blue . '"/>'
+                . '<circle cx="16" cy="11" r="3.2" fill="#fff"/>',
+                32, 32
             ),
             'wave' => $pngUri($iconsDir . DIRECTORY_SEPARATOR . 'wave.png') ?: 'data:image/svg+xml;base64,' . base64_encode(
                 '<?xml version="1.0" encoding="UTF-8"?>'

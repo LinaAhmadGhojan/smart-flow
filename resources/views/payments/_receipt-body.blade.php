@@ -44,29 +44,30 @@
 
     <div class="pay-wrap">
         <div class="pay-box">
-            <div class="pay-tab-center"><span class="pay-tab arb">{{ $lblPayMethod }}</span></div>
+            <div class="pay-tab-row"><span class="pay-tab arb">{{ $lblPayMethod }}</span></div>
             <table class="pay-grid">
                 <tr>
+                    {{-- Visual LTR matches web RTL screen: Cash | Bank | Cheque --}}
                     <td>
-                        <img class="pay-icon" src="{{ $iconCash }}" alt="">
-                        <div class="pay-label-row">
-                            <span class="pay-lbl arb">{{ $lblCash }}</span>
-                            <span class="chk {{ $isCash ? 'on' : '' }}">{{ $isCash ? '✓' : '' }}</span>
-                        </div>
+                        <table class="pay-item"><tr>
+                            <td class="pi-ico"><img class="pay-icon" src="{{ $iconCash }}" alt=""></td>
+                            <td class="pi-lbl"><span class="pay-lbl arb">{{ $lblCash }}</span></td>
+                            <td class="pi-chk"><span class="chk {{ $isCash ? 'on' : '' }}">{{ $isCash ? '✓' : '' }}</span></td>
+                        </tr></table>
                     </td>
                     <td>
-                        <img class="pay-icon" src="{{ $iconBank }}" alt="">
-                        <div class="pay-label-row">
-                            <span class="pay-lbl arb">{{ $lblBankTransfer }}</span>
-                            <span class="chk {{ $isBank ? 'on' : '' }}">{{ $isBank ? '✓' : '' }}</span>
-                        </div>
+                        <table class="pay-item"><tr>
+                            <td class="pi-ico"><img class="pay-icon" src="{{ $iconBank }}" alt=""></td>
+                            <td class="pi-lbl"><span class="pay-lbl arb">{{ $lblBankTransfer }}</span></td>
+                            <td class="pi-chk"><span class="chk {{ $isBank ? 'on' : '' }}">{{ $isBank ? '✓' : '' }}</span></td>
+                        </tr></table>
                     </td>
                     <td>
-                        <img class="pay-icon" src="{{ $iconCheque }}" alt="">
-                        <div class="pay-label-row">
-                            <span class="pay-lbl arb">{{ $lblCheque }}</span>
-                            <span class="chk {{ $isCheque ? 'on' : '' }}">{{ $isCheque ? '✓' : '' }}</span>
-                        </div>
+                        <table class="pay-item"><tr>
+                            <td class="pi-ico"><img class="pay-icon" src="{{ $iconCheque }}" alt=""></td>
+                            <td class="pi-lbl"><span class="pay-lbl arb">{{ $lblCheque }}</span></td>
+                            <td class="pi-chk"><span class="chk {{ $isCheque ? 'on' : '' }}">{{ $isCheque ? '✓' : '' }}</span></td>
+                        </tr></table>
                     </td>
                 </tr>
             </table>
@@ -85,8 +86,8 @@
             <td>@if($bankName)<span class="ar">{{ $bankName }}</span>@else<span class="cell-dots"></span>@endif</td>
             <td>@if($refNo)<span class="en">{{ $refNo }}</span>@else<span class="cell-dots"></span>@endif</td>
             <td class="amt-cell">
-                <span class="en">{{ $amountNumber }}</span>
-                <span class="arb"> {{ $lblCurrency }}</span>
+                <span class="arb">{{ $lblCurrency }}</span>
+                <span class="en"> {{ $amountNumber }}</span>
             </td>
         </tr>
     </table>

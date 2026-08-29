@@ -231,35 +231,31 @@ class ProjectFinanceController extends Controller
             abort(404);
         }
 
-        $webData = $this->paymentReceiptViewData($project, $payment, false);
-        $filename = $webData['receiptNumber'] . '.pdf';
+        $filename = 'RCP-' . $project->id . '-' . str_pad((string) $payment->id, 3, '0', STR_PAD_LEFT) . '.pdf';
 
-        // Same HTML as the web view → Chrome PDF (A5 landscape). Dompdf is last resort only.
-        $rendered = BrowserPdf::render(
-            view('payments.receipt-html', $webData + [
-                'fontEmbedCss' => $this->receiptFontEmbedCss(),
-                'forBrowserPdf' => true,
-            ])->render(),
-            1200,
-            ['width' => 8.27, 'height' => 5.83, 'landscape' => true]
-        );
+        if (config('pdf.receipt_use_browser')) {
+            $webData = $this->paymentReceiptViewData($project, $payment, false);
+            $rendered = BrowserPdf::render(
+                view('payments.receipt-html', $webData + [
+                    'fontEmbedCss' => $this->receiptFontEmbedCss(),
+                    'forBrowserPdf' => true,
+                ])->render(),
+                1200,
+                ['width' => 8.27, 'height' => 5.83, 'landscape' => true]
+            );
 
-        if ($rendered !== null) {
-            return response($rendered, 200, [
-                'Content-Type' => 'application/pdf',
-                'Content-Disposition' => 'attachment; filename="' . $filename . '"',
-                'Content-Length' => (string) strlen($rendered),
-            ]);
+            if ($rendered !== null) {
+                return response($rendered, 200, [
+                    'Content-Type' => 'application/pdf',
+                    'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+                    'Content-Length' => (string) strlen($rendered),
+                ]);
+            }
         }
 
-        Log::warning('BrowserPdf unavailable for payment receipt; falling back to Dompdf A5', [
-            'project_id' => $project->id,
-            'payment_id' => $payment->id,
-        ]);
-
-        // Dedicated Dompdf template — fits one A5 landscape page (no mid-table page break).
         $data = $this->paymentReceiptViewData($project, $payment, true);
-        $pdf = Pdf::loadView('payments.receipt-pdf', $data)->setPaper('a5', 'landscape');
+        $pdf = Pdf::loadView('payments.receipt-pdf', $data)
+            ->setPaper('a5', 'landscape');
         $pdf->setOption('isRemoteEnabled', true);
         $pdf->setOption('isFontSubsettingEnabled', true);
         $pdf->setOption('defaultFont', 'DejaVu Sans');

@@ -36,12 +36,17 @@ class BrowserPdf
         file_put_contents($htmlFile, $html);
 
         try {
+            // Exact paper size (e.g. A5) requires CDP. Do NOT fall back to CLI:
+            // Chrome --print-to-pdf defaults to A4 and breaks hosting receipts.
             if ($paper !== null) {
                 $cdp = self::renderViaCdp($binary, $htmlFile, $profileDir, $waitMs, $paper);
                 if ($cdp !== null) {
                     return $cdp;
                 }
-                Log::warning('BrowserPdf: CDP A5 print failed, falling back to CLI');
+
+                Log::warning('BrowserPdf: CDP paper-size print failed; not using CLI (would be A4)');
+
+                return null;
             }
 
             return self::renderViaCli($binary, $htmlFile, $pdfFile, $profileDir, $waitMs);

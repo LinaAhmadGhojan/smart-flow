@@ -21,6 +21,19 @@ class SettingsController extends Controller
         return response()->json(array_merge($settings, CompanySettings::brandingResponse($settings)));
     }
 
+    public function companyInfoJson()
+    {
+        $settings = CompanySettings::read();
+
+        if ($settings === []) {
+            return response()->json($this->defaultSettings())
+                ->header('Cache-Control', 'public, max-age=60');
+        }
+
+        return response()->json(array_merge($settings, CompanySettings::brandingResponse($settings)))
+            ->header('Cache-Control', 'public, max-age=60');
+    }
+
     public function update(Request $request)
     {
         try {

@@ -44,4 +44,5 @@ php artisan optimize:clear
 php -r "if (function_exists('opcache_reset')) { opcache_reset(); echo \"OPcache cleared\n\"; }"
 
 echo "Deploy complete."
-echo "Verify: curl -s https://smartflowuae.com/api/products | head -c 400"
+echo "Verify settings: curl -s https://smartflowuae.com/company-info.json | grep -E 'logo|signature' || true"
+echo "Verify build: curl -s https://smartflowuae.com/build/manifest.json | grep main"

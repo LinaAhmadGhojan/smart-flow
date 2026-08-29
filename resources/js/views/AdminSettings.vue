@@ -618,9 +618,7 @@ const saveBranding = async () => {
     if (signatureFile.value) fd.append('signature', signatureFile.value)
     if (signatureName.value) fd.append('signature_name', signatureName.value)
 
-    const res = await api.post('/settings/branding', fd, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    })
+    const res = await api.post('/settings/branding', fd)
 
     if (res.data.logo) branding.value.logo = mediaUrl(res.data.logo)
     if (res.data.signature) branding.value.signature = mediaUrl(res.data.signature)

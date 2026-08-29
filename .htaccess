@@ -5,6 +5,9 @@
 
     RewriteEngine On
 
+    # Always serve company-info.json from Laravel (includes logo/signature paths)
+    RewriteRule ^company-info\.json$ index.php [L]
+
     # Hostinger docroot: uploaded files are under public/storage/
     RewriteRule ^storage/(products|groups|reviews|branding|reports|projects|study-plans|offers)/(.+)$ public/storage/$1/$2 [L]
 

@@ -20,9 +20,11 @@ const RECEIPT_H = 559
 function forceReceiptGeometry(root: HTMLElement): void {
   root.style.boxSizing = 'border-box'
   root.style.width = `${RECEIPT_W}px`
+  root.style.minHeight = `${RECEIPT_H}px`
   root.style.height = `${RECEIPT_H}px`
   root.style.maxWidth = `${RECEIPT_W}px`
-  root.style.overflow = 'hidden'
+  // Keep footer (phone/email/wave) visible — do not clip the bottom.
+  root.style.overflow = 'visible'
 
   const contentW = RECEIPT_W - 44 // page padding 22+22
   const innerW = contentW - 32 // sheet padding 16+16
@@ -35,6 +37,10 @@ function forceReceiptGeometry(root: HTMLElement): void {
   }
 
   root.querySelectorAll<HTMLElement>('.fline').forEach((row) => {
+    // Only force flex on div.fline rows (not Dompdf table.fline)
+    if (row.tagName === 'TABLE') {
+      return
+    }
     row.style.display = 'flex'
     row.style.flexDirection = 'row'
     row.style.alignItems = 'flex-end'
@@ -51,6 +57,19 @@ function forceReceiptGeometry(root: HTMLElement): void {
     table.style.maxWidth = `${w}px`
     table.style.tableLayout = 'fixed'
   })
+
+  const contact = root.querySelector('.contact') as HTMLElement | null
+  if (contact) {
+    contact.style.display = 'block'
+    contact.style.width = `${contentW}px`
+    contact.style.maxWidth = `${contentW}px`
+    contact.style.visibility = 'visible'
+    contact.style.opacity = '1'
+    contact.style.overflow = 'visible'
+    contact.style.whiteSpace = 'nowrap'
+    contact.style.direction = 'ltr'
+    contact.style.textAlign = 'center'
+  }
 }
 
 /**

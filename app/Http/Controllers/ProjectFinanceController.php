@@ -252,16 +252,19 @@ class ProjectFinanceController extends Controller
             ]);
         }
 
-        Log::warning('BrowserPdf unavailable for payment receipt; falling back to Dompdf', [
+        Log::warning('BrowserPdf unavailable for payment receipt; falling back to Dompdf A5', [
             'project_id' => $project->id,
             'payment_id' => $payment->id,
         ]);
 
+        // Dedicated Dompdf template — fits one A5 landscape page (no mid-table page break).
         $data = $this->paymentReceiptViewData($project, $payment, true);
-        $pdf = Pdf::loadView('payments.receipt-html', $data)->setPaper('a5', 'landscape');
+        $pdf = Pdf::loadView('payments.receipt-pdf', $data)->setPaper('a5', 'landscape');
         $pdf->setOption('isRemoteEnabled', true);
         $pdf->setOption('isFontSubsettingEnabled', true);
-        $pdf->setOption('defaultFont', 'Cairo');
+        $pdf->setOption('defaultFont', 'DejaVu Sans');
+        $pdf->setOption('dpi', 96);
+        $pdf->setOption('isHtml5ParserEnabled', true);
 
         return $pdf->download($filename);
     }

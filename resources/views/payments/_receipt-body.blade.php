@@ -109,8 +109,8 @@
     </table>
 
     <div class="contact">
-        <span><img src="{{ $iconPhone }}" alt=""> {{ $phone }}</span>
-        <span><img src="{{ $iconEmail }}" alt=""> {{ $email }}</span>
+        <span><img src="{{ $iconPhone }}" alt=""><span class="en">{{ $phone }}</span></span>
+        <span><img src="{{ $iconEmail }}" alt=""><span class="en">{{ $email }}</span></span>
         <span><img src="{{ $iconLocation }}" alt=""> <span class="ar">{{ $addressAr }}</span></span>
     </div>
 </div>

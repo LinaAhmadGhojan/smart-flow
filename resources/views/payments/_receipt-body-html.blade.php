@@ -43,19 +43,26 @@
         </tr>
     </table>
     @else
-    <div class="fline">
-        <div class="lab"><span class="arb">{{ $lblReceivedFrom }}</span>&nbsp;:</div>
-        <div class="val ar">{{ $clientName }}</div>
-    </div>
-    <div class="fline">
-        <div class="lab"><span class="arb">{{ $lblAmountWords }}</span>&nbsp;:</div>
-        <div class="val ar">{{ $amountWords }}</div>
-    </div>
-    <div class="fline">
-        <div class="lab"><span class="arb">{{ $lblFor }}</span>&nbsp;:</div>
-        <div class="val ar">{{ $forLabel }}</div>
-    </div>
+    <table class="fline">
+        <tr>
+            <td class="lab"><span class="arb">{{ $lblReceivedFrom }}</span>&nbsp;:</td>
+            <td class="val ar">{{ $clientName }}</td>
+        </tr>
+    </table>
+    <table class="fline">
+        <tr>
+            <td class="lab"><span class="arb">{{ $lblAmountWords }}</span>&nbsp;:</td>
+            <td class="val ar">{{ $amountWords }}</td>
+        </tr>
+    </table>
+    <table class="fline">
+        <tr>
+            <td class="lab"><span class="arb">{{ $lblFor }}</span>&nbsp;:</td>
+            <td class="val ar">{{ $forLabel }}</td>
+        </tr>
+    </table>
     @endif
+
     <div class="pay-wrap">
         <div class="pay-box">
             <div class="pay-tab arb">{{ $lblPayMethod }}</div>
@@ -111,15 +118,22 @@
         </div>
     </div>
 
-    @if(!empty($forPdf))
     <table class="grid">
         <tr>
+            @if(!empty($forPdf))
             <th class="arb" style="width:22%">{{ $lblDateCol }}</th>
             <th class="arb" style="width:22%">{{ $lblBank }}</th>
             <th class="arb" style="width:30%">{{ $lblRef }}</th>
             <th class="arb" style="width:26%">{{ $lblAmount }}</th>
+            @else
+            <th class="arb" style="width:26%">{{ $lblAmount }}</th>
+            <th class="arb" style="width:30%">{{ $lblRef }}</th>
+            <th class="arb" style="width:22%">{{ $lblBank }}</th>
+            <th class="arb" style="width:22%">{{ $lblDateCol }}</th>
+            @endif
         </tr>
         <tr>
+            @if(!empty($forPdf))
             <td><span class="en">{{ $dateLabel }}</span></td>
             <td>@if($bankName)<span class="ar">{{ $bankName }}</span>@else<span class="cell-dots"></span>@endif</td>
             <td>@if($refNo)<span class="en">{{ $refNo }}</span>@else<span class="cell-dots"></span>@endif</td>
@@ -127,31 +141,21 @@
                 <span class="en amt-num">{{ $amountNumber }}</span>
                 <span class="arb amt-cur">{{ $lblCurrency }}</span>
             </td>
-        </tr>
-    </table>
-    @else
-    <div class="amt-grid">
-        <div class="amt-grid-head">
-            <div class="arb">{{ $lblAmount }}</div>
-            <div class="arb">{{ $lblRef }}</div>
-            <div class="arb">{{ $lblBank }}</div>
-            <div class="arb">{{ $lblDateCol }}</div>
-        </div>
-        <div class="amt-grid-row">
-            <div class="amt-cell">
+            @else
+            <td class="amt-cell">
                 <span class="en amt-num">{{ $amountNumber }}</span>
                 <span class="arb amt-cur">{{ $lblCurrency }}</span>
-            </div>
-            <div>@if($refNo)<span class="en">{{ $refNo }}</span>@else<span class="cell-dots"></span>@endif</div>
-            <div>@if($bankName)<span class="ar">{{ $bankName }}</span>@else<span class="cell-dots"></span>@endif</div>
-            <div><span class="en">{{ $dateLabel }}</span></div>
-        </div>
-    </div>
-    @endif
+            </td>
+            <td>@if($refNo)<span class="en">{{ $refNo }}</span>@else<span class="cell-dots"></span>@endif</td>
+            <td>@if($bankName)<span class="ar">{{ $bankName }}</span>@else<span class="cell-dots"></span>@endif</td>
+            <td><span class="en">{{ $dateLabel }}</span></td>
+            @endif
+        </tr>
+    </table>
 
-    @if(!empty($forPdf))
     <table class="signs">
         <tr>
+            @if(!empty($forPdf))
             <td>
                 <div class="sig-lab arb">{{ $lblReceiver }}</div>
                 <div class="sig-line"></div>
@@ -161,40 +165,27 @@
                 <div class="sig-lab arb">{{ $lblAccountant }}</div>
                 <div class="sig-line"></div>
             </td>
+            @else
+            <td>
+                <div class="sig-lab arb">{{ $lblAccountant }}</div>
+                <div class="sig-line"></div>
+            </td>
+            <td></td>
+            <td>
+                <div class="sig-lab arb">{{ $lblReceiver }}</div>
+                <div class="sig-line"></div>
+            </td>
+            @endif
         </tr>
     </table>
-    @else
-    <div class="signs-row">
-        <div class="sign-col">
-            <div class="sig-lab arb">{{ $lblAccountant }}</div>
-            <div class="sig-line"></div>
-        </div>
-        <div class="sign-col"></div>
-        <div class="sign-col">
-            <div class="sig-lab arb">{{ $lblReceiver }}</div>
-            <div class="sig-line"></div>
-        </div>
-    </div>
-    @endif
 </div>
 
 <div class="thanks arb">{{ $lblThanks }}</div>
-<table class="contact" dir="ltr">
-    <tr>
-        <td>
-            <img src="{{ $iconPhone }}" alt="">
-            <span class="en" dir="ltr">{{ $phone }}</span>
-        </td>
-        <td>
-            <img src="{{ $iconEmail }}" alt="">
-            <span class="en" dir="ltr">{{ $email }}</span>
-        </td>
-        <td>
-            <img src="{{ $iconLocation }}" alt="">
-            <span class="ar">{{ $addressAr }}</span>
-        </td>
-    </tr>
-</table>
+<div class="contact" dir="ltr">
+    <span class="c-item"><img src="{{ $iconPhone }}" alt=""><b class="en" dir="ltr">{{ $phone }}</b></span>
+    <span class="c-item"><img src="{{ $iconEmail }}" alt=""><b class="en" dir="ltr">{{ $email }}</b></span>
+    <span class="c-item"><img src="{{ $iconLocation }}" alt=""><b class="ar">{{ $addressAr }}</b></span>
+</div>
 <div class="wave-wrap" aria-hidden="true">
     <img src="{{ $waveSvg }}" alt="">
 </div>

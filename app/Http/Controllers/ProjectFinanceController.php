@@ -366,7 +366,7 @@ class ProjectFinanceController extends Controller
         ];
     }
 
-    /** Group a UAE number as "+971 56 256 6232" so it reads cleanly on the receipt. */
+    /** Prefer a clean display string; keep digits if formatting cannot match UAE mobile. */
     private function formatUaePhone(string $phone): string
     {
         $raw = trim($phone);
@@ -375,11 +375,9 @@ class ProjectFinanceController extends Controller
         if (str_starts_with($digits, '00')) {
             $digits = substr($digits, 2);
         }
-        // Local UAE mobile: 05xxxxxxxx → 9715xxxxxxxx
         if (str_starts_with($digits, '0') && strlen($digits) === 10) {
             $digits = '971' . substr($digits, 1);
         }
-        // Already without country code: 5xxxxxxxx (9 digits)
         if (strlen($digits) === 9 && str_starts_with($digits, '5')) {
             $digits = '971' . $digits;
         }
@@ -393,7 +391,11 @@ class ProjectFinanceController extends Controller
             );
         }
 
-        // Keep whatever was configured — never truncate for display.
+        // Never reduce a real number down to bare country code.
+        if ($digits === '971' || $raw === '' || $raw === '+971') {
+            return '+971';
+        }
+
         return $raw !== '' ? $raw : '+971';
     }
 

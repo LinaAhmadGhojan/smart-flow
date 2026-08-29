@@ -1,5 +1,5 @@
 import { downloadBlob, fetchAdminPdf } from '@/lib/api'
-import { toPng } from 'html-to-image'
+import html2canvas from 'html2canvas'
 import { jsPDF } from 'jspdf'
 
 export function paymentReceiptHtmlPath(projectId: number | string, paymentId: number | string): string {
@@ -14,13 +14,33 @@ export function paymentReceiptFilename(projectId: number | string, paymentId: nu
   return `RCP-${projectId}-${String(paymentId).padStart(3, '0')}.pdf`
 }
 
+/** A5 landscape design size in CSS pixels (210mm × 148mm at 96dpi). */
 const RECEIPT_W = 794
 const RECEIPT_H = 559
 
+function canvasLooksBlank(canvas: HTMLCanvasElement): boolean {
+  const ctx = canvas.getContext('2d')
+  if (!ctx) {
+    return true
+  }
+  const { width, height } = canvas
+  if (width < 10 || height < 10) {
+    return true
+  }
+  const sample = ctx.getImageData(0, 0, Math.min(40, width), Math.min(40, height)).data
+  let nonWhite = 0
+  for (let i = 0; i < sample.length; i += 4) {
+    if (sample[i] < 250 || sample[i + 1] < 250 || sample[i + 2] < 250) {
+      nonWhite++
+    }
+  }
+  return nonWhite < 8
+}
+
 /**
- * Capture the on-screen receipt into an A5 PDF.
- * Does not mutate layout styles (that was splitting the amount table and
- * clipping the phone number). Works on hosting without server Chrome.
+ * Capture the visible receipt into a real A5 landscape PDF download.
+ * Uses the browser paint pipeline so Arabic + layout match the on-screen page.
+ * Works on shared hosting (no Chrome on the server required).
  */
 export async function downloadReceiptPdfFromFrame(
   frame: HTMLIFrameElement,
@@ -43,36 +63,80 @@ export async function downloadReceiptPdfFromFrame(
     throw new Error('لم يتم العثور على محتوى الوصل')
   }
 
-  // Snapshot the laid-out page as the user sees it — no geometry overrides.
-  await new Promise((r) => setTimeout(r, 100))
+  const previous = {
+    width: page.style.width,
+    height: page.style.height,
+    maxWidth: page.style.maxWidth,
+    minHeight: page.style.minHeight,
+    overflow: page.style.overflow,
+    background: page.style.background,
+  }
 
-  const width = Math.max(page.offsetWidth, RECEIPT_W)
-  const height = Math.max(page.offsetHeight, RECEIPT_H)
+  page.style.width = `${RECEIPT_W}px`
+  page.style.height = `${RECEIPT_H}px`
+  page.style.maxWidth = `${RECEIPT_W}px`
+  page.style.minHeight = `${RECEIPT_H}px`
+  page.style.overflow = 'hidden'
+  page.style.background = '#ffffff'
 
-  const dataUrl = await toPng(page, {
-    width,
-    height,
-    canvasWidth: width * 2,
-    canvasHeight: height * 2,
-    pixelRatio: 2,
-    cacheBust: true,
-    backgroundColor: '#ffffff',
-    style: {
-      transform: 'none',
-    },
-  })
+  await new Promise((r) => setTimeout(r, 150))
 
-  const pdf = new jsPDF({
-    orientation: 'landscape',
-    unit: 'mm',
-    format: 'a5',
-    compress: true,
-  })
+  try {
+    let canvas = await html2canvas(page, {
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: '#ffffff',
+      foreignObjectRendering: true,
+      logging: false,
+      width: RECEIPT_W,
+      height: RECEIPT_H,
+      windowWidth: RECEIPT_W,
+      windowHeight: RECEIPT_H,
+    })
 
-  const pageW = pdf.internal.pageSize.getWidth()
-  const pageH = pdf.internal.pageSize.getHeight()
-  pdf.addImage(dataUrl, 'PNG', 0, 0, pageW, pageH, undefined, 'FAST')
-  pdf.save(filename)
+    if (canvasLooksBlank(canvas)) {
+      canvas = await html2canvas(page, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        foreignObjectRendering: false,
+        logging: false,
+        width: RECEIPT_W,
+        height: RECEIPT_H,
+        windowWidth: RECEIPT_W,
+        windowHeight: RECEIPT_H,
+      })
+    }
+
+    const pdf = new jsPDF({
+      orientation: 'landscape',
+      unit: 'mm',
+      format: 'a5',
+      compress: true,
+    })
+
+    // Exact A5 landscape: 210mm × 148mm
+    pdf.addImage(
+      canvas.toDataURL('image/jpeg', 0.96),
+      'JPEG',
+      0,
+      0,
+      pdf.internal.pageSize.getWidth(),
+      pdf.internal.pageSize.getHeight(),
+      undefined,
+      'FAST',
+    )
+    pdf.save(filename)
+  } finally {
+    page.style.width = previous.width
+    page.style.height = previous.height
+    page.style.maxWidth = previous.maxWidth
+    page.style.minHeight = previous.minHeight
+    page.style.overflow = previous.overflow
+    page.style.background = previous.background
+  }
 }
 
 export async function downloadReceiptPdf(

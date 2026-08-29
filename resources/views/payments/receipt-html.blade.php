@@ -169,39 +169,23 @@
     }
 
     .fline {
-        display: flex;
-        flex-direction: row;
-        align-items: flex-end;
         width: 100%;
-        box-sizing: border-box;
+        border-collapse: separate;
+        border-spacing: 0;
         margin: 6px 0;
-        gap: 10px;
-    }
-    /* Dompdf table fallback still uses td.lab / td.val */
-    table.fline {
-        display: table;
-        border-collapse: collapse;
         table-layout: auto;
-        gap: 0;
     }
-    table.fline td { padding: 5px 0; vertical-align: bottom; border: none; }
+    .fline td { padding: 5px 0; vertical-align: bottom; border: none; }
     .fline .lab {
-        flex: 0 0 auto;
         white-space: nowrap;
-        padding: 0 0 5px;
+        width: 1%;
+        padding-left: 12px;
         text-align: right;
         font-size: 13px;
         font-weight: 700;
         color: #1a437f;
-        line-height: 1.45;
-    }
-    table.fline .lab {
-        width: 1%;
-        padding-left: 12px;
     }
     .fline .val {
-        flex: 1 1 auto;
-        min-width: 0;
         border-bottom: 1.5px dotted #8faed0;
         padding: 0 8px 5px;
         text-align: right;
@@ -209,10 +193,10 @@
         font-size: 13px;
         font-weight: 600;
         min-height: 20px;
+        width: 99%;
         line-height: 1.45;
         letter-spacing: 0.01em;
     }
-    table.fline .val { width: 99%; }
     .fline-empty .val { min-height: 16px; }
 
     .pay-wrap { margin: 16px 0 10px; }
@@ -291,13 +275,11 @@
     }
 
     .grid {
-        width: 100% !important;
-        min-width: 100%;
-        max-width: 100%;
+        width: 100%;
         border-collapse: separate;
         border-spacing: 0;
         margin: 8px 0 10px;
-        table-layout: fixed !important;
+        table-layout: fixed;
     }
     .grid th {
         background: #1a437f;
@@ -308,12 +290,9 @@
         text-align: center;
         border: 1px solid #1a437f;
     }
-    .grid th:nth-child(1) { width: 26%; }
-    .grid th:nth-child(2) { width: 30%; }
-    .grid th:nth-child(3) { width: 22%; }
-    .grid th:nth-child(4) { width: 22%; }
     .grid td {
         border: 1px solid #b8cce8;
+        border-top: none;
         padding: 10px 6px;
         text-align: center;
         vertical-align: middle;
@@ -322,80 +301,25 @@
         color: #1a437f;
         background: #fff;
     }
-    .grid td.amt-cell,
-    .amt-cell { background: #e8f4fb; font-weight: 700; }
-
-    /* Div grid — survives browser PDF capture without header/body gaps */
-    .amt-grid {
-        width: 100%;
-        box-sizing: border-box;
-        margin: 8px 0 10px;
-    }
-    .amt-grid-head,
-    .amt-grid-row {
-        display: grid;
-        grid-template-columns: 26% 30% 22% 22%;
-        width: 100%;
-        box-sizing: border-box;
-    }
-    .amt-grid-head > div {
-        background: #1a437f;
-        color: #fff;
-        font-size: 12px;
-        font-weight: 700;
-        padding: 8px 6px;
-        text-align: center;
-        border: 1px solid #1a437f;
-        box-sizing: border-box;
-    }
-    .amt-grid-row > div {
-        border: 1px solid #b8cce8;
-        border-top: none;
-        padding: 10px 6px;
-        text-align: center;
-        vertical-align: middle;
-        min-height: 32px;
-        font-size: 11px;
-        color: #1a437f;
-        background: #fff;
-        box-sizing: border-box;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    .amt-grid-row > div.amt-cell { background: #e8f4fb; font-weight: 700; }
-
+    .grid tr:first-child td { border-top: 1px solid #b8cce8; }
+    .grid td.amt-cell { background: #e8f4fb; font-weight: 700; }
     .amt-num { font-weight: 700; margin-left: 4px; }
     .amt-cur { font-size: 10px; font-weight: 700; }
     .cell-dots {
-        display: block;
+        display: inline-block;
         width: 90%;
-        margin: 0 auto;
         border-bottom: 1px dotted #7a9cc8;
         height: 14px;
     }
 
     .signs {
-        width: 100% !important;
-        min-width: 100%;
+        width: 100%;
         border-collapse: separate;
         border-spacing: 0;
         margin-top: 6px;
         table-layout: fixed;
     }
     .signs td { width: 33%; border: none; vertical-align: bottom; padding: 0 10px; text-align: center; }
-    .signs-row {
-        display: grid;
-        grid-template-columns: 1fr 1fr 1fr;
-        width: 100%;
-        margin-top: 6px;
-        box-sizing: border-box;
-    }
-    .sign-col {
-        padding: 0 10px;
-        text-align: center;
-        box-sizing: border-box;
-    }
     .sig-lab { font-size: 11.5px; font-weight: 700; margin-bottom: 4px; color: #1a437f; }
     .sig-line { border-bottom: 1px dotted #7a9cc8; height: 24px; }
     .sig-line img { height: 22px; width: auto; max-width: 90px; vertical-align: bottom; }
@@ -409,24 +333,22 @@
 
     .contact {
         width: 100%;
-        border-collapse: separate;
-        border-spacing: 0;
-        table-layout: fixed;
+        text-align: center;
         direction: ltr;
         unicode-bidi: isolate;
         margin: 2px 0 0;
-        padding: 0;
+        padding: 0 4px 2px;
         font-size: 10px;
         font-weight: 600;
         color: #1a437f;
         line-height: 1.5;
-    }
-    .contact td {
-        border: none;
-        padding: 2px 6px;
-        text-align: center;
-        vertical-align: middle;
         white-space: nowrap;
+    }
+    .contact .c-item {
+        display: inline-block;
+        margin: 0 12px;
+        white-space: nowrap;
+        vertical-align: middle;
         direction: ltr;
         unicode-bidi: isolate;
     }
@@ -436,7 +358,9 @@
         vertical-align: middle;
         margin-right: 4px;
     }
-    .contact .en {
+    .contact .en,
+    .contact b {
+        font-weight: 600;
         direction: ltr;
         unicode-bidi: isolate;
         white-space: nowrap;

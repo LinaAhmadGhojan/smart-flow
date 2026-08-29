@@ -17,64 +17,10 @@ export function paymentReceiptFilename(projectId: number | string, paymentId: nu
 const RECEIPT_W = 794
 const RECEIPT_H = 559
 
-function forceReceiptGeometry(root: HTMLElement): void {
-  root.style.boxSizing = 'border-box'
-  root.style.width = `${RECEIPT_W}px`
-  root.style.minHeight = `${RECEIPT_H}px`
-  root.style.height = `${RECEIPT_H}px`
-  root.style.maxWidth = `${RECEIPT_W}px`
-  // Keep footer (phone/email/wave) visible — do not clip the bottom.
-  root.style.overflow = 'visible'
-
-  const contentW = RECEIPT_W - 44 // page padding 22+22
-  const innerW = contentW - 32 // sheet padding 16+16
-
-  const sheet = root.querySelector('.sheet') as HTMLElement | null
-  if (sheet) {
-    sheet.style.width = `${contentW}px`
-    sheet.style.maxWidth = `${contentW}px`
-    sheet.style.boxSizing = 'border-box'
-  }
-
-  root.querySelectorAll<HTMLElement>('.fline').forEach((row) => {
-    // Only force flex on div.fline rows (not Dompdf table.fline)
-    if (row.tagName === 'TABLE') {
-      return
-    }
-    row.style.display = 'flex'
-    row.style.flexDirection = 'row'
-    row.style.alignItems = 'flex-end'
-    row.style.width = `${innerW}px`
-    row.style.maxWidth = `${innerW}px`
-    row.style.boxSizing = 'border-box'
-  })
-
-  root.querySelectorAll<HTMLElement>('table.header, table.pay-grid, table.grid, table.signs').forEach((table) => {
-    const insideSheet = !!table.closest('.sheet')
-    const w = insideSheet ? innerW : contentW
-    table.style.width = `${w}px`
-    table.style.minWidth = `${w}px`
-    table.style.maxWidth = `${w}px`
-    table.style.tableLayout = 'fixed'
-  })
-
-  const contact = root.querySelector('.contact') as HTMLElement | null
-  if (contact) {
-    contact.style.display = 'block'
-    contact.style.width = `${contentW}px`
-    contact.style.maxWidth = `${contentW}px`
-    contact.style.visibility = 'visible'
-    contact.style.opacity = '1'
-    contact.style.overflow = 'visible'
-    contact.style.whiteSpace = 'nowrap'
-    contact.style.direction = 'ltr'
-    contact.style.textAlign = 'center'
-  }
-}
-
 /**
- * Capture the on-screen receipt (already laid out correctly) into an A5 PDF.
- * Captures the live iframe DOM — no re-clone that breaks RTL tables.
+ * Capture the on-screen receipt into an A5 PDF.
+ * Does not mutate layout styles (that was splitting the amount table and
+ * clipping the phone number). Works on hosting without server Chrome.
  */
 export async function downloadReceiptPdfFromFrame(
   frame: HTMLIFrameElement,
@@ -97,22 +43,22 @@ export async function downloadReceiptPdfFromFrame(
     throw new Error('لم يتم العثور على محتوى الوصل')
   }
 
-  forceReceiptGeometry(page)
-  await new Promise((r) => setTimeout(r, 120))
+  // Snapshot the laid-out page as the user sees it — no geometry overrides.
+  await new Promise((r) => setTimeout(r, 100))
+
+  const width = Math.max(page.offsetWidth, RECEIPT_W)
+  const height = Math.max(page.offsetHeight, RECEIPT_H)
 
   const dataUrl = await toPng(page, {
-    width: RECEIPT_W,
-    height: RECEIPT_H,
-    canvasWidth: RECEIPT_W * 2,
-    canvasHeight: RECEIPT_H * 2,
+    width,
+    height,
+    canvasWidth: width * 2,
+    canvasHeight: height * 2,
     pixelRatio: 2,
     cacheBust: true,
     backgroundColor: '#ffffff',
     style: {
-      width: `${RECEIPT_W}px`,
-      height: `${RECEIPT_H}px`,
       transform: 'none',
-      direction: 'rtl',
     },
   })
 

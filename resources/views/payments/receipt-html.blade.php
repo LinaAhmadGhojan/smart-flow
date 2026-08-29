@@ -294,10 +294,10 @@
         width: 100% !important;
         min-width: 100%;
         max-width: 100%;
-        border-collapse: collapse;
+        border-collapse: separate;
+        border-spacing: 0;
         margin: 8px 0 10px;
         table-layout: fixed !important;
-        display: table;
     }
     .grid th {
         background: #1a437f;
@@ -322,7 +322,49 @@
         color: #1a437f;
         background: #fff;
     }
-    .grid td.amt-cell { background: #e8f4fb; font-weight: 700; }
+    .grid td.amt-cell,
+    .amt-cell { background: #e8f4fb; font-weight: 700; }
+
+    /* Div grid — survives browser PDF capture without header/body gaps */
+    .amt-grid {
+        width: 100%;
+        box-sizing: border-box;
+        margin: 8px 0 10px;
+    }
+    .amt-grid-head,
+    .amt-grid-row {
+        display: grid;
+        grid-template-columns: 26% 30% 22% 22%;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .amt-grid-head > div {
+        background: #1a437f;
+        color: #fff;
+        font-size: 12px;
+        font-weight: 700;
+        padding: 8px 6px;
+        text-align: center;
+        border: 1px solid #1a437f;
+        box-sizing: border-box;
+    }
+    .amt-grid-row > div {
+        border: 1px solid #b8cce8;
+        border-top: none;
+        padding: 10px 6px;
+        text-align: center;
+        vertical-align: middle;
+        min-height: 32px;
+        font-size: 11px;
+        color: #1a437f;
+        background: #fff;
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .amt-grid-row > div.amt-cell { background: #e8f4fb; font-weight: 700; }
+
     .amt-num { font-weight: 700; margin-left: 4px; }
     .amt-cur { font-size: 10px; font-weight: 700; }
     .cell-dots {
@@ -336,11 +378,24 @@
     .signs {
         width: 100% !important;
         min-width: 100%;
-        border-collapse: collapse;
+        border-collapse: separate;
+        border-spacing: 0;
         margin-top: 6px;
         table-layout: fixed;
     }
     .signs td { width: 33%; border: none; vertical-align: bottom; padding: 0 10px; text-align: center; }
+    .signs-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        width: 100%;
+        margin-top: 6px;
+        box-sizing: border-box;
+    }
+    .sign-col {
+        padding: 0 10px;
+        text-align: center;
+        box-sizing: border-box;
+    }
     .sig-lab { font-size: 11.5px; font-weight: 700; margin-bottom: 4px; color: #1a437f; }
     .sig-line { border-bottom: 1px dotted #7a9cc8; height: 24px; }
     .sig-line img { height: 22px; width: auto; max-width: 90px; vertical-align: bottom; }
@@ -353,29 +408,33 @@
     }
 
     .contact {
-        text-align: center;
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        table-layout: fixed;
         direction: ltr;
         unicode-bidi: isolate;
         margin: 2px 0 0;
-        padding: 0 8px 2px;
+        padding: 0;
         font-size: 10px;
         font-weight: 600;
         color: #1a437f;
         line-height: 1.5;
+    }
+    .contact td {
+        border: none;
+        padding: 2px 6px;
+        text-align: center;
+        vertical-align: middle;
         white-space: nowrap;
-        overflow: visible;
+        direction: ltr;
+        unicode-bidi: isolate;
     }
     .contact img {
         height: 11px;
         width: 11px;
         vertical-align: middle;
         margin-right: 4px;
-    }
-    .contact > span {
-        margin: 0 10px;
-        white-space: nowrap;
-        display: inline-block;
-        vertical-align: middle;
     }
     .contact .en {
         direction: ltr;

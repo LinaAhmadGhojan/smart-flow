@@ -257,6 +257,13 @@ class BrowserPdf
                 // ignore font wait failures
             }
 
+            // Match the receipt preview page: use the same @media print rules as Ctrl+P.
+            try {
+                $client->call('Emulation.setEmulatedMedia', ['media' => 'print']);
+            } catch (\Throwable) {
+                // ignore emulation failures
+            }
+
             $printed = $client->call('Page.printToPDF', [
                 'landscape' => (bool) ($paper['landscape'] ?? true),
                 'paperWidth' => (float) ($paper['width'] ?? 8.27),

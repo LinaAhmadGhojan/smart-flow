@@ -216,12 +216,7 @@ class ProjectFinanceController extends Controller
             abort(404);
         }
 
-        return response()->view(
-            'payments.receipt-html',
-            $this->paymentReceiptViewData($project, $payment, false) + [
-                'fontEmbedCss' => $this->receiptFontEmbedCss(),
-            ]
-        );
+        return $this->paymentReceiptHtmlView($project, $payment);
     }
 
     public function pdfPayment(Project $project, ProjectPayment $payment)
@@ -237,12 +232,8 @@ class ProjectFinanceController extends Controller
         // (wave, Arabic, A5). Dompdf is the shared-hosting fallback.
         $useBrowser = config('pdf.receipt_use_browser') || BrowserPdf::available();
         if ($useBrowser) {
-            $webData = $this->paymentReceiptViewData($project, $payment, false);
             $rendered = BrowserPdf::render(
-                view('payments.receipt-html', $webData + [
-                    'fontEmbedCss' => $this->receiptFontEmbedCss(),
-                    'forBrowserPdf' => true,
-                ])->render(),
+                $this->paymentReceiptHtmlView($project, $payment)->render(),
                 1200,
                 ['width' => 8.27, 'height' => 5.83, 'landscape' => true]
             );
@@ -405,6 +396,17 @@ class ProjectFinanceController extends Controller
      * Inline the receipt fonts so a headless browser renders the same glyphs
      * without depending on Google Fonts being reachable.
      */
+    /** Same HTML as the receipt preview page (/admin/payments/receipt/...). */
+    private function paymentReceiptHtmlView(Project $project, ProjectPayment $payment)
+    {
+        return view(
+            'payments.receipt-html',
+            $this->paymentReceiptViewData($project, $payment, false) + [
+                'fontEmbedCss' => $this->receiptFontEmbedCss(),
+            ]
+        );
+    }
+
     private function receiptFontEmbedCss(): string
     {
         $faces = [

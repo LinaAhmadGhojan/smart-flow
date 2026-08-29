@@ -52,11 +52,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { fetchAdminHtml } from '@/lib/api'
-import {
-  downloadReceiptPdf,
-  downloadReceiptPdfFromFrame,
-  paymentReceiptFilename,
-} from '@/lib/receiptPdf'
+import { exportReceiptPdf } from '@/lib/receiptPdf'
 
 const route = useRoute()
 const router = useRouter()
@@ -92,20 +88,10 @@ const loadHtml = async () => {
 /** Export exactly what is visible in the iframe (same layout/fonts as the link). */
 const exportPdf = async () => {
   pdfLoading.value = true
-  const filename = paymentReceiptFilename(projectId.value, paymentId.value)
   try {
-    const frame = frameRef.value
-    if (frame?.contentDocument?.body) {
-      await downloadReceiptPdfFromFrame(frame, filename)
-      return
-    }
-    await downloadReceiptPdf(projectId.value, paymentId.value)
-  } catch {
-    try {
-      await downloadReceiptPdf(projectId.value, paymentId.value)
-    } catch (e: any) {
-      alert(e.message || e.response?.data?.message || 'تعذر تصدير الوصل')
-    }
+    await exportReceiptPdf(projectId.value, paymentId.value, frameRef.value)
+  } catch (e: any) {
+    alert(e.message || e.response?.data?.message || 'تعذر تصدير الوصل')
   } finally {
     pdfLoading.value = false
   }

@@ -1106,7 +1106,7 @@
 import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import api, { fetchAdminHtml } from '@/lib/api'
-import { downloadReceiptPdf, downloadDeliveryNotePdf, deliveryNoteHtmlPath } from '@/lib/receiptPdf'
+import { exportReceiptPdf, downloadDeliveryNotePdf, deliveryNoteHtmlPath } from '@/lib/receiptPdf'
 
 interface Customer { id: number; name: string; phone?: string; email?: string }
 interface ProjectFileRow { id: number; label: string; path: string; visibility: string; kind: string }
@@ -1693,7 +1693,7 @@ const removePayment = async (id: number) => {
 
 const downloadPaymentPdf = async (p: { id: number }) => {
   try {
-    await downloadReceiptPdf(route.params.id as string, p.id)
+    await exportReceiptPdf(route.params.id as string, p.id)
   } catch (e: any) {
     alert(e.message || e.response?.data?.message || 'تعذر تصدير الوصل')
   }

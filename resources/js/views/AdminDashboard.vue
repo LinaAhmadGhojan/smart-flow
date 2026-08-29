@@ -118,9 +118,8 @@ const loadStats = async () => {
 
   try {
     const today = new Date().toISOString().slice(0, 10)
-    const res = await fetch(`/api/admin/appointments?from=${today}&to=${today}`)
-    const data = await res.json()
-    const list = Array.isArray(data) ? data : (data.data || [])
+    const res = await api.get('/admin/appointments', { params: { from: today, to: today } })
+    const list = Array.isArray(res.data) ? res.data : (res.data.data || [])
     setStat('appointments', list.length)
   } catch { setStat('appointments', 0) }
 }

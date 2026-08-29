@@ -23,7 +23,6 @@
 </table>
 
 <div class="sheet">
-
     <table class="fline">
         <tr>
             <td class="val ar">{{ $clientName }}</td>
@@ -99,22 +98,17 @@
                 <div class="sig-line"></div>
             </td>
             <td>
-                <div class="thanks arb">{{ $lblThanks }}</div>
-            </td>
-            <td>
                 <div class="sig-lab arb">{{ $lblAccountant }}</div>
                 <div class="sig-line"></div>
             </td>
         </tr>
     </table>
-
-    <div class="contact">
-        <span><img src="{{ $iconPhone }}" alt=""><span class="en">{{ $phone }}</span></span>
-        <span><img src="{{ $iconEmail }}" alt=""><span class="en">{{ $email }}</span></span>
-        <span><img src="{{ $iconLocation }}" alt=""> <span class="ar">{{ $addressAr }}</span></span>
-    </div>
 </div>
 
-<div class="wave-wrap">
-    <img src="{{ $waveSvg }}" alt="">
+<div class="thanks arb">{{ $lblThanks }}</div>
+<div class="contact">
+    <span><img src="{{ $iconPhone }}" alt=""><span class="en">{{ $phone }}</span></span>
+    <span><img src="{{ $iconEmail }}" alt=""><span class="en">{{ $email }}</span></span>
+    <span><img src="{{ $iconLocation }}" alt=""> <span class="ar">{{ $addressAr }}</span></span>
 </div>
+<div class="footer-bar" aria-hidden="true"></div>

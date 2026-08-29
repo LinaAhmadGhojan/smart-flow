@@ -39,7 +39,7 @@
     }
     .en { font-family: DejaVu Sans, sans-serif; direction: ltr; font-weight: normal; }
 
-    .header { width: 100%; border-collapse: collapse; margin-bottom: 6px; page-break-inside: avoid; }
+    .header { width: 100%; border-collapse: collapse; margin-bottom: 6px; }
     .header td { vertical-align: top; border: none; padding: 0; }
     .logo-cell { width: 36%; text-align: left; }
     .logo-cell img { height: 38px; width: auto; max-width: 110px; display: block; }
@@ -63,7 +63,6 @@
         border: 1.8px solid #1a437f;
         border-radius: 12px;
         padding: 10px 14px 8px;
-        page-break-inside: avoid;
     }
 
     .fline { width: 100%; border-collapse: collapse; margin: 4px 0; }
@@ -87,22 +86,20 @@
         line-height: 1.35;
     }
 
-    .pay-wrap { margin: 10px 0 6px; position: relative; page-break-inside: avoid; }
-    .pay-tab-row { text-align: center; height: 0; position: relative; z-index: 2; }
+    .pay-wrap {
+        margin: 8px 0 6px;
+        border: 1.5px solid #1a437f;
+        border-radius: 8px;
+        padding: 0 0 6px;
+    }
+    .pay-tab-center { text-align: center; margin: -1px 0 6px; }
     .pay-tab {
         display: inline-block;
         background: #1a437f;
         color: #fff;
         font-size: 11px;
         padding: 3px 16px;
-        border-radius: 3px;
-        position: relative;
-        top: 9px;
-    }
-    .pay-box {
-        border: 1.5px solid #1a437f;
-        border-radius: 8px;
-        padding: 16px 0 8px;
+        border-radius: 0 0 3px 3px;
     }
     .pay-grid { width: 100%; border-collapse: collapse; table-layout: fixed; }
     .pay-grid td {
@@ -138,9 +135,7 @@
         border-collapse: collapse;
         margin: 6px 0 8px;
         table-layout: fixed;
-        page-break-inside: avoid !important;
     }
-    .grid tr { page-break-inside: avoid !important; page-break-after: avoid !important; }
     .grid th {
         background: #1a437f;
         color: #fff;
@@ -168,7 +163,7 @@
         height: 12px;
     }
 
-    .signs { width: 100%; border-collapse: collapse; margin-top: 6px; page-break-inside: avoid; }
+    .signs { width: 100%; border-collapse: collapse; margin-top: 6px; }
     .signs td { width: 50%; border: none; vertical-align: bottom; padding: 0 12px; text-align: center; }
     .sig-lab { font-size: 11px; color: #1a437f; margin-bottom: 3px; }
     .sig-line { border-bottom: 1px dotted #7a9cc8; height: 18px; }
@@ -179,7 +174,6 @@
         color: #1a437f;
         padding: 8px 0 3px;
         text-align: center;
-        page-break-inside: avoid;
     }
 
     .contact {
@@ -191,7 +185,6 @@
         font-family: DejaVu Sans, 'ArReg', sans-serif;
         line-height: 1.4;
         white-space: nowrap;
-        page-break-inside: avoid;
     }
     .contact img {
         height: 9px;
@@ -205,10 +198,7 @@
         margin-top: 6px;
         height: 8px;
         background: #1a437f;
-        border-radius: 0 0 2px 2px;
-        page-break-inside: avoid;
     }
-    .wave-wrap { display: none; }
 </style>
 </head>
 <body>

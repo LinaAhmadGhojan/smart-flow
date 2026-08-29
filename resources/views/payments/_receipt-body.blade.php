@@ -42,35 +42,34 @@
         </tr>
     </table>
 
+    {{-- No position:absolute — Dompdf reflows it and can force a 2nd page --}}
     <div class="pay-wrap">
-        <div class="pay-tab-row"><span class="pay-tab arb">{{ $lblPayMethod }}</span></div>
-        <div class="pay-box">
-            <table class="pay-grid">
-                <tr>
-                    <td>
-                        <img class="pay-icon" src="{{ $iconCash }}" alt="">
-                        <div class="pay-label-row">
-                            <span class="pay-lbl arb">{{ $lblCash }}</span>
-                            <span class="chk {{ $isCash ? 'on' : '' }}">{{ $isCash ? '✓' : '' }}</span>
-                        </div>
-                    </td>
-                    <td>
-                        <img class="pay-icon" src="{{ $iconBank }}" alt="">
-                        <div class="pay-label-row">
-                            <span class="pay-lbl arb">{{ $lblBankTransfer }}</span>
-                            <span class="chk {{ $isBank ? 'on' : '' }}">{{ $isBank ? '✓' : '' }}</span>
-                        </div>
-                    </td>
-                    <td>
-                        <img class="pay-icon" src="{{ $iconCheque }}" alt="">
-                        <div class="pay-label-row">
-                            <span class="pay-lbl arb">{{ $lblCheque }}</span>
-                            <span class="chk {{ $isCheque ? 'on' : '' }}">{{ $isCheque ? '✓' : '' }}</span>
-                        </div>
-                    </td>
-                </tr>
-            </table>
-        </div>
+        <div class="pay-tab-center"><span class="pay-tab arb">{{ $lblPayMethod }}</span></div>
+        <table class="pay-grid">
+            <tr>
+                <td>
+                    <img class="pay-icon" src="{{ $iconCash }}" alt="">
+                    <div class="pay-label-row">
+                        <span class="pay-lbl arb">{{ $lblCash }}</span>
+                        <span class="chk {{ $isCash ? 'on' : '' }}">{{ $isCash ? '✓' : '' }}</span>
+                    </div>
+                </td>
+                <td>
+                    <img class="pay-icon" src="{{ $iconBank }}" alt="">
+                    <div class="pay-label-row">
+                        <span class="pay-lbl arb">{{ $lblBankTransfer }}</span>
+                        <span class="chk {{ $isBank ? 'on' : '' }}">{{ $isBank ? '✓' : '' }}</span>
+                    </div>
+                </td>
+                <td>
+                    <img class="pay-icon" src="{{ $iconCheque }}" alt="">
+                    <div class="pay-label-row">
+                        <span class="pay-lbl arb">{{ $lblCheque }}</span>
+                        <span class="chk {{ $isCheque ? 'on' : '' }}">{{ $isCheque ? '✓' : '' }}</span>
+                    </div>
+                </td>
+            </tr>
+        </table>
     </div>
 
     <table class="grid">

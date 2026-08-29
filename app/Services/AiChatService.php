@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use Illuminate\Support\Facades\File;
+use App\Support\CompanySettings;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -194,13 +194,7 @@ PROMPT;
     /** @return array<string, mixed> */
     private function companyInfo(): array
     {
-        $path = public_path('company-info.json');
-        if (!File::exists($path)) {
-            return [];
-        }
-        $data = json_decode(File::get($path), true);
-
-        return is_array($data) ? $data : [];
+        return CompanySettings::read();
     }
 
     private function whatsappHref(string $number): string

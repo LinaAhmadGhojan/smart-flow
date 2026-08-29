@@ -26,6 +26,9 @@ chmod 664 company-info.json public/company-info.json 2>/dev/null || true
 
 composer install --no-dev --optimize-autoloader --no-interaction
 
+php artisan migrate --force
+php artisan company-settings:import-legacy 2>/dev/null || echo "Legacy settings import skipped"
+
 # Rebuild frontend when Node is available; otherwise use committed build/ from git
 if command -v npm >/dev/null 2>&1; then
   npm ci --no-audit --no-fund
@@ -38,7 +41,6 @@ else
   fi
 fi
 
-php artisan migrate --force
 php scripts/build-dompdf-font-artifacts.php || echo "Dompdf font build skipped"
 php artisan optimize:clear
 php -r "if (function_exists('opcache_reset')) { opcache_reset(); echo \"OPcache cleared\n\"; }"

@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use App\Models\Product;
-use Illuminate\Support\Facades\File;
+use App\Support\CompanySettings;
 
 class ChatAssistantService
 {
@@ -221,13 +221,7 @@ class ChatAssistantService
     /** @return array<string, mixed> */
     private function companyInfo(): array
     {
-        $path = public_path('company-info.json');
-        if (!File::exists($path)) {
-            return [];
-        }
-        $data = json_decode(File::get($path), true);
-
-        return is_array($data) ? $data : [];
+        return CompanySettings::read();
     }
 
     /** @param list<array<string, string>> $actions */

@@ -21,6 +21,8 @@ mkdir -p public/storage/study-plans
 mkdir -p public/storage/offers
 
 chmod -R 775 storage bootstrap/cache 2>/dev/null || true
+touch company-info.json public/company-info.json 2>/dev/null || true
+chmod 664 company-info.json public/company-info.json 2>/dev/null || true
 
 composer install --no-dev --optimize-autoloader --no-interaction
 

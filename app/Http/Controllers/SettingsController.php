@@ -18,7 +18,7 @@ class SettingsController extends Controller
             return response()->json($this->defaultSettings());
         }
 
-        return response()->json($settings);
+        return response()->json(array_merge($settings, CompanySettings::brandingResponse($settings)));
     }
 
     public function update(Request $request)
@@ -102,9 +102,10 @@ class SettingsController extends Controller
 
             $settings = CompanySettings::read();
             $destinationPath = CompanySettings::brandingDir();
+            $previousLogo = $settings['logo'] ?? null;
+            $previousSignature = $settings['signature'] ?? null;
 
             if ($request->hasFile('logo')) {
-                self::deleteBrandingFile($settings['logo'] ?? null);
                 $file = $request->file('logo');
                 $filename = 'logo-' . time() . '-' . uniqid() . '.' . $file->getClientOriginalExtension();
                 $file->move($destinationPath, $filename);
@@ -112,7 +113,6 @@ class SettingsController extends Controller
             }
 
             if ($request->hasFile('signature')) {
-                self::deleteBrandingFile($settings['signature'] ?? null);
                 $file = $request->file('signature');
                 $filename = 'signature-' . time() . '-' . uniqid() . '.' . $file->getClientOriginalExtension();
                 $file->move($destinationPath, $filename);
@@ -125,12 +125,18 @@ class SettingsController extends Controller
 
             CompanySettings::write($settings);
 
-            return response()->json([
+            if ($request->hasFile('logo') && $previousLogo && $previousLogo !== ($settings['logo'] ?? null)) {
+                self::deleteBrandingFile($previousLogo);
+            }
+            if ($request->hasFile('signature') && $previousSignature && $previousSignature !== ($settings['signature'] ?? null)) {
+                self::deleteBrandingFile($previousSignature);
+            }
+
+            $saved = CompanySettings::read();
+
+            return response()->json(array_merge([
                 'message' => 'تم تحديث الشعار/التوقيع بنجاح',
-                'logo' => isset($settings['logo']) ? StorageUrl::toPublicUrl($settings['logo']) : null,
-                'signature' => isset($settings['signature']) ? StorageUrl::toPublicUrl($settings['signature']) : null,
-                'signatureName' => $settings['signatureName'] ?? null,
-            ]);
+            ], CompanySettings::brandingResponse($saved)));
         } catch (\Exception $e) {
             Log::error('Error saving branding', ['error' => $e->getMessage()]);
 

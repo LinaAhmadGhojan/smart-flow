@@ -381,7 +381,7 @@
             <label class="block text-gray-700 font-medium mb-2">شعار الشركة</label>
             <div class="flex items-center gap-4 mb-3">
               <div class="w-20 h-20 rounded-lg border border-gray-200 flex items-center justify-center overflow-hidden bg-gray-50">
-                <img v-if="logoPreview || branding.logo" :src="(logoPreview || branding.logo) as string" class="w-full h-full object-contain" />
+                <img v-if="logoPreview || branding.logo" :src="(logoPreview || branding.logo) as string" class="w-full h-full object-contain" @error="handleMediaError" />
                 <span v-else class="text-gray-300 text-xs">لا يوجد</span>
               </div>
               <input type="file" accept="image/png,image/jpeg,image/jpg,image/webp" @change="onLogoChange"
@@ -394,7 +394,7 @@
             <label class="block text-gray-700 font-medium mb-2">توقيع/ختم الشركة</label>
             <div class="flex items-center gap-4 mb-3">
               <div class="w-20 h-20 rounded-lg border border-gray-200 flex items-center justify-center overflow-hidden bg-gray-50">
-                <img v-if="signaturePreview || branding.signature" :src="(signaturePreview || branding.signature) as string" class="w-full h-full object-contain" />
+                <img v-if="signaturePreview || branding.signature" :src="(signaturePreview || branding.signature) as string" class="w-full h-full object-contain" @error="handleMediaError" />
                 <span v-else class="text-gray-300 text-xs">لا يوجد</span>
               </div>
               <input type="file" accept="image/png,image/jpeg,image/jpg,image/webp" @change="onSignatureChange"
@@ -428,7 +428,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '@/lib/api'
-import { mediaUrl } from '@/lib/media'
+import { mediaUrl, handleMediaError } from '@/lib/media'
 
 const router = useRouter()
 
@@ -526,6 +526,17 @@ const saving = ref(false)
 const successMessage = ref('')
 const errorMessage = ref('')
 
+// --- Logo & signature branding ---
+const branding = ref<{ logo: string | null; signature: string | null }>({ logo: null, signature: null })
+const signatureName = ref('')
+const logoFile = ref<File | null>(null)
+const signatureFile = ref<File | null>(null)
+const logoPreview = ref<string | null>(null)
+const signaturePreview = ref<string | null>(null)
+const brandingSaving = ref(false)
+const brandingSuccess = ref('')
+const brandingError = ref('')
+
 const loadSettings = async () => {
   try {
     const response = await api.get('/settings')
@@ -585,17 +596,6 @@ const loadSettings = async () => {
   }
 }
 
-// --- Logo & signature branding ---
-const branding = ref<{ logo: string | null; signature: string | null }>({ logo: null, signature: null })
-const signatureName = ref('')
-const logoFile = ref<File | null>(null)
-const signatureFile = ref<File | null>(null)
-const logoPreview = ref<string | null>(null)
-const signaturePreview = ref<string | null>(null)
-const brandingSaving = ref(false)
-const brandingSuccess = ref('')
-const brandingError = ref('')
-
 const onLogoChange = (e: Event) => {
   const file = (e.target as HTMLInputElement).files?.[0] ?? null
   logoFile.value = file
@@ -629,6 +629,7 @@ const saveBranding = async () => {
     logoPreview.value = null
     signaturePreview.value = null
     brandingSuccess.value = '✅ تم حفظ الشعار والتوقيع بنجاح!'
+    await loadSettings()
   } catch (err: any) {
     brandingError.value = err.response?.data?.error || 'حدث خطأ أثناء حفظ الشعار/التوقيع'
   } finally {

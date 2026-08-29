@@ -184,7 +184,7 @@ class QuotationController extends Controller
             'clientNameIsArabic' => (bool) preg_match('/[\x{0600}-\x{06FF}]/u', $quotation->client_name),
             'comments' => ArabicPdfText::shape($quotation->comments ?: ''),
             'commentsIsArabic' => (bool) preg_match('/[\x{0600}-\x{06FF}]/u', (string) $quotation->comments),
-            'arabicFontUrl' => 'file:///' . str_replace('\\', '/', resource_path('fonts/NotoNaskhArabic-Regular.ttf')),
+            'arabicFontUrl' => DompdfFontCache::arabicFontUrl(),
             'items' => $quotation->items->map(function (QuotationItem $item) use ($quotation, $globalShareById, $globalPctLabel, $currency) {
                 $imagePath = $item->is_section ? null : $this->absoluteAssetPath($item->product?->image);
                 $lineSubtotal = round((float) $item->quantity * (float) $item->rate, 2);

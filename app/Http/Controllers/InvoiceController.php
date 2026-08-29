@@ -163,7 +163,7 @@ class InvoiceController extends Controller
                 'clientNameIsArabic' => (bool) preg_match('/[\x{0600}-\x{06FF}]/u', $invoice->client_name),
                 'notes' => ArabicPdfText::shape($invoice->notes ?: ''),
                 'notesIsArabic' => (bool) preg_match('/[\x{0600}-\x{06FF}]/u', (string) $invoice->notes),
-                'arabicFontUrl' => 'file:///' . str_replace('\\', '/', resource_path('fonts/NotoNaskhArabic-Regular.ttf')),
+                'arabicFontUrl' => DompdfFontCache::arabicFontUrl(),
                 'items' => $items,
                 'partsSubtotal' => $discounts['subtotal'],
                 'discounts' => $discounts,

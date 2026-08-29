@@ -37,7 +37,7 @@ else
 fi
 
 php artisan migrate --force
-php scripts/warm-dompdf-fonts.php || echo "Dompdf font warm skipped"
+php scripts/build-dompdf-font-artifacts.php || echo "Dompdf font build skipped"
 php artisan optimize:clear
 php -r "if (function_exists('opcache_reset')) { opcache_reset(); echo \"OPcache cleared\n\"; }"
 

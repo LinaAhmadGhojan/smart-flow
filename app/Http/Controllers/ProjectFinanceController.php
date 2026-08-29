@@ -234,13 +234,13 @@ class ProjectFinanceController extends Controller
         $webData = $this->paymentReceiptViewData($project, $payment, false);
         $filename = $webData['receiptNumber'] . '.pdf';
 
-        // Prefer fast CLI; CDP A5 is optional and time-capped so the UI stays responsive.
+        // Same HTML as the web view → Chrome PDF (A5 landscape). Dompdf is last resort only.
         $rendered = BrowserPdf::render(
             view('payments.receipt-html', $webData + [
                 'fontEmbedCss' => $this->receiptFontEmbedCss(),
                 'forBrowserPdf' => true,
             ])->render(),
-            2500,
+            1200,
             ['width' => 8.27, 'height' => 5.83, 'landscape' => true]
         );
 

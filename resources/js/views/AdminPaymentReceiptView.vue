@@ -49,18 +49,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { fetchAdminHtml } from '@/lib/api'
-import {
-  downloadReceiptPdf,
-  downloadReceiptPdfFromFrame,
-  paymentReceiptFilename,
-} from '@/lib/receiptPdf'
+import { downloadReceiptPdf } from '@/lib/receiptPdf'
 
 const route = useRoute()
 const router = useRouter()
-const frameRef = ref<HTMLIFrameElement | null>(null)
 
 const projectId = computed(() => String(route.params.projectId || ''))
 const paymentId = computed(() => String(route.params.paymentId || ''))
@@ -89,38 +84,12 @@ const loadHtml = async () => {
   }
 }
 
-const waitForFrame = async (frame: HTMLIFrameElement): Promise<void> => {
-  if (frame.contentDocument?.readyState === 'complete') {
-    return
-  }
-  await new Promise<void>((resolve) => {
-    frame.addEventListener('load', () => resolve(), { once: true })
-  })
-}
-
 const exportPdf = async () => {
   pdfLoading.value = true
   try {
-    await nextTick()
-    const frame = frameRef.value
-    if (frame) {
-      await waitForFrame(frame)
-      await downloadReceiptPdfFromFrame(frame, paymentReceiptFilename(projectId.value, paymentId.value))
-      return
-    }
-    // Fallback if the iframe is not ready yet.
     await downloadReceiptPdf(projectId.value, paymentId.value)
   } catch (e: any) {
-    try {
-      await downloadReceiptPdf(projectId.value, paymentId.value)
-    } catch (serverErr: any) {
-      alert(
-        e.message ||
-          serverErr.message ||
-          e.response?.data?.message ||
-          'تعذر تصدير الوصل',
-      )
-    }
+    alert(e.message || e.response?.data?.message || 'تعذر تصدير الوصل')
   } finally {
     pdfLoading.value = false
   }

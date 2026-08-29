@@ -9,16 +9,16 @@ use Symfony\Component\Process\Process;
 /**
  * Print an HTML document to PDF with a headless Chromium browser.
  *
- * Prefer the fast CLI path. Optional CDP paper size is only used when requested
- * and must finish quickly so the UI does not hang.
+ * Keeps Arabic shaping / layout identical to the browser view.
+ * When $paper is set, uses CDP Page.printToPDF for exact size (A5 etc).
  */
 class BrowserPdf
 {
     /**
-     * @param  array{width?: float, height?: float, landscape?: bool}|null  $paper  Paper size in inches (A5 landscape = 8.27 x 5.83).
+     * @param  array{width?: float, height?: float, landscape?: bool}|null  $paper  Inches (A5 landscape = 8.27 × 5.83).
      * @return string|null Raw PDF bytes, or null when no browser is available.
      */
-    public static function render(string $html, int $waitMs = 2500, ?array $paper = null): ?string
+    public static function render(string $html, int $waitMs = 1500, ?array $paper = null): ?string
     {
         $binary = self::binary();
         if ($binary === null) {
@@ -36,20 +36,15 @@ class BrowserPdf
         file_put_contents($htmlFile, $html);
 
         try {
-            // Fast path first — matches the web receipt in a few seconds.
-            $cli = self::renderViaCli($binary, $htmlFile, $pdfFile, $profileDir, $waitMs);
-            if ($cli !== null && $paper === null) {
-                return $cli;
-            }
-
             if ($paper !== null) {
-                $cdp = self::renderViaCdp($binary, $htmlFile, $profileDir, min($waitMs, 4000), $paper);
+                $cdp = self::renderViaCdp($binary, $htmlFile, $profileDir, $waitMs, $paper);
                 if ($cdp !== null) {
                     return $cdp;
                 }
+                Log::warning('BrowserPdf: CDP A5 print failed, falling back to CLI');
             }
 
-            return $cli;
+            return self::renderViaCli($binary, $htmlFile, $pdfFile, $profileDir, $waitMs);
         } catch (\Throwable $e) {
             Log::warning('BrowserPdf: ' . $e->getMessage());
 
@@ -90,44 +85,37 @@ class BrowserPdf
             '--user-data-dir=' . $profileDir,
             self::fileUrl($htmlFile),
         ]);
-        $chrome->setTimeout(12);
+        $chrome->setTimeout(15);
         $chrome->start();
 
         try {
-            self::waitForChromePort($port, 5);
+            self::waitForChromePort($port, 4);
 
-            $list = self::httpGetJson('http://127.0.0.1:' . $port . '/json/list');
-            $wsUrl = null;
-            if (is_array($list)) {
-                foreach ($list as $target) {
-                    if (is_array($target) && !empty($target['webSocketDebuggerUrl'])) {
-                        $wsUrl = $target['webSocketDebuggerUrl'];
-                        break;
-                    }
-                }
-            }
-            if (!is_string($wsUrl) || $wsUrl === '') {
+            $wsUrl = self::waitForDebuggerUrl($port, 4);
+            if ($wsUrl === null) {
                 return null;
             }
 
             $client = new ChromeDevtools($wsUrl);
             $client->call('Page.enable');
 
-            usleep(max(200000, min(800000, $waitMs * 100)));
+            // Fonts are embedded as data-URIs; a short settle is enough.
+            usleep(max(250000, min(900000, $waitMs * 200)));
 
-            $client->call('Runtime.evaluate', [
-                'expression' => 'document.fonts && document.fonts.ready ? document.fonts.ready.then(() => true) : true',
-                'awaitPromise' => true,
-            ]);
-
-            $landscape = (bool) ($paper['landscape'] ?? true);
-            $width = (float) ($paper['width'] ?? 8.27);
-            $height = (float) ($paper['height'] ?? 5.83);
+            try {
+                $client->call('Runtime.evaluate', [
+                    'expression' => 'document.fonts && document.fonts.ready ? document.fonts.ready.then(() => 1) : 1',
+                    'awaitPromise' => true,
+                    'returnByValue' => true,
+                ]);
+            } catch (\Throwable) {
+                // ignore font wait failures
+            }
 
             $printed = $client->call('Page.printToPDF', [
-                'landscape' => $landscape,
-                'paperWidth' => $width,
-                'paperHeight' => $height,
+                'landscape' => (bool) ($paper['landscape'] ?? true),
+                'paperWidth' => (float) ($paper['width'] ?? 8.27),
+                'paperHeight' => (float) ($paper['height'] ?? 5.83),
                 'printBackground' => true,
                 'preferCSSPageSize' => true,
                 'marginTop' => 0,
@@ -179,13 +167,13 @@ class BrowserPdf
             '--hide-scrollbars',
             '--allow-file-access-from-files',
             '--user-data-dir=' . $profileDir,
-            '--virtual-time-budget=' . max(500, $waitMs),
+            '--virtual-time-budget=' . max(400, $waitMs),
             '--run-all-compositor-stages-before-draw',
             '--no-pdf-header-footer',
             '--print-to-pdf=' . $pdfFile,
             self::fileUrl($htmlFile),
         ]);
-        $process->setTimeout(20);
+        $process->setTimeout(15);
         $process->run();
 
         if (!is_file($pdfFile) || filesize($pdfFile) < 1000) {
@@ -290,18 +278,45 @@ class BrowserPdf
 
     private static function waitForChromePort(int $port, int $seconds): void
     {
-        $deadline = time() + $seconds;
-        while (time() < $deadline) {
-            $socket = @fsockopen('127.0.0.1', $port, $errno, $errstr, 1);
+        $deadline = microtime(true) + $seconds;
+        while (microtime(true) < $deadline) {
+            $socket = @fsockopen('127.0.0.1', $port, $errno, $errstr, 0.5);
             if ($socket !== false) {
                 fclose($socket);
 
                 return;
             }
-            usleep(150000);
+            usleep(100000);
         }
 
         throw new \RuntimeException('Chrome remote debugging port did not open.');
+    }
+
+    private static function waitForDebuggerUrl(int $port, int $seconds): ?string
+    {
+        $deadline = microtime(true) + $seconds;
+        while (microtime(true) < $deadline) {
+            $list = self::httpGetJson('http://127.0.0.1:' . $port . '/json/list');
+            if (is_array($list)) {
+                foreach ($list as $target) {
+                    if (
+                        is_array($target)
+                        && ($target['type'] ?? '') === 'page'
+                        && !empty($target['webSocketDebuggerUrl'])
+                    ) {
+                        return (string) $target['webSocketDebuggerUrl'];
+                    }
+                }
+                foreach ($list as $target) {
+                    if (is_array($target) && !empty($target['webSocketDebuggerUrl'])) {
+                        return (string) $target['webSocketDebuggerUrl'];
+                    }
+                }
+            }
+            usleep(120000);
+        }
+
+        return null;
     }
 
     /** @return array<string, mixed>|null */
@@ -309,7 +324,7 @@ class BrowserPdf
     {
         $context = stream_context_create([
             'http' => [
-                'timeout' => 5,
+                'timeout' => 3,
                 'ignore_errors' => true,
             ],
         ]);

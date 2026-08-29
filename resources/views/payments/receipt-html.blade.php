@@ -346,12 +346,23 @@
     @media print {
         @page { size: A5 landscape; margin: 0; }
 
-        html, body, .page-wrap {
+        html, body {
+            width: 210mm !important;
+            height: 148mm !important;
+            background: #fff !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            overflow: hidden !important;
+        }
+        .page-wrap {
+            display: block !important;
+            min-height: auto !important;
+            width: 210mm !important;
+            height: 148mm !important;
             background: #fff !important;
             padding: 0 !important;
             margin: 0 !important;
         }
-        .page-wrap { display: block !important; min-height: auto !important; }
 
         /* 210mm x 148mm equals the 794x559px screen design, so the printed
            sheet reflows exactly like the browser view and stays on one page. */

@@ -8,7 +8,7 @@
     "src": "logo.svg"
   },
   "node_modules/canvg/lib/index.es.js": {
-    "file": "assets/index.es-BCnQFUWu.js",
+    "file": "assets/index.es-CCQX5iKq.js",
     "name": "index.es",
     "src": "node_modules/canvg/lib/index.es.js",
     "isDynamicEntry": true,
@@ -22,17 +22,24 @@
     "src": "node_modules/dompurify/dist/purify.es.mjs",
     "isDynamicEntry": true
   },
+  "node_modules/html2canvas/dist/html2canvas.esm.js": {
+    "file": "assets/html2canvas.esm-QH1iLAAe.js",
+    "name": "html2canvas.esm",
+    "src": "node_modules/html2canvas/dist/html2canvas.esm.js",
+    "isDynamicEntry": true
+  },
   "resources/css/app.css": {
     "file": "assets/app-C4LsXYcF.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
   "resources/js/main.ts": {
-    "file": "assets/main-ChEpWLbi.js",
+    "file": "assets/main-L5gTsNpR.js",
     "name": "main",
     "src": "resources/js/main.ts",
     "isEntry": true,
     "dynamicImports": [
+      "node_modules/html2canvas/dist/html2canvas.esm.js",
       "node_modules/dompurify/dist/purify.es.mjs",
       "node_modules/canvg/lib/index.es.js",
       "resources/js/views/AllOffersPage.vue",
@@ -48,7 +55,7 @@
     ]
   },
   "resources/js/views/AllOffersPage.vue": {
-    "file": "assets/AllOffersPage-BT8lkTWC.js",
+    "file": "assets/AllOffersPage-DB5Kza4w.js",
     "name": "AllOffersPage",
     "src": "resources/js/views/AllOffersPage.vue",
     "isDynamicEntry": true,
@@ -57,7 +64,7 @@
     ]
   },
   "resources/js/views/GateMachineStudyPage.vue": {
-    "file": "assets/GateMachineStudyPage-RXozlwa_.js",
+    "file": "assets/GateMachineStudyPage-8olROBj2.js",
     "name": "GateMachineStudyPage",
     "src": "resources/js/views/GateMachineStudyPage.vue",
     "isDynamicEntry": true,
@@ -69,7 +76,7 @@
     ]
   },
   "resources/js/views/ProjectStudyPage.vue": {
-    "file": "assets/ProjectStudyPage-n-N0DNCs.js",
+    "file": "assets/ProjectStudyPage-BxwvppjH.js",
     "name": "ProjectStudyPage",
     "src": "resources/js/views/ProjectStudyPage.vue",
     "isDynamicEntry": true,

@@ -39,16 +39,8 @@ class BrowserPdf
             // Exact paper size (e.g. A5) requires CDP. Do NOT fall back to CLI:
             // Chrome --print-to-pdf defaults to A4 and breaks hosting receipts.
             if ($paper !== null) {
-                // php artisan serve on Windows cannot open Chrome DevTools sockets
-                // (Winsock 0x277A). Skip the slow failed attempts and let the
-                // controller fall back to Dompdf (or the UI use screen capture).
-                if (PHP_OS_FAMILY === 'Windows' && PHP_SAPI === 'cli-server') {
-                    Log::info('BrowserPdf: skip Chrome under php built-in server (DevTools Winsock)');
-
-                    return null;
-                }
-
-                // Windows Apache/FPM: try a detached CLI child first.
+                // Windows: spawn Chrome via wscript (breaks out of artisan serve's
+                // Winsock job object that blocks DevTools port 0x277A).
                 if (PHP_OS_FAMILY === 'Windows') {
                     $viaChild = self::renderViaPhpCliChild($htmlFile, $pdfFile, $waitMs, $paper);
                     if ($viaChild !== null) {
@@ -143,11 +135,18 @@ class BrowserPdf
         ];
         file_put_contents($batFile, implode("\r\n", $lines) . "\r\n");
 
+        $vbsFile = $dir . DIRECTORY_SEPARATOR . 'run-' . $jobId . '.vbs';
+        $batWin = str_replace('/', '\\', $batFile);
+        $vbs = 'CreateObject("WScript.Shell").Run "cmd /c ""'
+            . str_replace('"', '""', $batWin)
+            . '""", 0, True'
+            . "\r\n";
+        file_put_contents($vbsFile, $vbs);
+
         try {
-            // `start /WAIT` creates a new console process tree that is not bound to
-            // artisan serve's broken Winsock job object (Chrome DevTools 0x277A).
-            $launcher = Process::fromShellCommandline(
-                'start "sf-pdf" /WAIT /MIN cmd /c ' . escapeshellarg($batFile),
+            // wscript.exe is outside php's process job → Chrome DevTools works.
+            $launcher = new Process(
+                ['wscript.exe', '//Nologo', $vbsFile],
                 base_path()
             );
             $launcher->setTimeout((int) config('pdf.chrome_timeout', 60));
@@ -157,7 +156,7 @@ class BrowserPdf
                 return (string) file_get_contents($pdfFile);
             }
 
-            Log::warning('BrowserPdf: detached chrome render failed', [
+            Log::warning('BrowserPdf: wscript chrome render failed', [
                 'exit' => $launcher->getExitCode(),
                 'out' => mb_substr($launcher->getOutput() . "\n" . $launcher->getErrorOutput(), 0, 1500),
             ]);
@@ -165,6 +164,7 @@ class BrowserPdf
             return null;
         } finally {
             File::delete($batFile);
+            File::delete($vbsFile);
         }
     }
 

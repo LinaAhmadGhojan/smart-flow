@@ -1,5 +1,5 @@
 import { downloadBlob, fetchAdminPdf } from '@/lib/api'
-import html2canvas from 'html2canvas'
+import { toPng } from 'html-to-image'
 import { jsPDF } from 'jspdf'
 
 export function paymentReceiptHtmlPath(projectId: number | string, paymentId: number | string): string {
@@ -14,49 +14,13 @@ export function paymentReceiptFilename(projectId: number | string, paymentId: nu
   return `RCP-${projectId}-${String(paymentId).padStart(3, '0')}.pdf`
 }
 
-/** A5 landscape design size in CSS pixels (210mm × 148mm at 96dpi). */
+/** A5 landscape in CSS px (210mm × 148mm @ 96dpi). */
 const RECEIPT_W = 794
 const RECEIPT_H = 559
 
-function saveCanvasAsA5Pdf(canvas: HTMLCanvasElement, filename: string): void {
-  const pdf = new jsPDF({
-    orientation: 'landscape',
-    unit: 'mm',
-    format: 'a5',
-    compress: true,
-  })
-  pdf.addImage(
-    canvas.toDataURL('image/jpeg', 0.97),
-    'JPEG',
-    0,
-    0,
-    pdf.internal.pageSize.getWidth(),
-    pdf.internal.pageSize.getHeight(),
-    undefined,
-    'FAST',
-  )
-  pdf.save(filename)
-}
-
-function canvasLooksBroken(canvas: HTMLCanvasElement): boolean {
-  const ctx = canvas.getContext('2d')
-  if (!ctx || canvas.width < 10 || canvas.height < 10) {
-    return true
-  }
-  const { data } = ctx.getImageData(0, 0, Math.min(60, canvas.width), Math.min(60, canvas.height))
-  let nonWhite = 0
-  for (let i = 0; i < data.length; i += 4) {
-    if (data[i] < 250 || data[i + 1] < 250 || data[i + 2] < 250) {
-      nonWhite++
-    }
-  }
-  return nonWhite < 12
-}
-
 /**
- * Capture the visible receipt iframe into an A5 landscape PDF.
- * Uses foreignObjectRendering first so the browser paints Arabic as on screen
- * (html2canvas's own text engine breaks Arabic joining).
+ * Capture the receipt iframe exactly as painted on screen → A5 PDF.
+ * Uses the browser SVG/foreignObject pipeline so Arabic + Cairo fonts stay joined.
  */
 export async function downloadReceiptPdfFromFrame(
   frame: HTMLIFrameElement,
@@ -79,7 +43,7 @@ export async function downloadReceiptPdfFromFrame(
     throw new Error('لم يتم العثور على محتوى الوصل')
   }
 
-  const previous = {
+  const prev = {
     width: page.style.width,
     height: page.style.height,
     maxWidth: page.style.maxWidth,
@@ -97,73 +61,52 @@ export async function downloadReceiptPdfFromFrame(
   page.style.background = '#ffffff'
   page.style.margin = '0 auto'
 
-  await new Promise((r) => setTimeout(r, 250))
+  await new Promise((r) => setTimeout(r, 300))
 
   try {
-    let canvas = await html2canvas(page, {
-      scale: 2,
-      useCORS: true,
-      allowTaint: true,
-      backgroundColor: '#ffffff',
-      // Critical for Arabic: let the browser paint, don't re-layout glyphs.
-      foreignObjectRendering: true,
-      logging: false,
+    const dataUrl = await toPng(page, {
       width: RECEIPT_W,
       height: RECEIPT_H,
-      windowWidth: RECEIPT_W,
-      windowHeight: RECEIPT_H,
-      scrollX: 0,
-      scrollY: 0,
-      x: 0,
-      y: 0,
-      onclone: (_doc, el) => {
-        el.style.letterSpacing = 'normal'
-        el.querySelectorAll<HTMLElement>('*').forEach((node) => {
-          node.style.letterSpacing = 'normal'
-          node.style.wordSpacing = 'normal'
-        })
+      canvasWidth: RECEIPT_W * 2,
+      canvasHeight: RECEIPT_H * 2,
+      pixelRatio: 2,
+      cacheBust: true,
+      backgroundColor: '#ffffff',
+      skipAutoScale: true,
+      style: {
+        width: `${RECEIPT_W}px`,
+        height: `${RECEIPT_H}px`,
+        margin: '0',
+        transform: 'none',
       },
     })
 
-    if (canvasLooksBroken(canvas)) {
-      canvas = await html2canvas(page, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: '#ffffff',
-        foreignObjectRendering: false,
-        logging: false,
-        width: RECEIPT_W,
-        height: RECEIPT_H,
-        windowWidth: RECEIPT_W,
-        windowHeight: RECEIPT_H,
-        scrollX: 0,
-        scrollY: 0,
-        x: 0,
-        y: 0,
-        onclone: (_doc, el) => {
-          el.style.letterSpacing = 'normal'
-          el.querySelectorAll<HTMLElement>('*').forEach((node) => {
-            node.style.letterSpacing = 'normal'
-            node.style.wordSpacing = 'normal'
-          })
-        },
-      })
-    }
+    const pdf = new jsPDF({
+      orientation: 'landscape',
+      unit: 'mm',
+      format: 'a5',
+      compress: true,
+    })
 
-    if (canvasLooksBroken(canvas)) {
-      throw new Error('تعذر التقاط الوصل من الشاشة')
-    }
-
-    saveCanvasAsA5Pdf(canvas, filename)
+    pdf.addImage(
+      dataUrl,
+      'PNG',
+      0,
+      0,
+      pdf.internal.pageSize.getWidth(),
+      pdf.internal.pageSize.getHeight(),
+      undefined,
+      'FAST',
+    )
+    pdf.save(filename)
   } finally {
-    page.style.width = previous.width
-    page.style.height = previous.height
-    page.style.maxWidth = previous.maxWidth
-    page.style.minHeight = previous.minHeight
-    page.style.overflow = previous.overflow
-    page.style.background = previous.background
-    page.style.margin = previous.margin
+    page.style.width = prev.width
+    page.style.height = prev.height
+    page.style.maxWidth = prev.maxWidth
+    page.style.minHeight = prev.minHeight
+    page.style.overflow = prev.overflow
+    page.style.background = prev.background
+    page.style.margin = prev.margin
   }
 }
 

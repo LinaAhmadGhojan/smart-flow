@@ -89,10 +89,7 @@ const loadHtml = async () => {
   }
 }
 
-/**
- * Prefer capturing the on-screen iframe (exact layout).
- * Fall back to server PDF if capture fails.
- */
+/** Export exactly what is visible in the iframe (same layout/fonts as the link). */
 const exportPdf = async () => {
   pdfLoading.value = true
   const filename = paymentReceiptFilename(projectId.value, paymentId.value)
@@ -103,16 +100,11 @@ const exportPdf = async () => {
       return
     }
     await downloadReceiptPdf(projectId.value, paymentId.value)
-  } catch (e: any) {
+  } catch {
     try {
       await downloadReceiptPdf(projectId.value, paymentId.value)
-    } catch (fallbackErr: any) {
-      alert(
-        fallbackErr.message ||
-          e.message ||
-          e.response?.data?.message ||
-          'تعذر تصدير الوصل',
-      )
+    } catch (e: any) {
+      alert(e.message || e.response?.data?.message || 'تعذر تصدير الوصل')
     }
   } finally {
     pdfLoading.value = false

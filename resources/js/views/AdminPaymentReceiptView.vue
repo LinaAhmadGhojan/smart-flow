@@ -49,13 +49,17 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, nextTick, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { fetchAdminHtml } from '@/lib/api'
-import { downloadReceiptPdf } from '@/lib/receiptPdf'
+import {
+  downloadReceiptPdfFromFrame,
+  paymentReceiptFilename,
+} from '@/lib/receiptPdf'
 
 const route = useRoute()
 const router = useRouter()
+const frameRef = ref<HTMLIFrameElement | null>(null)
 
 const projectId = computed(() => String(route.params.projectId || ''))
 const paymentId = computed(() => String(route.params.paymentId || ''))
@@ -84,12 +88,35 @@ const loadHtml = async () => {
   }
 }
 
+const waitForFrame = async (frame: HTMLIFrameElement): Promise<void> => {
+  if (frame.contentDocument?.readyState === 'complete') {
+    return
+  }
+  await new Promise<void>((resolve) => {
+    frame.addEventListener('load', () => resolve(), { once: true })
+  })
+}
+
+/**
+ * Export PDF in the browser from the visible receipt.
+ * Does not call the server PDF endpoint — so hosting without Chrome
+ * still downloads an A5 file that matches the web view.
+ */
 const exportPdf = async () => {
   pdfLoading.value = true
   try {
-    await downloadReceiptPdf(projectId.value, paymentId.value)
+    await nextTick()
+    const frame = frameRef.value
+    if (!frame) {
+      throw new Error('الوصل غير جاهز')
+    }
+    await waitForFrame(frame)
+    await downloadReceiptPdfFromFrame(
+      frame,
+      paymentReceiptFilename(projectId.value, paymentId.value),
+    )
   } catch (e: any) {
-    alert(e.message || e.response?.data?.message || 'تعذر تصدير الوصل')
+    alert(e.message || 'تعذر تصدير الوصل')
   } finally {
     pdfLoading.value = false
   }

@@ -7,17 +7,41 @@
     "file": "assets/logo-CWYCaVRp.svg",
     "src": "logo.svg"
   },
+  "node_modules/canvg/lib/index.es.js": {
+    "file": "assets/index.es-BGDNLUbd.js",
+    "name": "index.es",
+    "src": "node_modules/canvg/lib/index.es.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/main.ts"
+    ]
+  },
+  "node_modules/dompurify/dist/purify.es.mjs": {
+    "file": "assets/purify.es-CYR4BTuT.js",
+    "name": "purify.es",
+    "src": "node_modules/dompurify/dist/purify.es.mjs",
+    "isDynamicEntry": true
+  },
+  "node_modules/html2canvas/dist/html2canvas.esm.js": {
+    "file": "assets/html2canvas.esm-QH1iLAAe.js",
+    "name": "html2canvas.esm",
+    "src": "node_modules/html2canvas/dist/html2canvas.esm.js",
+    "isDynamicEntry": true
+  },
   "resources/css/app.css": {
     "file": "assets/app-CoTbxjHQ.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
   "resources/js/main.ts": {
-    "file": "assets/main-B8oB0yAi.js",
+    "file": "assets/main-zf2d7nNl.js",
     "name": "main",
     "src": "resources/js/main.ts",
     "isEntry": true,
     "dynamicImports": [
+      "node_modules/html2canvas/dist/html2canvas.esm.js",
+      "node_modules/dompurify/dist/purify.es.mjs",
+      "node_modules/canvg/lib/index.es.js",
       "resources/js/views/AllOffersPage.vue",
       "resources/js/views/ProjectStudyPage.vue",
       "resources/js/views/GateMachineStudyPage.vue"
@@ -31,7 +55,7 @@
     ]
   },
   "resources/js/views/AllOffersPage.vue": {
-    "file": "assets/AllOffersPage-DOTy70O_.js",
+    "file": "assets/AllOffersPage-CrrSQuM3.js",
     "name": "AllOffersPage",
     "src": "resources/js/views/AllOffersPage.vue",
     "isDynamicEntry": true,
@@ -40,7 +64,7 @@
     ]
   },
   "resources/js/views/GateMachineStudyPage.vue": {
-    "file": "assets/GateMachineStudyPage-CP4nLEq1.js",
+    "file": "assets/GateMachineStudyPage-DIOfUW2h.js",
     "name": "GateMachineStudyPage",
     "src": "resources/js/views/GateMachineStudyPage.vue",
     "isDynamicEntry": true,
@@ -52,7 +76,7 @@
     ]
   },
   "resources/js/views/ProjectStudyPage.vue": {
-    "file": "assets/ProjectStudyPage-BurnYItm.js",
+    "file": "assets/ProjectStudyPage-COe_5Y1c.js",
     "name": "ProjectStudyPage",
     "src": "resources/js/views/ProjectStudyPage.vue",
     "isDynamicEntry": true,

@@ -14,7 +14,7 @@
         src: url('{{ $fontBoldUrl }}') format('truetype');
         font-weight: bold;
     }
-    @page { size: A5 landscape; margin: 4mm 6mm 3mm 6mm; }
+    @page { size: A5 landscape; margin: 4mm 6mm 0 6mm; }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body {
         margin: 0;
@@ -42,9 +42,8 @@
     .header { width: 100%; border-collapse: collapse; margin-bottom: 6px; }
     .header td { vertical-align: top; border: none; padding: 0; }
     .logo-cell { width: 36%; text-align: left; }
-    .logo-cell img { height: 38px; width: auto; max-width: 110px; display: block; }
+    .logo-cell img { height: 40px; width: auto; max-width: 110px; display: block; }
     .logo-name { font-size: 13px; color: #1a437f; margin-top: 3px; text-align: left; line-height: 1.15; }
-    .logo-tag { display: none; }
     .title-cell { width: 64%; text-align: right; vertical-align: top; }
     .doc-title { font-size: 20px; color: #1a437f; margin: 0 0 6px 0; text-align: right; line-height: 1.1; }
     .meta { width: 78%; margin-left: auto; border-collapse: collapse; }
@@ -63,9 +62,10 @@
         border: 1.8px solid #1a437f;
         border-radius: 12px;
         padding: 10px 14px 8px;
+        page-break-inside: avoid;
     }
 
-    .fline { width: 100%; border-collapse: collapse; margin: 4px 0; }
+    .fline { width: 100%; border-collapse: collapse; margin: 3px 0; }
     .fline td { padding: 4px 0; vertical-align: bottom; border: none; }
     .fline .lab {
         white-space: nowrap;
@@ -82,24 +82,23 @@
         text-align: right;
         color: #0f3266;
         font-size: 12px;
-        min-height: 16px;
         line-height: 1.35;
     }
 
-    .pay-wrap {
-        margin: 8px 0 6px;
+    .pay-wrap { margin: 10px 0 6px; }
+    .pay-box {
         border: 1.5px solid #1a437f;
         border-radius: 8px;
-        padding: 0 0 6px;
+        padding: 14px 0 6px;
     }
-    .pay-tab-center { text-align: center; margin: -1px 0 6px; }
+    .pay-tab-center { text-align: center; margin: -22px 0 8px; }
     .pay-tab {
         display: inline-block;
         background: #1a437f;
         color: #fff;
         font-size: 11px;
         padding: 3px 16px;
-        border-radius: 0 0 3px 3px;
+        border-radius: 3px;
     }
     .pay-grid { width: 100%; border-collapse: collapse; table-layout: fixed; }
     .pay-grid td {
@@ -112,7 +111,7 @@
         color: #1a437f;
     }
     .pay-grid td:first-child { border-left: none; }
-    .pay-icon { height: 26px; margin: 0 auto 3px; display: block; }
+    .pay-icon { height: 28px; margin: 0 auto 3px; display: block; }
     .pay-label-row { margin-top: 2px; white-space: nowrap; }
     .chk {
         display: inline-block;
@@ -133,7 +132,7 @@
     .grid {
         width: 100%;
         border-collapse: collapse;
-        margin: 6px 0 8px;
+        margin: 6px 0 6px;
         table-layout: fixed;
     }
     .grid th {
@@ -147,10 +146,10 @@
     }
     .grid td {
         border: 1px solid #b8cce8;
-        padding: 8px 5px;
+        padding: 7px 5px;
         text-align: center;
         vertical-align: middle;
-        height: 24px;
+        height: 22px;
         font-size: 11px;
         color: #1a437f;
         background: #fff;
@@ -163,27 +162,32 @@
         height: 12px;
     }
 
-    .signs { width: 100%; border-collapse: collapse; margin-top: 6px; }
+    .signs { width: 100%; border-collapse: collapse; margin-top: 4px; }
     .signs td { width: 50%; border: none; vertical-align: bottom; padding: 0 12px; text-align: center; }
-    .sig-lab { font-size: 11px; color: #1a437f; margin-bottom: 3px; }
-    .sig-line { border-bottom: 1px dotted #7a9cc8; height: 18px; }
-    .sig-line img { height: 16px; width: auto; max-width: 75px; vertical-align: bottom; }
+    .sig-lab { font-size: 11px; color: #1a437f; margin-bottom: 2px; }
+    .sig-line { border-bottom: 1px dotted #7a9cc8; height: 16px; }
 
     .thanks {
         font-size: 12.5px;
         color: #1a437f;
-        padding: 8px 0 3px;
+        padding: 6px 0 2px;
         text-align: center;
     }
 
     .contact {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 0 0 2px;
+        table-layout: fixed;
+    }
+    .contact td {
+        border: none;
+        padding: 1px 4px;
         text-align: center;
-        direction: ltr;
-        margin: 1px 0 0;
+        vertical-align: middle;
         font-size: 9px;
         color: #1a437f;
         font-family: DejaVu Sans, 'ArReg', sans-serif;
-        line-height: 1.4;
         white-space: nowrap;
     }
     .contact img {
@@ -192,12 +196,19 @@
         vertical-align: middle;
         margin-right: 3px;
     }
-    .contact span { margin: 0 9px; white-space: nowrap; }
 
-    .footer-bar {
-        margin-top: 6px;
-        height: 8px;
-        background: #1a437f;
+    .wave-wrap {
+        margin: 2px 0 0;
+        line-height: 0;
+        height: 28px;
+        overflow: hidden;
+        page-break-inside: avoid;
+        page-break-before: avoid;
+    }
+    .wave-wrap img {
+        width: 100%;
+        height: 28px;
+        display: block;
     }
 </style>
 </head>

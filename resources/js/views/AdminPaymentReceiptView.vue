@@ -52,7 +52,11 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { fetchAdminHtml } from '@/lib/api'
-import { downloadReceiptPdf } from '@/lib/receiptPdf'
+import {
+  downloadReceiptPdf,
+  downloadReceiptPdfFromFrame,
+  paymentReceiptFilename,
+} from '@/lib/receiptPdf'
 
 const route = useRoute()
 const router = useRouter()
@@ -65,6 +69,7 @@ const loading = ref(true)
 const pdfLoading = ref(false)
 const error = ref('')
 const htmlContent = ref('')
+const frameRef = ref<HTMLIFrameElement | null>(null)
 
 const htmlPath = computed(
   () => `/admin/projects/${projectId.value}/payments/${paymentId.value}/html`,
@@ -84,13 +89,28 @@ const loadHtml = async () => {
   }
 }
 
-/** Server PDF: Chrome A5 when available, otherwise Dompdf A5 receipt-pdf template. */
+/** Export exactly what is painted in the receipt iframe (same as on screen). */
 const exportPdf = async () => {
   pdfLoading.value = true
+  const filename = paymentReceiptFilename(projectId.value, paymentId.value)
   try {
+    const frame = frameRef.value
+    if (frame?.contentDocument?.body) {
+      await downloadReceiptPdfFromFrame(frame, filename)
+      return
+    }
     await downloadReceiptPdf(projectId.value, paymentId.value)
   } catch (e: any) {
-    alert(e.message || e.response?.data?.message || 'تعذر تصدير الوصل')
+    try {
+      await downloadReceiptPdf(projectId.value, paymentId.value)
+    } catch (fallbackErr: any) {
+      alert(
+        fallbackErr.message ||
+          e.message ||
+          e.response?.data?.message ||
+          'تعذر تصدير الوصل',
+      )
+    }
   } finally {
     pdfLoading.value = false
   }

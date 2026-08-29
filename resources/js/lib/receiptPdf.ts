@@ -18,29 +18,9 @@ export function paymentReceiptFilename(projectId: number | string, paymentId: nu
 const RECEIPT_W = 794
 const RECEIPT_H = 559
 
-function canvasLooksBlank(canvas: HTMLCanvasElement): boolean {
-  const ctx = canvas.getContext('2d')
-  if (!ctx) {
-    return true
-  }
-  const { width, height } = canvas
-  if (width < 10 || height < 10) {
-    return true
-  }
-  const sample = ctx.getImageData(0, 0, Math.min(40, width), Math.min(40, height)).data
-  let nonWhite = 0
-  for (let i = 0; i < sample.length; i += 4) {
-    if (sample[i] < 250 || sample[i + 1] < 250 || sample[i + 2] < 250) {
-      nonWhite++
-    }
-  }
-  return nonWhite < 8
-}
-
 /**
- * Capture the visible receipt into a real A5 landscape PDF download.
- * Uses the browser paint pipeline so Arabic + layout match the on-screen page.
- * Works on shared hosting (no Chrome on the server required).
+ * Capture the visible receipt iframe into an A5 landscape PDF download.
+ * Rasterizes the already-painted page so Arabic + layout match the screen.
  */
 export async function downloadReceiptPdfFromFrame(
   frame: HTMLIFrameElement,
@@ -70,6 +50,7 @@ export async function downloadReceiptPdfFromFrame(
     minHeight: page.style.minHeight,
     overflow: page.style.overflow,
     background: page.style.background,
+    margin: page.style.margin,
   }
 
   page.style.width = `${RECEIPT_W}px`
@@ -78,37 +59,28 @@ export async function downloadReceiptPdfFromFrame(
   page.style.minHeight = `${RECEIPT_H}px`
   page.style.overflow = 'hidden'
   page.style.background = '#ffffff'
+  page.style.margin = '0 auto'
 
-  await new Promise((r) => setTimeout(r, 150))
+  await new Promise((r) => setTimeout(r, 250))
 
   try {
-    let canvas = await html2canvas(page, {
+    const canvas = await html2canvas(page, {
       scale: 2,
       useCORS: true,
       allowTaint: true,
       backgroundColor: '#ffffff',
-      foreignObjectRendering: true,
+      // foreignObjectRendering can scramble Arabic glyphs — keep off
+      foreignObjectRendering: false,
       logging: false,
       width: RECEIPT_W,
       height: RECEIPT_H,
       windowWidth: RECEIPT_W,
       windowHeight: RECEIPT_H,
+      scrollX: 0,
+      scrollY: 0,
+      x: 0,
+      y: 0,
     })
-
-    if (canvasLooksBlank(canvas)) {
-      canvas = await html2canvas(page, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: '#ffffff',
-        foreignObjectRendering: false,
-        logging: false,
-        width: RECEIPT_W,
-        height: RECEIPT_H,
-        windowWidth: RECEIPT_W,
-        windowHeight: RECEIPT_H,
-      })
-    }
 
     const pdf = new jsPDF({
       orientation: 'landscape',
@@ -117,9 +89,8 @@ export async function downloadReceiptPdfFromFrame(
       compress: true,
     })
 
-    // Exact A5 landscape: 210mm × 148mm
     pdf.addImage(
-      canvas.toDataURL('image/jpeg', 0.96),
+      canvas.toDataURL('image/jpeg', 0.97),
       'JPEG',
       0,
       0,
@@ -136,6 +107,7 @@ export async function downloadReceiptPdfFromFrame(
     page.style.minHeight = previous.minHeight
     page.style.overflow = previous.overflow
     page.style.background = previous.background
+    page.style.margin = previous.margin
   }
 }
 

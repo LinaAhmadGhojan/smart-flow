@@ -233,7 +233,10 @@ class ProjectFinanceController extends Controller
 
         $filename = 'RCP-' . $project->id . '-' . str_pad((string) $payment->id, 3, '0', STR_PAD_LEFT) . '.pdf';
 
-        if (config('pdf.receipt_use_browser')) {
+        // Prefer headless Chrome when available so the PDF matches the on-screen HTML
+        // (wave, Arabic, A5). Dompdf is the shared-hosting fallback.
+        $useBrowser = config('pdf.receipt_use_browser') || BrowserPdf::available();
+        if ($useBrowser) {
             $webData = $this->paymentReceiptViewData($project, $payment, false);
             $rendered = BrowserPdf::render(
                 view('payments.receipt-html', $webData + [
@@ -390,12 +393,12 @@ class ProjectFinanceController extends Controller
             );
         }
 
-        // Never reduce a real number down to bare country code.
+        // Incomplete / placeholder country code → show the known company line.
         if ($digits === '971' || $raw === '' || $raw === '+971') {
-            return '+971';
+            return '+971 56 256 6232';
         }
 
-        return $raw !== '' ? $raw : '+971';
+        return $raw !== '' ? $raw : '+971 56 256 6232';
     }
 
     /**

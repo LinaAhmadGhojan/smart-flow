@@ -183,18 +183,9 @@
 
 <div class="thanks arb">{{ $lblThanks }}</div>
 <div class="contact">
-    <span>
-        <img src="{{ $iconPhone }}" alt="">
-        <span class="en phone" dir="ltr">{{ $phone }}</span>
-    </span>
-    <span>
-        <img src="{{ $iconEmail }}" alt="">
-        <span class="en mail" dir="ltr">{{ $email }}</span>
-    </span>
-    <span>
-        <img src="{{ $iconLocation }}" alt="">
-        <span class="ar">{{ $addressAr }}</span>
-    </span>
+    <span><img src="{{ $iconPhone }}" alt=""> <span class="en" dir="ltr">{{ $phone }}</span></span>
+    <span><img src="{{ $iconEmail }}" alt=""> <span class="en" dir="ltr">{{ $email }}</span></span>
+    <span><img src="{{ $iconLocation }}" alt=""> <span class="ar">{{ $addressAr }}</span></span>
 </div>
 <div class="wave-wrap" aria-hidden="true">
     <img src="{{ $waveSvg }}" alt="">

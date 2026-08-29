@@ -348,30 +348,21 @@
         font-size: 13px;
         font-weight: 700;
         color: #1a437f;
-        padding: 8px 0 2px;
+        padding: 8px 0 4px;
         text-align: center;
-        flex-shrink: 0;
     }
 
     .contact {
-        display: flex;
-        flex-direction: row;
-        flex-wrap: nowrap;
-        justify-content: center;
-        align-items: center;
-        gap: 18px;
-        width: 100%;
-        box-sizing: border-box;
         text-align: center;
         direction: ltr;
         unicode-bidi: isolate;
-        margin: 0;
-        padding: 2px 8px 4px;
+        margin: 2px 0 0;
+        padding: 0 8px 2px;
         font-size: 10px;
         font-weight: 600;
         color: #1a437f;
-        line-height: 1.4;
-        flex-shrink: 0;
+        line-height: 1.5;
+        white-space: nowrap;
         overflow: visible;
     }
     .contact img {
@@ -379,37 +370,28 @@
         width: 11px;
         vertical-align: middle;
         margin-right: 4px;
-        flex-shrink: 0;
     }
     .contact > span {
-        margin: 0;
+        margin: 0 10px;
         white-space: nowrap;
-        display: inline-flex;
-        align-items: center;
-        flex: 0 0 auto;
-        max-width: none;
-        overflow: visible;
-        text-overflow: clip;
+        display: inline-block;
+        vertical-align: middle;
     }
-    .contact .en,
-    .contact .phone,
-    .contact .mail {
+    .contact .en {
         direction: ltr;
         unicode-bidi: isolate;
         white-space: nowrap;
-        letter-spacing: 0.01em;
     }
 
     .wave-wrap {
         margin: auto -22px 0;
         line-height: 0;
-        height: 48px;
+        height: 52px;
         overflow: hidden;
-        flex-shrink: 0;
     }
     .wave-wrap img {
         width: 100%;
-        height: 48px;
+        height: 52px;
         display: block;
         object-fit: fill;
         -webkit-print-color-adjust: exact;
@@ -456,12 +438,12 @@
         }
         .wave-wrap {
             margin: auto -22px 0 !important;
-            height: 48px !important;
+            height: 52px !important;
             overflow: hidden !important;
         }
         .wave-wrap img {
             width: 100% !important;
-            height: 48px !important;
+            height: 52px !important;
             display: block !important;
             object-fit: fill !important;
         }

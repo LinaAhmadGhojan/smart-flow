@@ -16,6 +16,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 
 class ProjectFinanceController extends Controller
@@ -217,7 +218,9 @@ class ProjectFinanceController extends Controller
 
         return response()->view(
             'payments.receipt-html',
-            $this->paymentReceiptViewData($project, $payment, false)
+            $this->paymentReceiptViewData($project, $payment, false) + [
+                'fontEmbedCss' => $this->receiptFontEmbedCss(),
+            ]
         );
     }
 
@@ -231,12 +234,14 @@ class ProjectFinanceController extends Controller
         $webData = $this->paymentReceiptViewData($project, $payment, false);
         $filename = $webData['receiptNumber'] . '.pdf';
 
-        // Printing the browser view keeps Arabic shaping and the layout identical
-        // to what the user sees; Dompdf can only approximate both.
+        // Prefer fast CLI; CDP A5 is optional and time-capped so the UI stays responsive.
         $rendered = BrowserPdf::render(
             view('payments.receipt-html', $webData + [
                 'fontEmbedCss' => $this->receiptFontEmbedCss(),
-            ])->render()
+                'forBrowserPdf' => true,
+            ])->render(),
+            2500,
+            ['width' => 8.27, 'height' => 5.83, 'landscape' => true]
         );
 
         if ($rendered !== null) {
@@ -246,6 +251,11 @@ class ProjectFinanceController extends Controller
                 'Content-Length' => (string) strlen($rendered),
             ]);
         }
+
+        Log::warning('BrowserPdf unavailable for payment receipt; falling back to Dompdf', [
+            'project_id' => $project->id,
+            'payment_id' => $payment->id,
+        ]);
 
         $data = $this->paymentReceiptViewData($project, $payment, true);
         $pdf = Pdf::loadView('payments.receipt-html', $data)->setPaper('a5', 'landscape');

@@ -23,13 +23,18 @@ echo "amountWords=[{$data['amountWords']}]\n";
 $fontRef = new ReflectionMethod($ctrl, 'receiptFontEmbedCss');
 $fontRef->setAccessible(true);
 $data['fontEmbedCss'] = $fontRef->invoke($ctrl);
+$data['forBrowserPdf'] = true;
 
 $html = view('payments.receipt-html', $data)->render();
 file_put_contents(__DIR__ . '/receipt-preview.html', $html);
 
 echo 'chrome available: ' . (App\Support\BrowserPdf::available() ? 'yes' : 'no') . "\n";
 
-$pdf = App\Support\BrowserPdf::render($html);
+$pdf = App\Support\BrowserPdf::render(
+    $html,
+    8000,
+    ['width' => 8.27, 'height' => 5.83, 'landscape' => true]
+);
 if ($pdf === null) {
     fwrite(STDERR, "browser render FAILED\n");
     exit(1);

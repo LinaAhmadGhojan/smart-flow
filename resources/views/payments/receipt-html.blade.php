@@ -1,16 +1,21 @@
+@php
+    $webLayout = empty($forPdf);
+    $fixedPage = !empty($forBrowserPdf);
+@endphp
 <!DOCTYPE html>
-<html lang="ar" dir="{{ !empty($forPdf) ? 'ltr' : 'rtl' }}">
+<html lang="ar" dir="{{ $webLayout ? 'rtl' : 'ltr' }}">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <meta charset="utf-8"/>
-@if(empty($forPdf))
+@if($fixedPage || !empty($fontEmbedCss ?? null))
+@if(!empty($fontEmbedCss ?? null))
+<style>{!! $fontEmbedCss !!}</style>
+@endif
+@elseif($webLayout)
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet"/>
-@if(!empty($fontEmbedCss ?? null))
-<style>{!! $fontEmbedCss !!}</style>
-@endif
 @else
 <style>
     @font-face {
@@ -29,7 +34,9 @@
 @endif
 <title>{{ $receiptNumber }}</title>
 <style>
-    @if(!empty($forPdf))
+    @if($fixedPage)
+    @page { size: A5 landscape; margin: 0; }
+    @elseif(!empty($forPdf))
     @page { size: A5 landscape; margin: 5mm 7mm 4mm 7mm; }
     @endif
 
@@ -38,12 +45,19 @@
         background: #fff;
         font-family: 'Cairo', 'CairoFallback', 'Segoe UI', 'DejaVu Sans', sans-serif;
         color: #1a437f;
-        @if(empty($forPdf))
+        @if($webLayout && !$fixedPage)
         -webkit-font-smoothing: antialiased;
+        @endif
+        @if($fixedPage)
+        width: 210mm;
+        height: 148mm;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
         @endif
     }
     .page-wrap {
-        @if(!empty($forPdf))
+        @if($fixedPage || !empty($forPdf))
         padding: 0;
         background: #fff;
         display: block;
@@ -55,9 +69,23 @@
         padding: 12px;
         background: #f4f7fb;
         @endif
+        @if($fixedPage)
+        width: 210mm;
+        height: 148mm;
+        margin: 0;
+        overflow: hidden;
+        @endif
     }
     .receipt-page {
-        @if(!empty($forPdf))
+        @if($fixedPage)
+        width: 210mm;
+        max-width: 210mm;
+        height: 148mm;
+        min-height: 148mm;
+        padding: 18px 22px 0;
+        display: flex;
+        flex-direction: column;
+        @elseif(!empty($forPdf))
         width: 100%;
         max-width: none;
         min-height: auto;
@@ -314,7 +342,7 @@
         print-color-adjust: exact;
     }
 
-    @if(empty($forPdf))
+    @if($webLayout && !$fixedPage)
     @media print {
         @page { size: A5 landscape; margin: 0; }
 
@@ -357,6 +385,13 @@
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
         }
+    }
+    @endif
+
+    @if($fixedPage)
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
     }
     @endif
 </style>

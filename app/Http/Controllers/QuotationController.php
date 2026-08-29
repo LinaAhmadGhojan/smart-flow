@@ -11,6 +11,7 @@ use App\Support\ArabicPdfText;
 use App\Support\CompanySettings;
 use App\Support\DompdfFontCache;
 use App\Support\ProductDescription;
+use App\Support\StorageUrl;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;

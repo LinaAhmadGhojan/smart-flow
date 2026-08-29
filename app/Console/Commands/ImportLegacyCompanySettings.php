@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\CompanySetting;
 use App\Support\CompanySettings;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Schema;
 
 class ImportLegacyCompanySettings extends Command
 {
@@ -14,6 +15,12 @@ class ImportLegacyCompanySettings extends Command
 
     public function handle(): int
     {
+        if (!Schema::hasTable('company_settings')) {
+            $this->warn('company_settings table missing. Run: php artisan migrate --force');
+
+            return self::FAILURE;
+        }
+
         if (CompanySetting::query()->find(1)) {
             $this->info('Company settings already exist in database — skipped.');
 

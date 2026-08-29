@@ -1,0 +1,3 @@
+# Force Unix line endings for shell scripts (Hostinger/Linux)
+*.sh text eol=lf
+deploy.sh text eol=lf

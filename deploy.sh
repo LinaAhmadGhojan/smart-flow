@@ -27,15 +27,14 @@ chmod 664 company-info.json public/company-info.json 2>/dev/null || true
 composer install --no-dev --optimize-autoloader --no-interaction
 
 php artisan migrate --force
-php artisan company-settings:import-legacy 2>/dev/null || echo "Legacy settings import skipped"
+php artisan company-settings:import-legacy || echo "Legacy settings import skipped"
 
-# Rebuild frontend when Node is available; otherwise use committed build/ from git
 if command -v npm >/dev/null 2>&1; then
   npm ci --no-audit --no-fund
   npm run build
   cp -r public/build/. build/
 else
-  echo "npm not found — using build/ assets from git"
+  echo "npm not found - using build/ assets from git"
   if [ -d public/build ] && [ -f public/build/manifest.json ]; then
     cp -r public/build/. build/
   fi
@@ -43,8 +42,8 @@ fi
 
 php scripts/build-dompdf-font-artifacts.php || echo "Dompdf font build skipped"
 php artisan optimize:clear
-php -r "if (function_exists('opcache_reset')) { opcache_reset(); echo \"OPcache cleared\n\"; }"
+php -r 'if (function_exists("opcache_reset")) { opcache_reset(); echo "OPcache cleared\n"; }'
 
 echo "Deploy complete."
-echo "Verify settings: curl -s https://smartflowuae.com/company-info.json | grep -E 'logo|signature' || true"
+echo "Verify settings: curl -s https://smartflowuae.com/api/settings | grep -E 'logo|signature' || true"
 echo "Verify build: curl -s https://smartflowuae.com/build/manifest.json | grep main"

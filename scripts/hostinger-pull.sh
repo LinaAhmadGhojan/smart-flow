@@ -20,6 +20,13 @@ git checkout -- .htaccess .gitignore public/company-info.json company-info.json 
 echo "==> Pulling latest code from GitHub"
 git pull origin main
 
+echo "==> Fixing Windows line endings in shell scripts (if any)"
+for f in deploy.sh scripts/hostinger-pull.sh; do
+  if [ -f "$f" ]; then
+    sed -i 's/\r$//' "$f"
+  fi
+done
+
 echo "==> Running deploy"
 bash deploy.sh
 

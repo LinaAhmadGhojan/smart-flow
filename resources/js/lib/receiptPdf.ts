@@ -88,6 +88,24 @@ export async function downloadReceiptPdfFromFrame(
   mount.appendChild(shell)
   document.body.appendChild(mount)
 
+  // SVG foreignObject often shrinks % widths — force full-width tables in px.
+  const contentW = RECEIPT_W - 44 // receipt-page horizontal padding (22+22)
+  const innerW = contentW - 32 // .sheet horizontal padding (16+16)
+  const sheet = clone.querySelector('.sheet') as HTMLElement | null
+  if (sheet) {
+    sheet.style.width = `${contentW}px`
+    sheet.style.maxWidth = `${contentW}px`
+    sheet.style.boxSizing = 'border-box'
+  }
+  clone.querySelectorAll<HTMLElement>('table.header, table.fline, table.pay-grid, table.grid, table.signs').forEach((table) => {
+    const isInsideSheet = !!table.closest('.sheet')
+    const w = isInsideSheet ? innerW : contentW
+    table.style.width = `${w}px`
+    table.style.minWidth = `${w}px`
+    table.style.maxWidth = `${w}px`
+    table.style.tableLayout = 'fixed'
+  })
+
   try {
     // Let cloned @font-face register in the parent document.
     if (document.fonts?.ready) {

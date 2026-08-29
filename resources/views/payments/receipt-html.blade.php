@@ -160,13 +160,15 @@
     }
 
     .sheet {
+        width: 100%;
+        box-sizing: border-box;
         border: 1.8px solid #1a437f;
         border-radius: 14px;
         padding: 12px 16px 10px;
         margin-top: 4px;
     }
 
-    .fline { width: 100%; border-collapse: collapse; margin: 6px 0; }
+    .fline { width: 100%; border-collapse: collapse; margin: 6px 0; table-layout: auto; }
     .fline td { padding: 5px 0; vertical-align: bottom; border: none; }
     .fline .lab {
         white-space: nowrap;
@@ -266,7 +268,15 @@
         margin: 0 8px;
     }
 
-    .grid { width: 100%; border-collapse: collapse; margin: 8px 0 10px; table-layout: fixed; }
+    .grid {
+        width: 100% !important;
+        min-width: 100%;
+        max-width: 100%;
+        border-collapse: collapse;
+        margin: 8px 0 10px;
+        table-layout: fixed !important;
+        display: table;
+    }
     .grid th {
         background: #1a437f;
         color: #fff;
@@ -276,6 +286,10 @@
         text-align: center;
         border: 1px solid #1a437f;
     }
+    .grid th:nth-child(1) { width: 26%; }
+    .grid th:nth-child(2) { width: 30%; }
+    .grid th:nth-child(3) { width: 22%; }
+    .grid th:nth-child(4) { width: 22%; }
     .grid td {
         border: 1px solid #b8cce8;
         padding: 10px 6px;
@@ -290,13 +304,20 @@
     .amt-num { font-weight: 700; margin-left: 4px; }
     .amt-cur { font-size: 10px; font-weight: 700; }
     .cell-dots {
-        display: inline-block;
+        display: block;
         width: 90%;
+        margin: 0 auto;
         border-bottom: 1px dotted #7a9cc8;
         height: 14px;
     }
 
-    .signs { width: 100%; border-collapse: collapse; margin-top: 6px; }
+    .signs {
+        width: 100% !important;
+        min-width: 100%;
+        border-collapse: collapse;
+        margin-top: 6px;
+        table-layout: fixed;
+    }
     .signs td { width: 33%; border: none; vertical-align: bottom; padding: 0 10px; text-align: center; }
     .sig-lab { font-size: 11.5px; font-weight: 700; margin-bottom: 4px; color: #1a437f; }
     .sig-line { border-bottom: 1px dotted #7a9cc8; height: 24px; }

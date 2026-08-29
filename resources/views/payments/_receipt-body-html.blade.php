@@ -125,10 +125,10 @@
             <th class="arb" style="width:30%">{{ $lblRef }}</th>
             <th class="arb" style="width:26%">{{ $lblAmount }}</th>
             @else
-            <th class="arb">{{ $lblAmount }}</th>
-            <th class="arb">{{ $lblRef }}</th>
-            <th class="arb">{{ $lblBank }}</th>
-            <th class="arb">{{ $lblDateCol }}</th>
+            <th class="arb" style="width:26%">{{ $lblAmount }}</th>
+            <th class="arb" style="width:30%">{{ $lblRef }}</th>
+            <th class="arb" style="width:22%">{{ $lblBank }}</th>
+            <th class="arb" style="width:22%">{{ $lblDateCol }}</th>
             @endif
         </tr>
         <tr>

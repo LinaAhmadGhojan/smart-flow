@@ -16,3 +16,5 @@ id_rsa
 id_rsa.pub
 scripts/*.local
 scripts/.hostinger.env
+company-info.json
+public/company-info.json

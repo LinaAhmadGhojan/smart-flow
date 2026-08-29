@@ -43,24 +43,18 @@
         </tr>
     </table>
     @else
-    <table class="fline">
-        <tr>
-            <td class="lab"><span class="arb">{{ $lblReceivedFrom }}</span>&nbsp;:</td>
-            <td class="val ar">{{ $clientName }}</td>
-        </tr>
-    </table>
-    <table class="fline">
-        <tr>
-            <td class="lab"><span class="arb">{{ $lblAmountWords }}</span>&nbsp;:</td>
-            <td class="val ar">{{ $amountWords }}</td>
-        </tr>
-    </table>
-    <table class="fline">
-        <tr>
-            <td class="lab"><span class="arb">{{ $lblFor }}</span>&nbsp;:</td>
-            <td class="val ar">{{ $forLabel }}</td>
-        </tr>
-    </table>
+    <div class="fline">
+        <div class="lab"><span class="arb">{{ $lblReceivedFrom }}</span>&nbsp;:</div>
+        <div class="val ar">{{ $clientName }}</div>
+    </div>
+    <div class="fline">
+        <div class="lab"><span class="arb">{{ $lblAmountWords }}</span>&nbsp;:</div>
+        <div class="val ar">{{ $amountWords }}</div>
+    </div>
+    <div class="fline">
+        <div class="lab"><span class="arb">{{ $lblFor }}</span>&nbsp;:</div>
+        <div class="val ar">{{ $forLabel }}</div>
+    </div>
     @endif
     <div class="pay-wrap">
         <div class="pay-box">
@@ -118,6 +112,14 @@
     </div>
 
     <table class="grid">
+        @if(empty($forPdf))
+        <colgroup>
+            <col style="width:26%">
+            <col style="width:30%">
+            <col style="width:22%">
+            <col style="width:22%">
+        </colgroup>
+        @endif
         <tr>
             @if(!empty($forPdf))
             <th class="arb" style="width:22%">{{ $lblDateCol }}</th>
@@ -125,10 +127,10 @@
             <th class="arb" style="width:30%">{{ $lblRef }}</th>
             <th class="arb" style="width:26%">{{ $lblAmount }}</th>
             @else
-            <th class="arb" style="width:26%">{{ $lblAmount }}</th>
-            <th class="arb" style="width:30%">{{ $lblRef }}</th>
-            <th class="arb" style="width:22%">{{ $lblBank }}</th>
-            <th class="arb" style="width:22%">{{ $lblDateCol }}</th>
+            <th class="arb">{{ $lblAmount }}</th>
+            <th class="arb">{{ $lblRef }}</th>
+            <th class="arb">{{ $lblBank }}</th>
+            <th class="arb">{{ $lblDateCol }}</th>
             @endif
         </tr>
         <tr>

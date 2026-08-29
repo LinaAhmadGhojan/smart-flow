@@ -168,18 +168,40 @@
         margin-top: 4px;
     }
 
-    .fline { width: 100%; border-collapse: collapse; margin: 6px 0; table-layout: auto; }
-    .fline td { padding: 5px 0; vertical-align: bottom; border: none; }
+    .fline {
+        display: flex;
+        flex-direction: row;
+        align-items: flex-end;
+        width: 100%;
+        box-sizing: border-box;
+        margin: 6px 0;
+        gap: 10px;
+    }
+    /* Dompdf table fallback still uses td.lab / td.val */
+    table.fline {
+        display: table;
+        border-collapse: collapse;
+        table-layout: auto;
+        gap: 0;
+    }
+    table.fline td { padding: 5px 0; vertical-align: bottom; border: none; }
     .fline .lab {
+        flex: 0 0 auto;
         white-space: nowrap;
-        width: 1%;
-        padding-left: 12px;
+        padding: 0 0 5px;
         text-align: right;
         font-size: 13px;
         font-weight: 700;
         color: #1a437f;
+        line-height: 1.45;
+    }
+    table.fline .lab {
+        width: 1%;
+        padding-left: 12px;
     }
     .fline .val {
+        flex: 1 1 auto;
+        min-width: 0;
         border-bottom: 1.5px dotted #8faed0;
         padding: 0 8px 5px;
         text-align: right;
@@ -187,10 +209,10 @@
         font-size: 13px;
         font-weight: 600;
         min-height: 20px;
-        width: 99%;
         line-height: 1.45;
         letter-spacing: 0.01em;
     }
+    table.fline .val { width: 99%; }
     .fline-empty .val { min-height: 16px; }
 
     .pay-wrap { margin: 16px 0 10px; }

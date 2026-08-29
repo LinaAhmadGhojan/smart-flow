@@ -17,12 +17,45 @@ export function paymentReceiptFilename(projectId: number | string, paymentId: nu
 const RECEIPT_W = 794
 const RECEIPT_H = 559
 
+function forceReceiptGeometry(root: HTMLElement): void {
+  root.style.boxSizing = 'border-box'
+  root.style.width = `${RECEIPT_W}px`
+  root.style.height = `${RECEIPT_H}px`
+  root.style.maxWidth = `${RECEIPT_W}px`
+  root.style.overflow = 'hidden'
+
+  const contentW = RECEIPT_W - 44 // page padding 22+22
+  const innerW = contentW - 32 // sheet padding 16+16
+
+  const sheet = root.querySelector('.sheet') as HTMLElement | null
+  if (sheet) {
+    sheet.style.width = `${contentW}px`
+    sheet.style.maxWidth = `${contentW}px`
+    sheet.style.boxSizing = 'border-box'
+  }
+
+  root.querySelectorAll<HTMLElement>('.fline').forEach((row) => {
+    row.style.display = 'flex'
+    row.style.flexDirection = 'row'
+    row.style.alignItems = 'flex-end'
+    row.style.width = `${innerW}px`
+    row.style.maxWidth = `${innerW}px`
+    row.style.boxSizing = 'border-box'
+  })
+
+  root.querySelectorAll<HTMLElement>('table.header, table.pay-grid, table.grid, table.signs').forEach((table) => {
+    const insideSheet = !!table.closest('.sheet')
+    const w = insideSheet ? innerW : contentW
+    table.style.width = `${w}px`
+    table.style.minWidth = `${w}px`
+    table.style.maxWidth = `${w}px`
+    table.style.tableLayout = 'fixed'
+  })
+}
+
 /**
- * Capture the visible receipt into an A5 PDF entirely in the browser.
- * Does not need Chrome on the server — works on shared hosting.
- *
- * Clones the receipt into the parent document with its styles/fonts so
- * html-to-image (SVG foreignObject) paints Arabic with the browser engine.
+ * Capture the on-screen receipt (already laid out correctly) into an A5 PDF.
+ * Captures the live iframe DOM — no re-clone that breaks RTL tables.
  */
 export async function downloadReceiptPdfFromFrame(
   frame: HTMLIFrameElement,
@@ -37,112 +70,44 @@ export async function downloadReceiptPdfFromFrame(
     await srcDoc.fonts.ready
   }
 
-  const source =
+  const page =
     (srcDoc.querySelector('.receipt-page') as HTMLElement | null) ||
     (srcDoc.body.firstElementChild as HTMLElement | null)
 
-  if (!source) {
+  if (!page) {
     throw new Error('لم يتم العثور على محتوى الوصل')
   }
 
-  const mount = document.createElement('div')
-  mount.setAttribute('data-receipt-pdf-mount', '1')
-  mount.style.cssText = [
-    'position:fixed',
-    'left:-10000px',
-    'top:0',
-    `width:${RECEIPT_W}px`,
-    `height:${RECEIPT_H}px`,
-    'overflow:hidden',
-    'background:#ffffff',
-    'z-index:-1',
-    'pointer-events:none',
-  ].join(';')
+  forceReceiptGeometry(page)
+  await new Promise((r) => setTimeout(r, 120))
 
-  // Bring @font-face + receipt CSS into the parent document for the clone.
-  srcDoc.querySelectorAll('style').forEach((styleEl) => {
-    mount.appendChild(styleEl.cloneNode(true))
+  const dataUrl = await toPng(page, {
+    width: RECEIPT_W,
+    height: RECEIPT_H,
+    canvasWidth: RECEIPT_W * 2,
+    canvasHeight: RECEIPT_H * 2,
+    pixelRatio: 2,
+    cacheBust: true,
+    backgroundColor: '#ffffff',
+    style: {
+      width: `${RECEIPT_W}px`,
+      height: `${RECEIPT_H}px`,
+      transform: 'none',
+      direction: 'rtl',
+    },
   })
 
-  const shell = document.createElement('div')
-  shell.className = 'page-wrap'
-  shell.dir = 'rtl'
-  shell.style.cssText = `width:${RECEIPT_W}px;height:${RECEIPT_H}px;padding:0;margin:0;background:#fff;`
-
-  const clone = source.cloneNode(true) as HTMLElement
-  clone.classList.add('receipt-page')
-  clone.style.cssText = [
-    `width:${RECEIPT_W}px`,
-    `height:${RECEIPT_H}px`,
-    'max-width:none',
-    'min-height:0',
-    'margin:0',
-    'background:#ffffff',
-    'display:flex',
-    'flex-direction:column',
-    'overflow:hidden',
-    'box-sizing:border-box',
-  ].join(';')
-
-  shell.appendChild(clone)
-  mount.appendChild(shell)
-  document.body.appendChild(mount)
-
-  // SVG foreignObject often shrinks % widths — force full-width tables in px.
-  const contentW = RECEIPT_W - 44 // receipt-page horizontal padding (22+22)
-  const innerW = contentW - 32 // .sheet horizontal padding (16+16)
-  const sheet = clone.querySelector('.sheet') as HTMLElement | null
-  if (sheet) {
-    sheet.style.width = `${contentW}px`
-    sheet.style.maxWidth = `${contentW}px`
-    sheet.style.boxSizing = 'border-box'
-  }
-  clone.querySelectorAll<HTMLElement>('table.header, table.fline, table.pay-grid, table.grid, table.signs').forEach((table) => {
-    const isInsideSheet = !!table.closest('.sheet')
-    const w = isInsideSheet ? innerW : contentW
-    table.style.width = `${w}px`
-    table.style.minWidth = `${w}px`
-    table.style.maxWidth = `${w}px`
-    table.style.tableLayout = 'fixed'
+  const pdf = new jsPDF({
+    orientation: 'landscape',
+    unit: 'mm',
+    format: 'a5',
+    compress: true,
   })
 
-  try {
-    // Let cloned @font-face register in the parent document.
-    if (document.fonts?.ready) {
-      await document.fonts.ready
-    }
-    await new Promise((r) => setTimeout(r, 200))
-
-    const dataUrl = await toPng(clone, {
-      width: RECEIPT_W,
-      height: RECEIPT_H,
-      canvasWidth: RECEIPT_W * 2,
-      canvasHeight: RECEIPT_H * 2,
-      pixelRatio: 2,
-      cacheBust: true,
-      backgroundColor: '#ffffff',
-      style: {
-        width: `${RECEIPT_W}px`,
-        height: `${RECEIPT_H}px`,
-        transform: 'none',
-        direction: 'rtl',
-      },
-    })
-
-    const pdf = new jsPDF({
-      orientation: 'landscape',
-      unit: 'mm',
-      format: 'a5',
-      compress: true,
-    })
-
-    const pageW = pdf.internal.pageSize.getWidth()
-    const pageH = pdf.internal.pageSize.getHeight()
-    pdf.addImage(dataUrl, 'PNG', 0, 0, pageW, pageH, undefined, 'FAST')
-    pdf.save(filename)
-  } finally {
-    mount.remove()
-  }
+  const pageW = pdf.internal.pageSize.getWidth()
+  const pageH = pdf.internal.pageSize.getHeight()
+  pdf.addImage(dataUrl, 'PNG', 0, 0, pageW, pageH, undefined, 'FAST')
+  pdf.save(filename)
 }
 
 export async function downloadReceiptPdf(

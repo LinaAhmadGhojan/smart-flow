@@ -7,6 +7,7 @@ use App\Models\ProjectPayment;
 use App\Models\Quotation;
 use App\Models\QuotationItem;
 use App\Support\ArabicPdfText;
+use App\Support\DompdfFontCache;
 use App\Support\ProductDescription;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
@@ -71,6 +72,7 @@ class InvoiceController extends Controller
 
     public function pdf(Invoice $invoice)
     {
+        DompdfFontCache::ensureReady();
         try {
             $invoice->load(['quotation.items.product']);
             $quotation = $invoice->quotation;

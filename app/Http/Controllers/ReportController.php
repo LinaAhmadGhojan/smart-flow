@@ -14,6 +14,8 @@ use App\Support\ArabicPdfText;
 
 use App\Support\BrowserPdf;
 
+use App\Support\DompdfFontCache;
+
 use Barryvdh\DomPDF\Facade\Pdf;
 
 use Illuminate\Http\Request;
@@ -197,6 +199,8 @@ class ReportController extends Controller
     public function pdf(Report $report)
 
     {
+
+        DompdfFontCache::ensureReady();
 
         try {
 

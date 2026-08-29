@@ -10,6 +10,7 @@ use App\Models\ProjectPayment;
 use App\Models\ProjectProfitShare;
 use App\Support\ArabicPdfText;
 use App\Support\BrowserPdf;
+use App\Support\DompdfFontCache;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -221,6 +222,7 @@ class ProjectFinanceController extends Controller
 
     public function pdfPayment(Project $project, ProjectPayment $payment)
     {
+        DompdfFontCache::ensureReady();
         if ($payment->project_id !== $project->id) {
             abort(404);
         }
@@ -772,6 +774,7 @@ class ProjectFinanceController extends Controller
 
     public function pdfDeliveryNote(Project $project, ProjectDeliveryNote $deliveryNote)
     {
+        DompdfFontCache::ensureReady();
         if ($deliveryNote->project_id !== $project->id) {
             abort(404);
         }

@@ -9,6 +9,7 @@ mkdir -p storage/framework/views
 mkdir -p storage/framework/sessions
 mkdir -p storage/framework/cache/data
 mkdir -p storage/logs
+mkdir -p storage/fonts
 mkdir -p bootstrap/cache
 mkdir -p public/storage/products
 mkdir -p public/storage/groups
@@ -36,6 +37,7 @@ else
 fi
 
 php artisan migrate --force
+php scripts/warm-dompdf-fonts.php || echo "Dompdf font warm skipped"
 php artisan optimize:clear
 php -r "if (function_exists('opcache_reset')) { opcache_reset(); echo \"OPcache cleared\n\"; }"
 

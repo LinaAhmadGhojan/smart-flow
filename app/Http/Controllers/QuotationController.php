@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\Quotation;
 use App\Models\QuotationItem;
 use App\Support\ArabicPdfText;
+use App\Support\DompdfFontCache;
 use App\Support\ProductDescription;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
@@ -146,6 +147,7 @@ class QuotationController extends Controller
 
     public function pdf(Quotation $quotation)
     {
+        DompdfFontCache::ensureReady();
         $quotation->load(['items.product']);
         $company = $this->companySettings();
         $logoPath = $this->absoluteAssetPath($company['logo'] ?? null) ?? public_path('logo.jpeg');

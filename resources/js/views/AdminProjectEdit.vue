@@ -1091,6 +1091,7 @@
             </div>
             <iframe
               v-else-if="viewDnHtml"
+              ref="viewDnFrame"
               :srcdoc="viewDnHtml"
               class="w-full min-h-[90vh] border-0 bg-slate-100"
               title="دليفري نوت"
@@ -1106,7 +1107,7 @@
 import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import api, { fetchAdminHtml } from '@/lib/api'
-import { exportReceiptPdf, downloadDeliveryNotePdf, deliveryNoteHtmlPath } from '@/lib/receiptPdf'
+import { exportReceiptPdf, exportDeliveryNotePdf, deliveryNoteHtmlPath } from '@/lib/receiptPdf'
 
 interface Customer { id: number; name: string; phone?: string; email?: string }
 interface ProjectFileRow { id: number; label: string; path: string; visibility: string; kind: string }
@@ -1207,6 +1208,7 @@ const showDnForm = ref(false)
 const dnSaving = ref(false)
 const viewDn = ref<any>(null)
 const viewDnHtml = ref('')
+const viewDnFrame = ref<HTMLIFrameElement | null>(null)
 const viewDnLoading = ref(false)
 const dnItemOpen = ref<number | null>(null)
 const dnForm = ref({
@@ -1355,7 +1357,7 @@ const invoiceStatusClass = (s?: string) =>
 
 const downloadDnPdf = async (dn: any) => {
   try {
-    await downloadDeliveryNotePdf(route.params.id as string, dn.id, dn.number)
+    await exportDeliveryNotePdf(route.params.id as string, dn.id, dn.number, viewDnFrame.value)
   } catch {
     alert('تعذر تصدير PDF')
   }

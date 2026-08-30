@@ -51,8 +51,8 @@
     .brand { width: 56%; padding: 4px 12px 4px 0; }
     .brand-inner { width: 100%; border-collapse: collapse; direction: ltr; }
     .brand-inner td { border: none; vertical-align: middle; padding: 0; }
-    .logo-td { width: 96px; padding-right: 12px; }
-    .brand img.logo { height: 90px; width: auto; max-width: 96px; display: block; }
+    .logo-td { width: 175px; padding-right: 12px; }
+    .brand img.logo { width: 175px; height: auto; max-width: 175px; max-height: 120px; display: block; object-fit: contain; }
     .brand-text { direction: ltr; text-align: left; }
     .brand-name {
         font-size: 22px; font-weight: 700; color: #1a437f;

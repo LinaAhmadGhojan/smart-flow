@@ -808,22 +808,104 @@ class ProjectFinanceController extends Controller
         $data = $this->deliveryNoteViewData($project, $deliveryNote);
         $filename = ($data['noteNumber'] ?: 'delivery-note') . '.pdf';
 
-        $rendered = BrowserPdf::render(
-            view('delivery-notes.html', $data)->render()
-        );
+        try {
+            $rendered = BrowserPdf::render(
+                view('delivery-notes.html', $data)->render(),
+                1500,
+                ['width' => 8.27, 'height' => 11.69, 'landscape' => false]
+            );
 
-        if ($rendered !== null) {
-            return response($rendered, 200, [
-                'Content-Type' => 'application/pdf',
-                'Content-Disposition' => 'attachment; filename="' . $filename . '"',
-                'Content-Length' => (string) strlen($rendered),
+            if ($rendered !== null) {
+                return response($rendered, 200, [
+                    'Content-Type' => 'application/pdf',
+                    'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+                    'Content-Length' => (string) strlen($rendered),
+                ]);
+            }
+
+            // Dompdf cannot render the rich HTML layout (flex/SVG/base64 fonts).
+            $pdfData = $this->deliveryNotePdfViewData($project, $deliveryNote);
+            $pdf = Pdf::loadView('delivery-notes.pdf', $pdfData)->setPaper('a4', 'portrait');
+            $pdf->setOption('isRemoteEnabled', true);
+            $pdf->setOption('isHtml5ParserEnabled', true);
+            $pdf->setOption('isFontSubsettingEnabled', true);
+            $pdf->setOption('defaultFont', 'DejaVu Sans');
+
+            return $pdf->download($filename);
+        } catch (\Throwable $e) {
+            Log::error('Delivery note PDF export failed', [
+                'project_id' => $project->id,
+                'note_id' => $deliveryNote->id,
+                'error' => $e->getMessage(),
             ]);
+
+            return response()->json([
+                'message' => 'تعذر إنشاء ملف PDF: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /** @return array<string, mixed> */
+    private function deliveryNotePdfViewData(Project $project, ProjectDeliveryNote $note): array
+    {
+        $project->loadMissing(['customer']);
+        $company = $this->companySettings();
+        $signaturePath = $this->absoluteAssetPath($company['signature'] ?? null);
+
+        $isAr = static fn (?string $text) => (bool) preg_match('/[\x{0600}-\x{06FF}]/u', (string) $text);
+        $shape = static fn (?string $text) => ArabicPdfText::shape((string) $text);
+
+        $title = (string) (($note->title ?: $project->title_ar ?: $project->title) ?: $note->number);
+        $clientName = (string) ($project->customer?->name ?: '—');
+        $projectTitle = (string) (($project->title_ar ?: $project->title) ?: '—');
+        $projectLocation = (string) ($project->location ?: '');
+
+        $items = [];
+        foreach ((array) ($note->items ?: []) as $row) {
+            $desc = (string) ($row['description'] ?? '');
+            $qtyRaw = $row['quantity'] ?? '';
+            $qty = ($qtyRaw === '' || $qtyRaw === null)
+                ? ''
+                : rtrim(rtrim(number_format((float) $qtyRaw, 2, '.', ''), '0'), '.');
+            $items[] = [
+                'description' => $shape($desc),
+                'quantity' => $qty,
+                'isArabic' => $isAr($desc),
+            ];
         }
 
-        $pdf = Pdf::loadView('delivery-notes.html', $data)->setPaper('a4', 'portrait');
-        $pdf->setOption('isRemoteEnabled', true);
+        $notes = (string) ($note->notes ?: '');
+        $deliveredBy = (string) ($note->delivered_by ?: ($company['signatureName'] ?? 'SmartFlow'));
+        $receivedBy = (string) ($note->received_by ?: '');
 
-        return $pdf->download($filename);
+        return [
+            'note' => $note,
+            'arabicFontUrl' => DompdfFontCache::arabicFontUrl(),
+            'dateLabel' => Carbon::parse($note->delivered_at)->format('d / m / Y'),
+            'titleShaped' => $shape($title),
+            'titleIsArabic' => $isAr($title),
+            'lblClient' => $shape('العميل'),
+            'lblProject' => $shape('المشروع'),
+            'lblDesc' => $shape('الوصف'),
+            'lblNotes' => $shape('ملاحظات'),
+            'clientName' => $shape($clientName),
+            'clientIsArabic' => $isAr($clientName),
+            'projectTitle' => $shape($projectTitle),
+            'projectTitleIsArabic' => $isAr($projectTitle),
+            'projectLocation' => $shape($projectLocation),
+            'projectLocationIsArabic' => $isAr($projectLocation),
+            'items' => $items,
+            'notesShaped' => $shape($notes),
+            'notesIsArabic' => $isAr($notes),
+            'signatureDataUri' => $this->toDataUri($signaturePath, 180),
+            'lblDeliveredAr' => $shape('سلّم'),
+            'lblReceivedAr' => $shape('استلم'),
+            'deliveredByShaped' => $shape($deliveredBy),
+            'deliveredByIsArabic' => $isAr($deliveredBy),
+            'receivedByShaped' => $shape($receivedBy),
+            'receivedByIsArabic' => $isAr($receivedBy),
+            'companyShort' => (string) ($company['companyName'] ?? 'SMART FLOW'),
+        ];
     }
 
     /** @return array<string, mixed> */
@@ -866,7 +948,7 @@ class ProjectFinanceController extends Controller
         return [
             'noteNumber' => (string) ($note->number ?: 'DN'),
             'dateLabel' => Carbon::parse($note->delivered_at)->format('d / m / Y'),
-            'logoDataUri' => $this->toDataUri($logoPath, 240),
+            'logoDataUri' => $this->toDataUri($logoPath, 350),
             'signatureDataUri' => $this->toDataUri($signaturePath, 180),
             'companyNameAr' => (string) ($company['companyNameAr'] ?? $company['companyName'] ?? 'SMART FLOW'),
             'phone' => $this->formatUaePhone((string) ($contact['phone'] ?? '+971')),

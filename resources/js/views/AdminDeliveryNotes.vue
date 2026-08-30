@@ -122,6 +122,7 @@
             </div>
             <iframe
               v-else-if="viewHtml"
+              ref="viewFrame"
               :srcdoc="viewHtml"
               class="w-full min-h-[80vh] border-0"
               title="دليفري نوت"
@@ -153,7 +154,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import api, { fetchAdminHtml } from '@/lib/api'
-import { downloadDeliveryNotePdf, deliveryNoteHtmlPath } from '@/lib/receiptPdf'
+import { exportDeliveryNotePdf, deliveryNoteHtmlPath } from '@/lib/receiptPdf'
 
 interface DnItem {
   description: string
@@ -186,6 +187,7 @@ const search = ref('')
 const deleteTarget = ref<DeliveryNote | null>(null)
 const viewTarget = ref<DeliveryNote | null>(null)
 const viewHtml = ref('')
+const viewFrame = ref<HTMLIFrameElement | null>(null)
 const viewLoading = ref(false)
 
 const filtered = computed(() => {
@@ -252,7 +254,7 @@ const doDelete = async () => {
 
 const downloadPdf = async (dn: DeliveryNote) => {
   try {
-    await downloadDeliveryNotePdf(dn.project_id, dn.id, dn.number)
+    await exportDeliveryNotePdf(dn.project_id, dn.id, dn.number, viewFrame.value)
   } catch (e: any) {
     alert(e.message || e.response?.data?.message || 'تعذر تحميل PDF')
   }

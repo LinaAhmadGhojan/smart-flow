@@ -179,11 +179,20 @@
 @endif
 
 <div class="summary-page">
+@php
+    $totalDiscount = round((float) ($discounts['line_discount_total'] ?? 0) + (float) ($discounts['global_discount'] ?? 0), 2);
+@endphp
 <table class="totals">
     <tr>
         <td class="label">Subtotal</td>
-        <td class="val">{{ $currency }} {{ number_format((float)$discounts['net_before_tax'], 2) }}</td>
+        <td class="val">{{ $currency }} {{ number_format((float)$discounts['gross_subtotal'], 2) }}</td>
     </tr>
+    @if($totalDiscount > 0)
+    <tr class="disc-row">
+        <td class="label">Discount</td>
+        <td class="val">− {{ $currency }} {{ number_format($totalDiscount, 2) }}</td>
+    </tr>
+    @endif
     <tr>
         <td class="label">TAX {{ rtrim(rtrim(number_format((float)$taxPercent, 2), '0'), '.') }}%</td>
         <td class="val">{{ $currency }} {{ number_format((float)$taxAmount, 2) }}</td>

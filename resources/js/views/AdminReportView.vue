@@ -52,7 +52,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { fetchAdminHtml } from '@/lib/api'
-import { downloadReportPdf, reportHtmlPath } from '@/lib/reportPdf'
+import { exportReportPdf, reportHtmlPath } from '@/lib/reportPdf'
 
 const route = useRoute()
 const router = useRouter()
@@ -64,6 +64,7 @@ const loading = ref(true)
 const pdfLoading = ref(false)
 const error = ref('')
 const htmlContent = ref('')
+const frameRef = ref<HTMLIFrameElement | null>(null)
 
 const loadHtml = async () => {
   loading.value = true
@@ -82,7 +83,7 @@ const loadHtml = async () => {
 const exportPdf = async () => {
   pdfLoading.value = true
   try {
-    await downloadReportPdf(reportId.value)
+    await exportReportPdf(reportId.value, undefined, frameRef.value)
   } catch (err: any) {
     alert(err.message || 'تعذر تصدير PDF')
   } finally {

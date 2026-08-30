@@ -119,6 +119,7 @@
 import { ref, computed, onMounted } from 'vue'
 import api from '@/lib/api'
 import { mediaUrl, handleMediaError } from '@/lib/media'
+import { exportReportPdf } from '@/lib/reportPdf'
 
 interface Report {
   id: number
@@ -190,44 +191,9 @@ const deleteReport = async () => {
 // --- PDF export ---
 const downloadPdf = async (r: Report) => {
   try {
-    const res = await api.get(`/admin/reports/${r.id}/pdf`, {
-      responseType: 'blob',
-      headers: { Accept: 'application/pdf' },
-    })
-
-    const contentType = String(res.headers['content-type'] || '')
-    if (contentType.includes('application/json') || contentType.includes('text/html')) {
-      const text = await (res.data as Blob).text()
-      try {
-        const json = JSON.parse(text)
-        alert(json.message || 'تعذر تصدير التقرير كـ PDF')
-      } catch {
-        alert('تعذر تصدير التقرير كـ PDF')
-      }
-      return
-    }
-
-    const blob = new Blob([res.data], { type: 'application/pdf' })
-    const blobUrl = window.URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = blobUrl
-    a.download = `report-${r.id}.pdf`
-    document.body.appendChild(a)
-    a.click()
-    a.remove()
-    window.URL.revokeObjectURL(blobUrl)
+    await exportReportPdf(r.id)
   } catch (err: any) {
-    const blob = err.response?.data
-    if (blob instanceof Blob) {
-      try {
-        const json = JSON.parse(await blob.text())
-        alert(json.message || 'تعذر تصدير التقرير كـ PDF')
-        return
-      } catch {
-        // fall through
-      }
-    }
-    alert(err.response?.data?.message || 'تعذر تصدير التقرير كـ PDF')
+    alert(err.message || 'تعذر تصدير التقرير كـ PDF')
   }
 }
 

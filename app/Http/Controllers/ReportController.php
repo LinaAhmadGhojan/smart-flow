@@ -197,47 +197,33 @@ class ReportController extends Controller
 
 
     /** GET /api/admin/reports/{report}/pdf */
-
     public function pdf(Report $report)
-
     {
-
         DompdfFontCache::ensureReady();
-
         try {
-
             $data = $this->reportViewData($report);
-
             $filename = ($data['reportNo'] ?? 'report') . '.pdf';
 
-
-
-            $rendered = BrowserPdf::render(view('reports.report-html', $data)->render());
-
+            $rendered = BrowserPdf::render(
+                view('reports.report-html', $data + ['forBrowserPdf' => true])->render(),
+                1500,
+                ['width' => 8.27, 'height' => 11.69, 'landscape' => false]
+            );
             if ($rendered !== null) {
-
                 return response($rendered, 200, [
-
                     'Content-Type' => 'application/pdf',
-
                     'Content-Disposition' => 'attachment; filename="' . $filename . '"',
-
                     'Content-Length' => (string) strlen($rendered),
-
                 ]);
-
             }
 
-
-
-            $pdf = Pdf::loadView('reports.report-html', $data + ['forPdf' => true])->setPaper('a4', 'portrait');
-
+            $pdf = Pdf::loadView('reports.report-html', $data)
+                ->setPaper('a4', 'portrait');
             $pdf->setOption('isRemoteEnabled', true);
-
-
+            $pdf->setOption('isHtml5ParserEnabled', true);
+            $pdf->setOption('isFontSubsettingEnabled', true);
 
             return $pdf->download($filename);
-
         } catch (\Throwable $e) {
 
             \Illuminate\Support\Facades\Log::error('Report PDF export failed', [

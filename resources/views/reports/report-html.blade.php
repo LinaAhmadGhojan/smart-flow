@@ -3,28 +3,44 @@
 <head>
 <meta charset="utf-8"/>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-@if(empty($forPdf))
+@php
+    $webLayout = empty($forPdf);
+    $fixedPage = !empty($forBrowserPdf);
+@endphp
+@if($fixedPage || !empty($fontEmbedCss ?? null))
+@if(!empty($fontEmbedCss ?? null))
+<style>{!! $fontEmbedCss !!}</style>
+@endif
+@elseif($webLayout)
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&family=Cairo:wght@400;700&display=swap" rel="stylesheet"/>
-@if(!empty($fontEmbedCss))
-<style>{!! $fontEmbedCss !!}</style>
-@endif
 @endif
 <title>تقرير زيارة موقع {{ $reportNo }}</title>
 <style>
+    @if($fixedPage)
+    @page { size: A4 portrait; margin: 0; }
+    @endif
+
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body {
         background: #fff;
         color: #1a437f;
         font-family: 'Cairo', 'CairoFallback', 'Segoe UI', sans-serif;
-        @if(empty($forPdf))
+        @if($webLayout && !$fixedPage)
         -webkit-font-smoothing: antialiased;
+        @endif
+        @if($fixedPage)
+        width: 210mm;
+        height: 297mm;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
         @endif
     }
     .page-wrap {
-        @if(!empty($forPdf))
+        @if($fixedPage || !empty($forPdf))
         padding: 0;
         background: #fff;
         display: block;
@@ -36,24 +52,40 @@
         background: #eef3fa;
         padding: 12px;
         @endif
+        @if($fixedPage)
+        width: 210mm;
+        height: 297mm;
+        margin: 0;
+        overflow: hidden;
+        @endif
     }
     .sheet {
+        @if($fixedPage)
+        width: 210mm;
+        max-width: 210mm;
+        height: 297mm;
+        min-height: 297mm;
+        padding: 8mm 9mm 14mm;
+        @else
         width: 794px;
         max-width: 100%;
         min-height: 1123px;
+        padding: 12px 14px 52px;
+        @endif
         background: #fff;
         border: 1.5px solid #b8cce8;
         border-radius: 4px;
-        padding: 12px 14px 52px;
         position: relative;
         overflow: hidden;
         display: flex;
         flex-direction: column;
-        @if(!empty($forPdf))
-        width: 100%;
-        max-width: none;
+        @if($fixedPage || !empty($forPdf))
         border: none;
         border-radius: 0;
+        @endif
+        @if(!empty($forPdf) && !$fixedPage)
+        width: 100%;
+        max-width: none;
         @endif
     }
     .en { direction: ltr; unicode-bidi: embed; }
@@ -324,7 +356,7 @@
     }
     .footer-bolt { width: 13px; height: 13px; fill: #fff; vertical-align: middle; margin: 0 8px; }
 
-    @if(empty($forPdf))
+    @if($webLayout && !$fixedPage)
     @media print {
         @page { size: A4 portrait; margin: 0; }
         html, body, .page-wrap { background: #fff !important; padding: 0 !important; margin: 0 !important; }
@@ -339,10 +371,14 @@
         * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
     }
     @endif
+
+    @if($fixedPage)
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+    @endif
 </style>
-@if(!empty($forPdf) && !empty($fontEmbedCss))
-<style>{!! $fontEmbedCss !!}</style>
-@endif
 </head>
 <body>
 <div class="page-wrap">

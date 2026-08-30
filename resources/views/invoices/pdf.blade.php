@@ -20,7 +20,7 @@
     .left { width: 34%; }
     .center { width: 32%; text-align: center; }
     .right { width: 34%; text-align: right; }
-    .center img { width: 72px; height: auto; max-height: 72px; object-fit: contain; }
+    .center img { width: 175px; height: auto; max-height: 145px; object-fit: contain; }
     .country { margin: 0 0 2px; color: #444; }
     .trn { margin: 0; color: #777; font-size: 10px; }
     .doc-title { font-size: 30px; font-weight: bold; margin: 0 0 10px; color: #222; }
@@ -32,8 +32,10 @@
     .rule { border: none; border-top: 2px solid #2177cf; margin: 0 0 8px; }
     .items { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
     .items th {
+        background: #f3f3f3;
         border-top: 1px solid #ddd; border-bottom: 1px solid #ddd;
-        text-align: left; padding: 7px 6px; font-size: 11px; color: #777; font-weight: normal;
+        text-align: left; padding: 7px 6px; font-size: 11px; color: #333;
+        font-weight: bold;
     }
     .items td { border-bottom: 1px solid #eee; padding: 8px 6px; vertical-align: top; }
     .items .num { text-align: right; }
@@ -117,7 +119,7 @@
         </td>
         <td class="center">
             @if(!empty($logoDataUri))
-                <img src="{{ $logoDataUri }}" alt="logo" width="72" height="72" style="width:72px;height:72px;">
+                <img src="{{ $logoDataUri }}" alt="logo" width="175" style="width:175px;height:auto;max-height:145px;object-fit:contain;">
             @endif
         </td>
         <td class="right">
@@ -141,21 +143,19 @@
 <table class="items">
     <thead>
         <tr>
-            <th style="width:9%">Code</th>
-            <th style="width:22%">Description</th>
-            <th style="width:14%">Image</th>
-            <th style="width:7%" class="num">Quantity</th>
-            <th style="width:10%" class="num">Rate</th>
-            <th style="width:9%" class="num">Item Disc.</th>
-            <th style="width:11%" class="num">Global Disc.</th>
-            <th style="width:11%" class="num">Amount</th>
+            <th style="width:10%">Code</th>
+            <th style="width:30%">Description</th>
+            <th style="width:18%">Image</th>
+            <th style="width:8%" class="num">Quantity</th>
+            <th style="width:12%" class="num">Rate</th>
+            <th style="width:14%" class="num">Amount</th>
         </tr>
     </thead>
     <tbody>
         @foreach($items as $item)
         @if(!empty($item['is_section']))
         <tr class="section-row">
-            <td colspan="8" style="text-align:center;" class="{{ $item['descriptionIsArabic'] ? 'ar' : '' }}">{{ $item['description'] }}</td>
+            <td colspan="6" style="text-align:center;" class="{{ $item['descriptionIsArabic'] ? 'ar' : '' }}">{{ $item['description'] }}</td>
         </tr>
         @else
         <tr>
@@ -170,16 +170,7 @@
             </td>
             <td class="num">{{ rtrim(rtrim(number_format((float)$item['quantity'], 2, '.', ''), '0'), '.') }}</td>
             <td class="num">{{ $currency }} {{ number_format((float)$item['rate'], 2) }}</td>
-            <td class="num disc">{{ $item['discount_label'] ?? '—' }}</td>
-            <td class="num disc">{{ $item['global_discount_label'] ?? '—' }}</td>
-            <td class="num">
-                @if(!empty($item['discount_amount']) && (float)$item['discount_amount'] > 0)
-                    <span class="was-price">{{ $currency }} {{ number_format((float)($item['line_subtotal'] ?? $item['amount']), 2) }}</span>
-                @elseif(!empty($item['global_discount_share']) && (float)$item['global_discount_share'] > 0)
-                    <span class="was-price">{{ $currency }} {{ number_format((float)$item['amount'], 2) }}</span>
-                @endif
-                {{ $currency }} {{ number_format((float)($item['final_amount'] ?? $item['amount']), 2) }}
-            </td>
+            <td class="num">{{ $currency }} {{ number_format((float)($item['final_amount'] ?? $item['amount']), 2) }}</td>
         </tr>
         @endif
         @endforeach
@@ -188,32 +179,11 @@
 @endif
 
 <div class="summary-page">
-@if(count($items))
-<table class="parts-sub">
-    <tr>
-        <td class="label">Parts Subtotal</td>
-        <td class="val">{{ $currency }} {{ number_format((float)$discounts['gross_subtotal'], 2) }}</td>
-    </tr>
-</table>
-@endif
-
 <table class="totals">
-    @if((float)$discounts['line_discount_total'] > 0)
-    <tr class="disc-row">
-        <td class="label">Item Discount</td>
-        <td class="val disc-val">− {{ $currency }} {{ number_format((float)$discounts['line_discount_total'], 2) }}</td>
-    </tr>
-    @endif
     <tr>
         <td class="label">Subtotal</td>
-        <td class="val">{{ $currency }} {{ number_format((float)$discounts['subtotal'], 2) }}</td>
+        <td class="val">{{ $currency }} {{ number_format((float)$discounts['net_before_tax'], 2) }}</td>
     </tr>
-    @if((float)$discounts['global_discount'] > 0)
-    <tr class="disc-row">
-        <td class="label">Discount{{ ($quotation?->discount_type ?? null) === 'percent' ? ' ' . rtrim(rtrim(number_format((float)($quotation?->discount_value ?? 0), 2), '0'), '.') . '%' : '' }}</td>
-        <td class="val disc-val">− {{ $currency }} {{ number_format((float)$discounts['global_discount'], 2) }}</td>
-    </tr>
-    @endif
     <tr>
         <td class="label">TAX {{ rtrim(rtrim(number_format((float)$taxPercent, 2), '0'), '.') }}%</td>
         <td class="val">{{ $currency }} {{ number_format((float)$taxAmount, 2) }}</td>

@@ -32,6 +32,7 @@ php artisan company-settings:import-legacy || echo "Legacy settings import skipp
 if command -v npm >/dev/null 2>&1; then
   npm ci --no-audit --no-fund
   npm run build
+  rm -f public/hot hot
   cp -r public/build/. build/
 else
   echo "npm not found - using build/ assets from git"

@@ -18,3 +18,5 @@ scripts/*.local
 scripts/.hostinger.env
 company-info.json
 public/company-info.json
+/public/hot
+/hot

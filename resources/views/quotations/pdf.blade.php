@@ -11,12 +11,27 @@
     @page { margin: 36px 40px 50px 40px; }
     body { font-family: DejaVu Sans, 'ArabicReport', sans-serif; color: #333; font-size: 11px; line-height: 1.4; }
     .ar { font-family: 'ArabicReport', DejaVu Sans, sans-serif; direction: rtl; unicode-bidi: bidi-override; }
+    .doc-first-pages { position: relative; }
+    .watermark {
+        position: fixed;
+        top: 240px;
+        left: 10px;
+        width: 320px;
+        opacity: 0.07;
+        z-index: -1;
+    }
+    .watermark img {
+        width: 300px;
+        height: auto;
+        max-height: 300px;
+        object-fit: contain;
+    }
     .top { width: 100%; border-collapse: collapse; margin-bottom: 14px; }
     .top td { vertical-align: top; border: none; padding: 0; }
     .left { width: 34%; }
     .center { width: 32%; text-align: center; }
     .right { width: 34%; text-align: right; }
-    .center img { width: 72px; height: auto; max-height: 72px; object-fit: contain; }
+    .center img { width: 175px; height: auto; max-height: 145px; object-fit: contain; }
     .country { margin: 0 0 2px; color: #444; }
     .trn { margin: 0; color: #777; font-size: 10px; }
     .doc-title { font-size: 28px; font-weight: bold; margin: 0 0 8px; color: #222; }
@@ -50,7 +65,16 @@
     .totals tr.disc-row .val { color: #c0392b; font-weight: bold; }
     .summary-page { page-break-before: always; break-before: page; }
     .comments { white-space: pre-wrap; }
-    .foot-company { margin-top: 36px; font-size: 9px; color: #666; text-align: center; width: 100%; }
+    .foot-company {
+        margin-top: 32px;
+        margin-bottom: 4px;
+        padding: 0 20px;
+        font-size: 8.5px;
+        color: #555;
+        text-align: center;
+        line-height: 1.5;
+        letter-spacing: 0.15px;
+    }
     .sign-table { width: 100%; border-collapse: collapse; margin-top: 36px; table-layout: fixed; }
     .sign-table td {
         width: 50%; vertical-align: top; border: none; padding: 0 18px;
@@ -81,6 +105,11 @@
 </head>
 <body>
 
+@if(!empty($logoDataUri))
+<div class="watermark"><img src="{{ $logoDataUri }}" alt=""></div>
+@endif
+
+<div class="doc-first-pages">
 <table class="top">
     <tr>
         <td class="left">
@@ -91,7 +120,7 @@
         </td>
         <td class="center">
             @if(!empty($logoDataUri))
-                <img src="{{ $logoDataUri }}" alt="logo" width="72" height="72" style="width:72px;height:72px;">
+                <img src="{{ $logoDataUri }}" alt="logo" width="175" style="width:175px;height:auto;max-height:145px;object-fit:contain;">
             @endif
         </td>
         <td class="right">
@@ -110,21 +139,19 @@
 <table class="items">
     <thead>
         <tr>
-            <th style="width:8%">Code</th>
-            <th style="width:24%">Description</th>
-            <th style="width:16%">Image</th>
-            <th style="width:7%" class="num">Quantity</th>
-            <th style="width:10%" class="num">Rate</th>
-            <th style="width:9%" class="num">Item Disc.</th>
-            <th style="width:11%" class="num">Global Disc.</th>
-            <th style="width:11%" class="num">Amount</th>
+            <th style="width:10%">Code</th>
+            <th style="width:32%">Description</th>
+            <th style="width:18%">Image</th>
+            <th style="width:8%" class="num">Quantity</th>
+            <th style="width:12%" class="num">Rate</th>
+            <th style="width:14%" class="num">Amount</th>
         </tr>
     </thead>
     <tbody>
         @foreach($items as $item)
         @if(!empty($item['is_section']))
         <tr class="section-row">
-            <td colspan="8" style="text-align:center;" class="{{ $item['descriptionIsArabic'] ? 'ar' : '' }}">{{ $item['description'] }}</td>
+            <td colspan="6" style="text-align:center;" class="{{ $item['descriptionIsArabic'] ? 'ar' : '' }}">{{ $item['description'] }}</td>
         </tr>
         @else
         <tr>
@@ -139,44 +166,20 @@
             </td>
             <td class="num">{{ rtrim(rtrim(number_format((float)$item['quantity'], 2, '.', ''), '0'), '.') }}</td>
             <td class="num">{{ $doc->currency }} {{ number_format((float)$item['rate'], 2) }}</td>
-            <td class="num disc">{{ $item['discount_label'] ?? '—' }}</td>
-            <td class="num disc">{{ $item['global_discount_label'] ?? '—' }}</td>
-            <td class="num">
-                @if(!empty($item['discount_amount']) && (float)$item['discount_amount'] > 0)
-                    <span class="was-price">{{ $doc->currency }} {{ number_format((float)($item['line_subtotal'] ?? $item['amount']), 2) }}</span>
-                @elseif(!empty($item['global_discount_share']) && (float)$item['global_discount_share'] > 0)
-                    <span class="was-price">{{ $doc->currency }} {{ number_format((float)$item['amount'], 2) }}</span>
-                @endif
-                {{ $doc->currency }} {{ number_format((float)($item['final_amount'] ?? $item['amount']), 2) }}
-            </td>
+            <td class="num">{{ $doc->currency }} {{ number_format((float)($item['final_amount'] ?? $item['amount']), 2) }}</td>
         </tr>
         @endif
         @endforeach
     </tbody>
 </table>
+</div>
 
 <div class="summary-page">
 <table class="totals">
     <tr>
-        <td class="label">Parts Subtotal</td>
-        <td class="val">{{ $doc->currency }} {{ number_format((float)$discounts['gross_subtotal'], 2) }}</td>
-    </tr>
-    @if((float)$discounts['line_discount_total'] > 0)
-    <tr class="disc-row">
-        <td class="label">Item Discount</td>
-        <td class="val disc-val">− {{ $doc->currency }} {{ number_format((float)$discounts['line_discount_total'], 2) }}</td>
-    </tr>
-    @endif
-    <tr>
         <td class="label">Subtotal</td>
-        <td class="val">{{ $doc->currency }} {{ number_format((float)$discounts['subtotal'], 2) }}</td>
+        <td class="val">{{ $doc->currency }} {{ number_format((float)$discounts['net_before_tax'], 2) }}</td>
     </tr>
-    @if((float)$discounts['global_discount'] > 0)
-    <tr class="disc-row">
-        <td class="label">Discount{{ $doc->discount_type === 'percent' ? ' ' . rtrim(rtrim(number_format((float)$doc->discount_value, 2), '0'), '.') . '%' : '' }}</td>
-        <td class="val disc-val">− {{ $doc->currency }} {{ number_format((float)$discounts['global_discount'], 2) }}</td>
-    </tr>
-    @endif
     <tr>
         <td class="label">TAX {{ rtrim(rtrim(number_format((float)$doc->tax_percent, 2), '0'), '.') }}%</td>
         <td class="val">{{ $doc->currency }} {{ number_format((float)$doc->tax_amount, 2) }}</td>

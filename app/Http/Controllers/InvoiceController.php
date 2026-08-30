@@ -158,7 +158,7 @@ class InvoiceController extends Controller
                 'companyCountry' => $company['contact']['address']['en']
                     ?? ($company['seo']['location']['country'] ?? 'United Arab Emirates'),
                 'trn' => trim((string) ($company['trn'] ?? ($company['taxNumber'] ?? ''))),
-                'logoDataUri' => $this->toDataUri($logoPath, 160),
+                'logoDataUri' => $this->toDataUri($logoPath, 400),
                 'signatureDataUri' => $this->toDataUri($signaturePath, 420),
                 'clientName' => ArabicPdfText::shape($invoice->client_name),
                 'clientNameIsArabic' => (bool) preg_match('/[\x{0600}-\x{06FF}]/u', $invoice->client_name),

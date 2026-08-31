@@ -18,6 +18,7 @@
           <router-link to="/" class="nav-link">{{ t('home') }}</router-link>
           <router-link to="/offers" class="nav-link">{{ t('offers') }}</router-link>
           <router-link to="/products" class="nav-link">{{ t('allProducts') }}</router-link>
+          <router-link to="/projects" class="nav-link">{{ t('ourProjects') }}</router-link>
 
           <button
             type="button"
@@ -66,6 +67,7 @@
         <router-link to="/" class="mobile-link" @click="isMenuOpen = false">{{ t('home') }}</router-link>
         <router-link to="/offers" class="mobile-link" @click="isMenuOpen = false">{{ t('offers') }}</router-link>
         <router-link to="/products" class="mobile-link" @click="isMenuOpen = false">{{ t('allProducts') }}</router-link>
+        <router-link to="/projects" class="mobile-link" @click="isMenuOpen = false">{{ t('ourProjects') }}</router-link>
         <router-link to="/project-study" class="btn-primary block text-center mt-2" @click="isMenuOpen = false">
           {{ t('projectStudy') }}
         </router-link>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ProjectMaster;
 use App\Models\ProjectMasterFile;
+use App\Support\StorageUrl;
 use Illuminate\Http\Request;
 
 class ProjectMasterController extends Controller
@@ -119,7 +120,7 @@ class ProjectMasterController extends Controller
             'is_visible' => 'nullable',
         ]);
 
-        $data['is_visible'] = filter_var($data['is_visible'] ?? false, FILTER_VALIDATE_BOOLEAN);
+        $data['is_visible'] = filter_var($data['is_visible'] ?? true, FILTER_VALIDATE_BOOLEAN);
         $data['is_featured'] = filter_var($data['is_featured'] ?? false, FILTER_VALIDATE_BOOLEAN);
         $data['media_type'] = $data['media_type'] ?? 'image';
         $data['description'] = $data['description'] ?? '';
@@ -233,7 +234,7 @@ class ProjectMasterController extends Controller
     {
         $cover = $master->files->firstWhere('kind', 'image')?->path
             ?? ($master->images[0] ?? null)
-            ?? $master->media_url;
+            ?? $master->getRawOriginal('media_url');
 
         return [
             'id' => $master->id,
@@ -244,13 +245,13 @@ class ProjectMasterController extends Controller
             'location' => $master->location,
             'is_featured' => $master->is_featured,
             'order' => $master->order,
-            'cover' => $cover,
+            'cover' => StorageUrl::toPublicUrl($cover),
             'media_type' => $master->media_type,
-            'media_url' => $master->media_url,
+            'media_url' => StorageUrl::toPublicUrl($master->getRawOriginal('media_url')),
             'files' => $master->files->map(fn (ProjectMasterFile $f) => [
                 'id' => $f->id,
                 'label' => $f->label,
-                'path' => $f->path,
+                'path' => StorageUrl::toPublicUrl($f->path),
                 'kind' => $f->kind,
             ])->values(),
         ];

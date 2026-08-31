@@ -35,7 +35,7 @@ class FinancePdfBranding
                 ?? ($company['seo']['location']['country'] ?? 'United Arab Emirates')),
             'signatureName' => $company['signatureName'] ?? null,
             'logoDataUri' => self::toDataUri($logoPath, 350),
-            'signatureDataUri' => self::toDataUri($signaturePath, 180),
+            'signatureDataUri' => self::toDataUri($signaturePath, 320),
             'arabicFontUrl' => DompdfFontCache::arabicFontUrl(),
             'fontEmbedCss' => self::fontEmbedCss(),
         ]);
@@ -43,17 +43,34 @@ class FinancePdfBranding
 
     public static function fontEmbedCss(): string
     {
-        $faces = [
+        return self::buildFontEmbedCss([
             ['Cairo', 400, 'Cairo-Regular.ttf'],
             ['Cairo', 700, 'Cairo-Bold.ttf'],
             ['CairoFallback', 400, 'NotoSansArabic-Regular.ttf'],
             ['CairoFallback', 700, 'NotoSansArabic-Bold.ttf'],
-        ];
+        ]);
+    }
 
+    /** Cairo + Tajawal for site-visit reports (BrowserPdf / offline HTML). */
+    public static function reportFontEmbedCss(): string
+    {
+        return self::buildFontEmbedCss([
+            ['Cairo', 400, 'Cairo-Regular.ttf'],
+            ['Cairo', 700, 'Cairo-Bold.ttf'],
+            ['Tajawal', 400, 'Tajawal-Regular.ttf'],
+            ['Tajawal', 700, 'Tajawal-Bold.ttf'],
+            ['CairoFallback', 400, 'NotoSansArabic-Regular.ttf'],
+            ['CairoFallback', 700, 'NotoSansArabic-Bold.ttf'],
+        ]);
+    }
+
+    /** @param  array<int, array{0: string, 1: int, 2: string}>  $faces */
+    private static function buildFontEmbedCss(array $faces): string
+    {
         $css = '';
         foreach ($faces as [$family, $weight, $file]) {
-            $path = resource_path('fonts/' . $file);
-            if (!is_file($path)) {
+            $path = self::fontFilePath($file);
+            if ($path === null) {
                 continue;
             }
 
@@ -67,6 +84,34 @@ class FinancePdfBranding
         }
 
         return $css;
+    }
+
+    private static function fontFilePath(string $file): ?string
+    {
+        $resourcePath = resource_path('fonts/' . $file);
+        if (is_file($resourcePath)) {
+            return $resourcePath;
+        }
+
+        $storagePatterns = [
+            'Cairo-Regular.ttf' => ['cairo_normal_*.ttf', 'arreg_normal_*.ttf'],
+            'Cairo-Bold.ttf' => ['cairo_bold_*.ttf', 'arbold_normal_*.ttf'],
+            'NotoSansArabic-Regular.ttf' => ['cairofallback_normal_*.ttf'],
+            'NotoSansArabic-Bold.ttf' => ['cairofallback_bold_*.ttf'],
+            'Tajawal-Regular.ttf' => ['tajawal_normal_*.ttf'],
+            'Tajawal-Bold.ttf' => ['tajawal_bold_*.ttf'],
+        ];
+
+        foreach ($storagePatterns[$file] ?? [] as $pattern) {
+            $matches = glob(storage_path('fonts/' . $pattern)) ?: [];
+            if ($matches !== []) {
+                usort($matches, static fn (string $a, string $b): int => filemtime($b) <=> filemtime($a));
+
+                return $matches[0];
+            }
+        }
+
+        return null;
     }
 
     public static function absoluteAssetPath(?string $webPath): ?string

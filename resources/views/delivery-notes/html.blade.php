@@ -209,12 +209,14 @@
     .sig-ttl { font-size: 11px; font-weight: 700; }
     .sig-line { border-bottom: 1.2px dotted #8faed0; height: 18px; margin: 6px 0; text-align: right; font-size: 10px; padding: 0 4px; }
     .stamp-box {
-        border: 1.3px dashed #8faed0; height: 62px; border-radius: 4px; margin-top: 6px;
+        border: 1.3px dashed #8faed0; height: 100px; min-height: 100px; border-radius: 4px; margin-top: 6px;
         background: #fff;
         display: flex; align-items: center; justify-content: center; overflow: hidden;
+        padding: 4px 6px;
     }
     .stamp-box img {
-        max-width: 100%; max-height: 100%; object-fit: contain; display: block;
+        max-width: 100%; max-height: 92px; width: auto; height: auto;
+        object-fit: contain; display: block;
     }
 
     .footer {

@@ -49,6 +49,7 @@ const dict = {
   heroFeature4: { ar: 'تركيب مجاني وضمان سنة كاملة', en: 'Free installation & 1-year warranty' },
   heroBrowseOffers: { ar: 'استعرض العروض', en: 'Browse Offers' },
   ourProducts: { ar: 'منتجاتنا', en: 'Our Products' },
+  ourProjects: { ar: 'مشاريعنا', en: 'Our Projects' },
   ourGroups: { ar: 'مجموعات المنتجات', en: 'Product Groups' },
   groupsSubtitle: {
     ar: 'اختر مجموعة لاستعراض المنتجات بداخلها',

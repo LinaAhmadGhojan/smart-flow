@@ -21,7 +21,7 @@ return new class extends Migration
             $table->json('images')->nullable();
             $table->unsignedInteger('order')->default(0);
             $table->boolean('is_featured')->default(false);
-            $table->boolean('is_visible')->default(false);
+            $table->boolean('is_visible')->default(true);
             $table->timestamps();
         });
 

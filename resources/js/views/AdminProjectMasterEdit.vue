@@ -131,7 +131,7 @@ const form = ref({
   description_ar: '',
   location: '',
   order: 0,
-  is_visible: false,
+  is_visible: true,
   is_featured: false,
 })
 

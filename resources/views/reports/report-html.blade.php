@@ -7,15 +7,14 @@
     $webLayout = empty($forPdf);
     $fixedPage = !empty($forBrowserPdf);
 @endphp
-@if($fixedPage || !empty($fontEmbedCss ?? null))
-@if(!empty($fontEmbedCss ?? null))
-<style>{!! $fontEmbedCss !!}</style>
-@endif
-@elseif($webLayout)
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@500;700;800&family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+@if(!empty($fontEmbedCss ?? null))
+<style>{!! $fontEmbedCss !!}</style>
+@endif
+@if($webLayout)
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
 @endif
 <title>تقرير زيارة موقع {{ $reportNo }}</title>
 <style>
@@ -87,6 +86,21 @@
         width: 100%;
         max-width: none;
         @endif
+    }
+    /* Applied in-browser before PDF capture (same idea as delivery note). */
+    body.report-capture .page-wrap {
+        min-height: auto !important;
+        display: block !important;
+        background: #fff !important;
+        padding: 0 !important;
+    }
+    body.report-capture .sheet {
+        width: 794px !important;
+        max-width: 794px !important;
+        overflow: visible !important;
+        margin: 0 auto;
+        box-shadow: none !important;
+        height: auto !important;
     }
     .en { direction: ltr; unicode-bidi: embed; }
     span.en, .brand-contact .en { display: inline-block; }
@@ -406,12 +420,14 @@
         text-align: right; font-size: 10px; padding: 0 4px; font-weight: 700; color: #1a437f;
     }
     .stamp-box {
-        border: 1.3px dashed #8faed0; height: 62px; border-radius: 4px; margin-top: 6px;
+        border: 1.3px dashed #8faed0; height: 100px; min-height: 100px; border-radius: 4px; margin-top: 6px;
         background: #fff;
         display: flex; align-items: center; justify-content: center; overflow: hidden;
+        padding: 4px 6px;
     }
     .stamp-box img {
-        max-width: 100%; max-height: 100%; object-fit: contain; display: block;
+        max-width: 100%; max-height: 92px; width: auto; height: auto;
+        object-fit: contain; display: block;
     }
 
     .footer {

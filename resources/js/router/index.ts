@@ -33,9 +33,16 @@ import AdminQuotationEdit from '@/views/AdminQuotationEdit.vue'
 import AdminInvoices from '@/views/AdminInvoices.vue'
 import AdminInvoiceView from '@/views/AdminInvoiceView.vue'
 import AdminDeliveryNotes from '@/views/AdminDeliveryNotes.vue'
+import ProjectsPage from '@/views/ProjectsPage.vue'
 
 const router = createRouter({
   history: createWebHistory(),
+  scrollBehavior(to) {
+    if (to.hash) {
+      return { el: to.hash, behavior: 'smooth', top: 80 }
+    }
+    return { top: 0 }
+  },
   routes: [
     {
       path: '/',
@@ -46,6 +53,11 @@ const router = createRouter({
       path: '/products',
       name: 'all-products',
       component: AllProductsPage,
+    },
+    {
+      path: '/projects',
+      name: 'our-projects',
+      component: ProjectsPage,
     },
     {
       path: '/groups/:id',

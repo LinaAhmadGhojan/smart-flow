@@ -1,4 +1,4 @@
-import { downloadBlob, fetchAdminHtml, fetchAdminPdf } from '@/lib/api'
+import { fetchAdminHtml } from '@/lib/api'
 import { toPng } from 'html-to-image'
 import { jsPDF } from 'jspdf'
 
@@ -18,91 +18,107 @@ export function reportPdfFilename(reportId: number | string, reportNo?: string):
 const REPORT_W = 794
 const REPORT_H = 1123
 
-const SERVER_PDF_MODE_KEY = 'report-pdf-server-mode'
-
-type ServerPdfMode = 'chrome' | 'dompdf' | 'unknown'
-
-function getServerPdfMode(): ServerPdfMode {
-  try {
-    const mode = sessionStorage.getItem(SERVER_PDF_MODE_KEY)
-    if (mode === 'chrome' || mode === 'dompdf') {
-      return mode
-    }
-  } catch {
-    // ignore storage errors
-  }
-  return 'unknown'
-}
-
-function rememberServerPdfMode(mode: ServerPdfMode): void {
-  if (mode === 'unknown') {
-    return
-  }
-  try {
-    sessionStorage.setItem(SERVER_PDF_MODE_KEY, mode)
-  } catch {
-    // ignore storage errors
-  }
-}
-
 function reportFrameIsReady(frame: HTMLIFrameElement | null | undefined): frame is HTMLIFrameElement {
   return Boolean(frame?.contentDocument?.querySelector('.sheet'))
 }
 
-async function waitForImages(doc: Document): Promise<void> {
-  const pending = Array.from(doc.querySelectorAll('img')).filter((img) => !img.complete)
-  if (pending.length === 0) {
-    return
+function prepareReportForCapture(doc: Document): HTMLElement {
+  doc.body.classList.add('report-capture')
+
+  const pageWrap = doc.querySelector('.page-wrap') as HTMLElement | null
+  if (pageWrap) {
+    pageWrap.style.background = '#ffffff'
+    pageWrap.style.padding = '0'
+    pageWrap.style.minHeight = 'auto'
+    pageWrap.style.display = 'block'
   }
 
-  await Promise.all(
-    pending.map(
-      (img) =>
-        new Promise<void>((resolve) => {
-          img.addEventListener('load', () => resolve(), { once: true })
-          img.addEventListener('error', () => resolve(), { once: true })
-        }),
-    ),
-  )
+  const page = doc.querySelector('.sheet') as HTMLElement | null
+  if (!page) {
+    throw new Error('لم يتم العثور على محتوى التقرير')
+  }
+
+  page.style.width = `${REPORT_W}px`
+  page.style.maxWidth = `${REPORT_W}px`
+  page.style.overflow = 'visible'
+  page.style.minHeight = `${REPORT_H}px`
+
+  return page
 }
 
-async function prepareReportDocument(doc: Document, quick = false): Promise<void> {
+function addReportImageToPdf(pdf: jsPDF, dataUrl: string, imgPxW: number, imgPxH: number): void {
+  const pageW = pdf.internal.pageSize.getWidth()
+  const pageH = pdf.internal.pageSize.getHeight()
+  const imgHmm = (imgPxH / imgPxW) * pageW
+  let yOffset = 0
+  let pageIndex = 0
+
+  while (yOffset < imgHmm - 0.5) {
+    if (pageIndex > 0) {
+      pdf.addPage()
+    }
+    pdf.addImage(dataUrl, 'PNG', 0, -yOffset, pageW, imgHmm, undefined, 'FAST')
+    yOffset += pageH
+    pageIndex += 1
+  }
+}
+
+async function prepareReportDocument(doc: Document): Promise<void> {
   if (doc.fonts?.ready) {
     await doc.fonts.ready
   }
-  await waitForImages(doc)
-  if (!quick) {
-    await new Promise((r) => setTimeout(r, 400))
+
+  const pending = Array.from(doc.querySelectorAll('img')).filter((img) => !img.complete)
+  if (pending.length > 0) {
+    await Promise.all(
+      pending.map(
+        (img) =>
+          new Promise<void>((resolve) => {
+            img.addEventListener('load', () => resolve(), { once: true })
+            img.addEventListener('error', () => resolve(), { once: true })
+          }),
+      ),
+    )
+  }
+
+  await new Promise((r) => setTimeout(r, 600))
+}
+
+function createHiddenReportFrame(html: string): HTMLIFrameElement {
+  const frame = document.createElement('iframe')
+  frame.style.cssText =
+    'position:fixed;left:-9999px;top:0;width:794px;height:1200px;border:0;opacity:0;pointer-events:none'
+  frame.title = 'تقرير زيارة موقع'
+  frame.srcdoc = html
+  document.body.appendChild(frame)
+
+  return frame
+}
+
+async function waitForReportFrame(frame: HTMLIFrameElement): Promise<void> {
+  await new Promise<void>((resolve) => {
+    const done = () => resolve()
+    frame.addEventListener('load', done, { once: true })
+    setTimeout(done, 2500)
+  })
+
+  const doc = frame.contentDocument
+  if (doc) {
+    await prepareReportDocument(doc)
   }
 }
 
-async function isChromeServerPdf(blob: Blob): Promise<boolean> {
-  const head = await blob.slice(0, 8192).text()
-  if (head.includes('dompdf')) return false
-  if (head.includes('jsPDF')) return false
-  return head.includes('Skia') || head.includes('Chrome') || blob.size > 80000
-}
-
-async function downloadReportPdfFromFrame(
-  frame: HTMLIFrameElement,
-  filename: string,
-  quick = false,
-): Promise<void> {
+async function downloadReportPdfFromFrame(frame: HTMLIFrameElement, filename: string): Promise<void> {
   const srcDoc = frame.contentDocument
   if (!srcDoc?.body) {
     throw new Error('تعذر قراءة التقرير من الصفحة')
   }
 
-  await prepareReportDocument(srcDoc, quick)
+  await prepareReportDocument(srcDoc)
+  const page = prepareReportForCapture(srcDoc)
 
-  const page = srcDoc.querySelector('.sheet') as HTMLElement | null
-  if (!page) {
-    throw new Error('لم يتم العثور على محتوى التقرير')
-  }
-
-  const rect = page.getBoundingClientRect()
-  const width = Math.max(Math.round(rect.width), REPORT_W)
-  const height = Math.max(Math.round(rect.height), REPORT_H)
+  const width = REPORT_W
+  const height = Math.max(page.scrollHeight, page.offsetHeight, REPORT_H)
 
   const dataUrl = await toPng(page, {
     width,
@@ -122,53 +138,30 @@ async function downloadReportPdfFromFrame(
     compress: true,
   })
 
-  pdf.addImage(
-    dataUrl,
-    'PNG',
-    0,
-    0,
-    pdf.internal.pageSize.getWidth(),
-    pdf.internal.pageSize.getHeight(),
-    undefined,
-    'FAST',
-  )
+  addReportImageToPdf(pdf, dataUrl, width, height)
   pdf.save(filename)
+
+  srcDoc.body.classList.remove('report-capture')
 }
 
 async function captureReportFrame(
   frame: HTMLIFrameElement | null | undefined,
   filename: string,
-  quick = false,
 ): Promise<boolean> {
   if (!reportFrameIsReady(frame)) {
     return false
   }
 
-  await downloadReportPdfFromFrame(frame, filename, quick)
-  return true
-}
-
-async function tryServerReportPdf(
-  reportId: number | string,
-  filename: string,
-): Promise<'downloaded' | Blob | null> {
   try {
-    const blob = await fetchAdminPdf(reportPdfPath(reportId))
-    if (await isChromeServerPdf(blob)) {
-      rememberServerPdfMode('chrome')
-      downloadBlob(blob, filename)
-      return 'downloaded'
-    }
-
-    rememberServerPdfMode('dompdf')
-    return blob
+    await downloadReportPdfFromFrame(frame, filename)
+    return true
   } catch {
-    return null
+    return false
   }
 }
 
 /**
- * Export report PDF to match the on-screen preview (same approach as payment receipts).
+ * Export report PDF — captures the same HTML as the preview (client-side, like delivery note).
  */
 export async function exportReportPdf(
   reportId: number | string,
@@ -176,61 +169,24 @@ export async function exportReportPdf(
   frame?: HTMLIFrameElement | null,
 ): Promise<void> {
   const filename = reportPdfFilename(reportId, reportNo)
-  const serverMode = getServerPdfMode()
 
   if (reportFrameIsReady(frame)) {
-    await captureReportFrame(frame, filename, true)
-    return
-  }
-
-  let dompdfFallback: Blob | null = null
-
-  if (serverMode === 'chrome') {
-    const result = await tryServerReportPdf(reportId, filename)
-    if (result === 'downloaded') {
-      return
-    }
-    dompdfFallback = result instanceof Blob ? result : null
-  } else if (serverMode === 'unknown') {
-    const result = await tryServerReportPdf(reportId, filename)
-    if (result === 'downloaded') {
-      return
-    }
-    dompdfFallback = result instanceof Blob ? result : null
+    const ok = await captureReportFrame(frame, filename)
+    if (ok) return
   }
 
   const html = await fetchAdminHtml(reportHtmlPath(reportId))
-  const hiddenFrame = document.createElement('iframe')
-  hiddenFrame.style.cssText =
-    'position:fixed;left:-9999px;top:0;width:820px;height:1160px;border:0;opacity:0;pointer-events:none'
-  hiddenFrame.title = 'تقرير زيارة موقع'
-  hiddenFrame.srcdoc = html
-  document.body.appendChild(hiddenFrame)
+  const hiddenFrame = createHiddenReportFrame(html)
 
   try {
-    await new Promise<void>((resolve) => {
-      const done = () => resolve()
-      hiddenFrame.addEventListener('load', done, { once: true })
-      setTimeout(done, 3000)
-    })
-    const doc = hiddenFrame.contentDocument
-    if (doc) {
-      await prepareReportDocument(doc)
-    }
-    if (await captureReportFrame(hiddenFrame, filename)) {
-      return
-    }
+    await waitForReportFrame(hiddenFrame)
+    const ok = await captureReportFrame(hiddenFrame, filename)
+    if (ok) return
   } finally {
     hiddenFrame.remove()
   }
 
-  if (dompdfFallback) {
-    downloadBlob(dompdfFallback, filename)
-    return
-  }
-
-  const blob = await fetchAdminPdf(reportPdfPath(reportId))
-  downloadBlob(blob, filename)
+  throw new Error('تعذر تصدير PDF — انتظر تحميل المعاينة ثم حاول مرة أخرى')
 }
 
 export async function downloadReportPdf(

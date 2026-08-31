@@ -161,12 +161,13 @@
         text-align: center;
     }
     .sig-stamp {
-        min-height: 88px;
+        min-height: 120px;
         margin-bottom: 6px;
         text-align: center;
     }
     .sig-stamp img {
-        width: 110px;
+        width: 160px;
+        max-width: 100%;
         height: auto;
     }
     .sig-caption {
@@ -274,7 +275,7 @@
             <td>
                 <div class="sig-stamp">
                     @if(!empty($signatureDataUri))
-                        <img src="{{ $signatureDataUri }}" alt="signature" width="110" style="width:110px;height:auto;">
+                        <img src="{{ $signatureDataUri }}" alt="signature" width="160" style="width:160px;height:auto;max-height:120px;">
                     @endif
                 </div>
                 <p class="sig-caption"><span class="ar">{{ $lblDeliveredAr }}</span> / Delivered By</p>

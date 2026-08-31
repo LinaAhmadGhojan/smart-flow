@@ -158,6 +158,7 @@ interface Project {
   description: string
   description_ar: string
   location?: string | null
+  order?: number
   is_featured: boolean
   cover?: string | null
   media_type?: string
@@ -220,7 +221,13 @@ function getEmbedUrl(url: string | null): string {
 onMounted(async () => {
   try {
     const response = await axios.get('/api/project-masters')
-    projects.value = Array.isArray(response.data) ? response.data : []
+    const list = Array.isArray(response.data) ? response.data : []
+    projects.value = list.sort((a, b) => {
+      if (a.is_featured !== b.is_featured) {
+        return a.is_featured ? -1 : 1
+      }
+      return (a.order ?? 0) - (b.order ?? 0)
+    })
     projects.value.forEach((p) => { currentIndex.value[p.id] = 0 })
   } catch (error) {
     console.error('Error fetching projects:', error)

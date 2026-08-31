@@ -268,12 +268,23 @@
         padding: 0 2px 2px;
     }
     .stamp-box {
-        width: 88px;
-        height: 58px;
+        width: 140px;
+        height: 100px;
         border: 1.5px solid #b8cce8;
         border-radius: 4px;
         margin: 8px auto 4px;
         background: #fafcff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+    .stamp-box img {
+        max-width: 100%;
+        max-height: 92px;
+        width: auto;
+        height: auto;
+        object-fit: contain;
     }
 
     /* Footer */

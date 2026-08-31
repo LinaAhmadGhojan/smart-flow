@@ -18,7 +18,7 @@ use App\Support\CompanySettings;
 
 use App\Support\DompdfFontCache;
 
-use Barryvdh\DomPDF\Facade\Pdf;
+use App\Support\FinancePdfBranding;
 
 use Illuminate\Http\Request;
 
@@ -204,9 +204,10 @@ class ReportController extends Controller
             $data = $this->reportViewData($report);
             $filename = ($data['reportNo'] ?? 'report') . '.pdf';
 
+            // Same HTML as preview (delivery note / payment receipt approach).
             $rendered = BrowserPdf::render(
-                view('reports.report-html', $data + ['forBrowserPdf' => true])->render(),
-                1500,
+                view('reports.report-html', $data)->render(),
+                2000,
                 ['width' => 8.27, 'height' => 11.69, 'landscape' => false]
             );
             if ($rendered !== null) {
@@ -217,13 +218,9 @@ class ReportController extends Controller
                 ]);
             }
 
-            $pdf = Pdf::loadView('reports.report-html', $data)
-                ->setPaper('a4', 'portrait');
-            $pdf->setOption('isRemoteEnabled', true);
-            $pdf->setOption('isHtml5ParserEnabled', true);
-            $pdf->setOption('isFontSubsettingEnabled', true);
-
-            return $pdf->download($filename);
+            return response()->json([
+                'message' => 'تعذر إنشاء PDF على الخادم — استخدم زر التصدير من المعاينة.',
+            ], 503);
         } catch (\Throwable $e) {
 
             \Illuminate\Support\Facades\Log::error('Report PDF export failed', [
@@ -348,7 +345,7 @@ class ReportController extends Controller
 
             'logoDataUri' => $this->toDataUri($logoPath, 350),
 
-            'signatureDataUri' => $this->toDataUri($signaturePath, 180),
+            'signatureDataUri' => $this->toDataUri($signaturePath, 320),
 
             'companyNameAr' => $companyNameAr,
 
@@ -398,69 +395,9 @@ class ReportController extends Controller
 
             'waveSvg' => $icons['wave'],
 
-            'fontEmbedCss' => $this->documentFontEmbedCss(),
+            'fontEmbedCss' => FinancePdfBranding::reportFontEmbedCss(),
 
         ];
-
-    }
-
-
-
-    private function documentFontEmbedCss(): string
-
-    {
-
-        $faces = [
-
-            ['Cairo', 400, 'Cairo-Regular.ttf'],
-
-            ['Cairo', 700, 'Cairo-Bold.ttf'],
-
-            ['Tajawal', 400, 'Tajawal-Regular.ttf'],
-
-            ['Tajawal', 700, 'Tajawal-Bold.ttf'],
-
-            ['CairoFallback', 400, 'NotoSansArabic-Regular.ttf'],
-
-            ['CairoFallback', 700, 'NotoSansArabic-Bold.ttf'],
-
-        ];
-
-
-
-        $css = '';
-
-        foreach ($faces as [$family, $weight, $file]) {
-
-            $path = resource_path('fonts/' . $file);
-
-            if (!is_file($path)) {
-
-                continue;
-
-            }
-
-
-
-            $css .= sprintf(
-
-                "@font-face{font-family:'%s';font-style:normal;font-weight:%d;font-display:block;"
-
-                . "src:url(data:font/ttf;base64,%s) format('truetype');}\n",
-
-                $family,
-
-                $weight,
-
-                base64_encode((string) file_get_contents($path))
-
-            );
-
-        }
-
-
-
-        return $css;
 
     }
 

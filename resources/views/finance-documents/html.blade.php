@@ -41,20 +41,14 @@
         max-width: 100%;
         min-height: 1123px;
         background: #fff;
-        padding: 12px 18px 24px;
+        padding: 12px 36px 24px;
         position: relative;
         overflow: visible;
-    }
-    body.doc-invoice .sheet {
-        padding-right: 36px;
     }
     .sheet-summary {
         padding: 90px 36px 78px 36px;
         display: flex;
         flex-direction: column;
-    }
-    body.doc-invoice .sheet-summary {
-        padding-right: 54px;
     }
     .summary-content {
         flex: 1;
@@ -410,20 +404,18 @@
         .sheet {
             width: 210mm !important;
             min-height: 297mm !important;
-            padding: 10px 12px 24px !important;
+            padding: 10px 36px 24px !important;
             margin: 0 !important;
             page-break-after: always;
             break-after: page;
         }
         .sheet:last-child { page-break-after: auto; break-after: auto; }
         .sheet-summary { padding: 90px 36px 70px 36px !important; }
-        body.doc-invoice .sheet { padding-right: 36px !important; }
-        body.doc-invoice .sheet-summary { padding-right: 54px !important; }
         * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
     }
 </style>
 </head>
-<body class="{{ ($docType ?? '') === 'invoice' ? 'doc-invoice' : '' }}">
+<body>
 <div class="page-wrap">
 
 @php

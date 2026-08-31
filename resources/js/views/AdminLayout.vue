@@ -48,25 +48,62 @@
       </div>
 
       <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-1">
-        <RouterLink
-          v-for="item in navItems"
-          :key="item.to"
-          :to="item.to"
-          class="nav-item"
-          :class="{ 'nav-item--active': isActive(item.to) }"
-          @click="sidebarOpen = false"
-        >
-          <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" :d="item.icon" />
-          </svg>
-          <span class="flex-1">{{ item.label }}</span>
-          <span
-            v-if="item.to === '/admin/study-requests' && newTotal > 0"
-            class="nav-badge"
+        <template v-for="entry in navEntries" :key="entry.key">
+          <RouterLink
+            v-if="entry.type === 'link'"
+            :to="entry.to"
+            class="nav-item"
+            :class="{ 'nav-item--active': isActive(entry.to) }"
+            @click="sidebarOpen = false"
           >
-            {{ newTotal > 99 ? '99+' : newTotal }}
-          </span>
-        </RouterLink>
+            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" :d="entry.icon" />
+            </svg>
+            <span class="flex-1">{{ entry.label }}</span>
+          </RouterLink>
+
+          <div v-else class="nav-group">
+            <button
+              type="button"
+              class="nav-group-head"
+              :class="{ 'nav-group-head--active': isGroupActive(entry) }"
+              @click="toggleGroup(entry.key)"
+            >
+              <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" :d="entry.icon" />
+              </svg>
+              <span class="flex-1 text-right">{{ entry.label }}</span>
+              <svg
+                class="nav-chevron"
+                :class="{ 'nav-chevron--open': isGroupOpen(entry.key) }"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+
+            <div v-show="isGroupOpen(entry.key)" class="nav-sub">
+              <RouterLink
+                v-for="child in entry.children"
+                :key="child.to"
+                :to="child.to"
+                class="nav-sub-item"
+                :class="{ 'nav-sub-item--active': isActive(child.to) }"
+                @click="sidebarOpen = false"
+              >
+                <span class="flex-1">{{ child.label }}</span>
+                <span
+                  v-if="child.badge === 'study-requests' && newTotal > 0"
+                  class="nav-badge"
+                >
+                  {{ newTotal > 99 ? '99+' : newTotal }}
+                </span>
+              </RouterLink>
+            </div>
+          </div>
+        </template>
       </nav>
 
       <div class="px-3 py-4 border-t border-white/10 space-y-1">
@@ -211,7 +248,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter, RouterLink, RouterView } from 'vue-router'
 import { useAdminNotifications } from '@/composables/useAdminNotifications'
 
@@ -257,28 +294,132 @@ onUnmounted(() => {
   document.removeEventListener('click', onDocumentClick)
 })
 
-const navItems = [
-  { to: '/admin/dashboard', label: 'الرئيسية', icon: 'M3 12l9-9 9 9M5 10v10a1 1 0 001 1h3m10-11l1 1v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
-  { to: '/admin/products', label: 'المنتجات', icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4' },
-  { to: '/admin/categories', label: 'الفئات', icon: 'M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z' },
-  { to: '/admin/groups', label: 'المجموعات', icon: 'M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z' },
-  { to: '/admin/offers', label: 'العروض', icon: 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z' },
-  { to: '/admin/projects', label: 'مشاريع التنفيذ', icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4' },
-  { to: '/admin/project-masters', label: 'مشاريع الموقع', icon: 'M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z' },
-  { to: '/admin/payments', label: 'الدفعات', icon: 'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z' },
-  { to: '/admin/reviews', label: 'التقييمات', icon: 'M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.196-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.783-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z' },
-  { to: '/admin/appointments', label: 'المواعيد', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' },
-  { to: '/admin/study-requests', label: 'طلبات الدراسة', icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
-  { to: '/admin/customers', label: 'العملاء', icon: 'M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m5-2.13a4 4 0 100-8 4 4 0 000 8zm6 0a4 4 0 10-3.998-4.318A4 4 0 0018 12.13z' },
-  { to: '/admin/engineers', label: 'المهندسون', icon: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z' },
-  { to: '/admin/reports', label: 'التقارير', icon: 'M9 17v-6h6v6m-9 4h12a2 2 0 002-2V6.414a2 2 0 00-.586-1.414l-2.414-2.414A2 2 0 0015.586 2H6a2 2 0 00-2 2v13a2 2 0 002 2zm3-14h4v3H9V7z' },
-  { to: '/admin/quotations', label: 'عروض الأسعار', icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
-  { to: '/admin/invoices', label: 'الفواتير', icon: 'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z' },
-  { to: '/admin/delivery-notes', label: 'Delivery Notes', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4' },
-  { to: '/admin/settings', label: 'الإعدادات', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z' },
+type NavLink = {
+  type: 'link'
+  key: string
+  to: string
+  label: string
+  icon: string
+}
+
+type NavChild = {
+  to: string
+  label: string
+  badge?: 'study-requests'
+}
+
+type NavGroup = {
+  type: 'group'
+  key: string
+  label: string
+  icon: string
+  children: NavChild[]
+}
+
+type NavEntry = NavLink | NavGroup
+
+const navEntries: NavEntry[] = [
+  {
+    type: 'link',
+    key: 'dashboard',
+    to: '/admin/dashboard',
+    label: 'الرئيسية',
+    icon: 'M3 12l9-9 9 9M5 10v10a1 1 0 001 1h3m10-11l1 1v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6',
+  },
+  {
+    type: 'group',
+    key: 'catalog',
+    label: 'Catalog | الكتalog',
+    icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4',
+    children: [
+      { to: '/admin/products', label: 'Products | المنتجات' },
+      { to: '/admin/categories', label: 'Categories | الفئات' },
+      { to: '/admin/groups', label: 'Groups | المجموعات' },
+      { to: '/admin/offers', label: 'Offers | العروض' },
+    ],
+  },
+  {
+    type: 'group',
+    key: 'projects',
+    label: 'Projects | المشاريع',
+    icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4',
+    children: [
+      { to: '/admin/projects', label: 'CRM Projects | مشاريع التنفيذ' },
+      { to: '/admin/project-masters', label: 'Website | مشاريع الموقع' },
+    ],
+  },
+  {
+    type: 'group',
+    key: 'finance',
+    label: 'Finance | المالية',
+    icon: 'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z',
+    children: [
+      { to: '/admin/quotations', label: 'Quotations | عروض الأسعار' },
+      { to: '/admin/invoices', label: 'Invoices | الفواتير' },
+      { to: '/admin/delivery-notes', label: 'Delivery Notes' },
+      { to: '/admin/payments', label: 'Payments | الدفعات' },
+    ],
+  },
+  {
+    type: 'group',
+    key: 'crm',
+    label: 'CRM | العملاء',
+    icon: 'M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m5-2.13a4 4 0 100-8 4 4 0 000 8zm6 0a4 4 0 10-3.998-4.318A4 4 0 0018 12.13z',
+    children: [
+      { to: '/admin/customers', label: 'Customers | العملاء' },
+      { to: '/admin/engineers', label: 'Engineers | المهندسون' },
+      { to: '/admin/reviews', label: 'Reviews | التقييمات' },
+      { to: '/admin/appointments', label: 'Appointments | المواعيد' },
+      { to: '/admin/study-requests', label: 'Study Requests | طلبات الدراسة', badge: 'study-requests' },
+    ],
+  },
+  {
+    type: 'link',
+    key: 'reports',
+    to: '/admin/reports',
+    label: 'التقارير | Reports',
+    icon: 'M9 17v-6h6v6m-9 4h12a2 2 0 002-2V6.414a2 2 0 00-.586-1.414l-2.414-2.414A2 2 0 0015.586 2H6a2 2 0 00-2 2v13a2 2 0 002 2zm3-14h4v3H9V7z',
+  },
+  {
+    type: 'link',
+    key: 'settings',
+    to: '/admin/settings',
+    label: 'الإعدادات | Settings',
+    icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z',
+  },
 ]
 
+const openGroups = ref<Record<string, boolean>>({})
+
+const findGroupForPath = (path: string): string | null => {
+  for (const entry of navEntries) {
+    if (entry.type !== 'group') continue
+    if (entry.children.some((child) => path === child.to || path.startsWith(child.to + '/'))) {
+      return entry.key
+    }
+  }
+  return null
+}
+
+const syncOpenGroups = () => {
+  const activeGroup = findGroupForPath(route.path)
+  if (activeGroup) {
+    openGroups.value[activeGroup] = true
+  }
+}
+
+const isGroupOpen = (key: string) => !!openGroups.value[key]
+
+const toggleGroup = (key: string) => {
+  openGroups.value[key] = !openGroups.value[key]
+}
+
+const isGroupActive = (group: NavGroup) =>
+  group.children.some((child) => isActive(child.to))
+
 const isActive = (to: string) => route.path === to || route.path.startsWith(to + '/')
+
+watch(() => route.path, syncOpenGroups, { immediate: true })
 
 const adminEmail = computed(() => sessionStorage.getItem('adminEmail') || 'المدير')
 const adminInitial = computed(() => adminEmail.value.charAt(0).toUpperCase())
@@ -403,6 +544,77 @@ const handleLogout = () => {
 
 .nav-item--active {
   background: var(--sf-accent, #1d4f91);
+  color: #fff;
+}
+
+.nav-group {
+  margin-bottom: 0.15rem;
+}
+
+.nav-group-head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.625rem 0.75rem;
+  border-radius: 0.65rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.75);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: right;
+}
+
+.nav-group-head:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+}
+
+.nav-group-head--active {
+  color: #fff;
+}
+
+.nav-chevron {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+  opacity: 0.7;
+  transition: transform 0.2s ease;
+}
+
+.nav-chevron--open {
+  transform: rotate(90deg);
+}
+
+.nav-sub {
+  margin-top: 0.15rem;
+  margin-right: 0.5rem;
+  padding-right: 0.75rem;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.nav-sub-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.55rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.55);
+  transition: all 0.15s ease;
+}
+
+.nav-sub-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.nav-sub-item--active {
+  background: rgba(29, 79, 145, 0.55);
   color: #fff;
 }
 

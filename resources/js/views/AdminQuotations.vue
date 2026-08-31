@@ -103,6 +103,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import api from '@/lib/api'
+import { exportQuotationPdf } from '@/lib/financePdf'
 
 interface Quotation {
   id: number
@@ -186,19 +187,7 @@ const doDelete = async () => {
 
 const downloadPdf = async (q: Quotation) => {
   try {
-    const res = await api.get(`/admin/quotations/${q.id}/pdf`, {
-      responseType: 'blob',
-      headers: { Accept: 'application/pdf' },
-    })
-    const blob = new Blob([res.data], { type: 'application/pdf' })
-    const url = window.URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `${q.number}.pdf`
-    document.body.appendChild(a)
-    a.click()
-    a.remove()
-    window.URL.revokeObjectURL(url)
+    await exportQuotationPdf(q.id, q.number)
   } catch {
     alert('تعذر تصدير PDF')
   }

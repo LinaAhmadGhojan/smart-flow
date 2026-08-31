@@ -7,12 +7,11 @@ use App\Models\Invoice;
 use App\Models\Product;
 use App\Models\Quotation;
 use App\Models\QuotationItem;
-use App\Support\ArabicPdfText;
+use App\Support\BrowserPdf;
 use App\Support\CompanySettings;
-use App\Support\DompdfFontCache;
+use App\Support\FinanceDocumentViewData;
 use App\Support\ProductDescription;
 use App\Support\StorageUrl;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
@@ -147,79 +146,45 @@ class QuotationController extends Controller
         return response()->json($invoice->load(['quotation', 'project']), 201);
     }
 
+    public function html(Quotation $quotation)
+    {
+        return response()->view('finance-documents.html', FinanceDocumentViewData::forQuotation($quotation));
+    }
+
     public function pdf(Quotation $quotation)
     {
-        DompdfFontCache::ensureReady();
-        $quotation->load(['items.product']);
-        $company = $this->companySettings();
-        $logoPath = $this->absoluteAssetPath($company['logo'] ?? null) ?? public_path('logo.jpeg');
-        $signaturePath = $this->absoluteAssetPath($company['signature'] ?? null);
-        $discounts = $quotation->discountBreakdown();
-        $productItems = $quotation->items->where('is_section', false)->values();
-        $globalShares = Quotation::allocateGlobalDiscount(
-            (float) $discounts['global_discount'],
-            $productItems->map(fn (QuotationItem $i) => (float) $i->amount)->all()
-        );
-        $globalShareById = [];
-        foreach ($productItems as $idx => $productItem) {
-            $globalShareById[$productItem->id] = $globalShares[$idx] ?? 0.0;
+        try {
+            $data = FinanceDocumentViewData::forQuotation($quotation);
+            $filename = $quotation->number . '.pdf';
+            $html = view('finance-documents.html', $data)->render();
+
+            $rendered = BrowserPdf::render(
+                $html,
+                2000,
+                ['width' => 8.27, 'height' => 11.69, 'landscape' => false]
+            );
+
+            if ($rendered !== null) {
+                return response($rendered, 200, [
+                    'Content-Type' => 'application/pdf',
+                    'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+                    'Content-Length' => (string) strlen($rendered),
+                ]);
+            }
+
+            return response()->json([
+                'message' => 'تعذر إنشاء PDF على الخادم — استخدم التصدير من المتصفح.',
+            ], 503);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Quotation PDF export failed', [
+                'quotation_id' => $quotation->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'message' => 'تعذر تصدير PDF: ' . $e->getMessage(),
+            ], 500);
         }
-        $globalPctLabel = $quotation->globalDiscountLabelShort();
-        $currency = $quotation->currency ?? 'AED';
-
-        $pdf = Pdf::loadView('quotations.pdf', [
-            'doc' => $quotation,
-            'discounts' => $discounts,
-            'globalPctLabel' => $globalPctLabel,
-            'docTitle' => 'Estimate',
-            'company' => $company,
-            'companyNameEn' => $company['companyName'] ?? 'SMARTFLOW',
-            'companyLegalName' => $company['legalName']
-                ?? 'AL TDFUQ AL DHAKI ELECTRICITY TRANSMISSION & CONTROL EQUIPMENT INSTALLATION WORKS L.L.C',
-            'companyCountry' => $company['contact']['address']['en']
-                ?? ($company['seo']['location']['country'] ?? 'United Arab Emirates'),
-            'trn' => trim((string) ($company['trn'] ?? ($company['taxNumber'] ?? ''))),
-            'logoDataUri' => $this->toDataUri($logoPath, 400),
-            'signatureDataUri' => $this->toDataUri($signaturePath, 420),
-            'signatureName' => $company['signatureName'] ?? null,
-            'clientName' => ArabicPdfText::shape($quotation->client_name),
-            'clientNameIsArabic' => (bool) preg_match('/[\x{0600}-\x{06FF}]/u', $quotation->client_name),
-            'comments' => ArabicPdfText::shape($quotation->comments ?: ''),
-            'commentsIsArabic' => (bool) preg_match('/[\x{0600}-\x{06FF}]/u', (string) $quotation->comments),
-            'arabicFontUrl' => DompdfFontCache::arabicFontUrl(),
-            'items' => $quotation->items->map(function (QuotationItem $item) use ($quotation, $globalShareById, $globalPctLabel, $currency) {
-                $imagePath = $item->is_section ? null : $this->absoluteAssetPath($item->product?->image);
-                $lineSubtotal = round((float) $item->quantity * (float) $item->rate, 2);
-                $discountAmount = (float) ($item->discount_amount ?? 0);
-                $discountLabel = $item->discountLabel($currency);
-                $globalShare = $item->is_section ? 0.0 : (float) ($globalShareById[$item->id] ?? 0);
-                $globalDiscountLabel = '—';
-                if ($globalShare > 0) {
-                    $globalDiscountLabel = ($globalPctLabel !== '' ? $globalPctLabel . ' → ' : '')
-                        . '−' . $currency . ' ' . number_format($globalShare, 2);
-                }
-                $finalAmount = max(0, round((float) $item->amount - $globalShare, 2));
-
-                return [
-                    'is_section' => (bool) $item->is_section,
-                    'code' => $item->code,
-                    'description' => ArabicPdfText::shape(ProductDescription::withoutFeaturesSection($item->description)),
-                    'descriptionIsArabic' => (bool) preg_match('/[\x{0600}-\x{06FF}]/u', $item->description),
-                    'quantity' => $item->quantity,
-                    'rate' => $item->rate,
-                    'line_subtotal' => $lineSubtotal,
-                    'discount_label' => $discountLabel,
-                    'discount_amount' => $discountAmount,
-                    'global_discount_label' => $globalDiscountLabel,
-                    'global_discount_share' => $globalShare,
-                    'amount' => $item->amount,
-                    'final_amount' => $finalAmount,
-                    'imageDataUri' => $this->toDataUri($imagePath, 270),
-                ];
-            }),
-        ])->setPaper('a4');
-
-        return $pdf->download($quotation->number . '.pdf');
     }
 
     private function validated(Request $request, ?int $ignoreId = null): array

@@ -166,6 +166,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/admin/quotations', [QuotationController::class, 'store']);
     Route::put('/admin/quotations/{quotation}', [QuotationController::class, 'update']);
     Route::delete('/admin/quotations/{quotation}', [QuotationController::class, 'destroy']);
+    Route::get('/admin/quotations/{quotation}/html', [QuotationController::class, 'html']);
     Route::get('/admin/quotations/{quotation}/pdf', [QuotationController::class, 'pdf']);
     Route::post('/admin/quotations/{quotation}/invoices', [QuotationController::class, 'createInvoice']);
 
@@ -173,6 +174,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/admin/invoices/{invoice}', [InvoiceController::class, 'show']);
     Route::put('/admin/invoices/{invoice}', [InvoiceController::class, 'update']);
     Route::delete('/admin/invoices/{invoice}', [InvoiceController::class, 'destroy']);
+    Route::get('/admin/invoices/{invoice}/html', [InvoiceController::class, 'html']);
     Route::get('/admin/invoices/{invoice}/pdf', [InvoiceController::class, 'pdf']);
 
     // Project finance: payments, expenses, delivery notes

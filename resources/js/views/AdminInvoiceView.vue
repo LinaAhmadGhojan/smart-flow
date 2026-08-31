@@ -309,6 +309,7 @@
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import api from '@/lib/api'
+import { exportInvoicePdf } from '@/lib/financePdf'
 import { allocateGlobalDiscount, computeGlobalDiscount } from '@/lib/quotationDiscount'
 
 interface ProjectOption {
@@ -557,24 +558,7 @@ const savePayment = async () => {
 const downloadPdf = async () => {
   pdfLoading.value = true
   try {
-    const res = await api.get(`/admin/invoices/${route.params.id}/pdf`, {
-      responseType: 'blob',
-      headers: { Accept: 'application/pdf' },
-    })
-    const type = res.headers['content-type'] || ''
-    if (type.includes('application/json')) {
-      const text = await (res.data as Blob).text()
-      throw new Error(JSON.parse(text).message || 'PDF error')
-    }
-    const blob = new Blob([res.data], { type: 'application/pdf' })
-    const url = window.URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `${invoice.value?.number || 'invoice'}.pdf`
-    document.body.appendChild(a)
-    a.click()
-    a.remove()
-    window.URL.revokeObjectURL(url)
+    await exportInvoicePdf(route.params.id as string, invoice.value?.number)
   } catch (e: any) {
     alert(e?.message || 'تعذر تصدير PDF')
   } finally {

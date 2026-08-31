@@ -116,6 +116,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import api from '@/lib/api'
+import { exportInvoicePdf } from '@/lib/financePdf'
 
 interface Invoice {
   id: number
@@ -192,25 +193,7 @@ const doDelete = async () => {
 
 const downloadPdf = async (inv: Invoice) => {
   try {
-    const res = await api.get(`/admin/invoices/${inv.id}/pdf`, {
-      responseType: 'blob',
-      headers: { Accept: 'application/pdf' },
-    })
-    const type = res.headers['content-type'] || ''
-    if (type.includes('application/json')) {
-      const text = await (res.data as Blob).text()
-      const err = JSON.parse(text)
-      throw new Error(err.message || 'PDF error')
-    }
-    const blob = new Blob([res.data], { type: 'application/pdf' })
-    const url = window.URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `${inv.number}.pdf`
-    document.body.appendChild(a)
-    a.click()
-    a.remove()
-    window.URL.revokeObjectURL(url)
+    await exportInvoicePdf(inv.id, inv.number)
   } catch (e: any) {
     alert(e?.message || 'تعذر تصدير PDF')
   }

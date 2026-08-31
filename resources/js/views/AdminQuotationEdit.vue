@@ -400,6 +400,7 @@ import {
   productEnglishSubtitle,
   type SearchableProduct,
 } from '@/lib/productSearch'
+import { exportInvoicePdf, exportQuotationPdf } from '@/lib/financePdf'
 import { allocateGlobalDiscount, computeGlobalDiscount } from '@/lib/quotationDiscount'
 
 interface LineItem {
@@ -896,22 +897,9 @@ const createInvoice = async () => {
   }
 }
 
-const downloadBlob = async (url: string, filename: string) => {
-  const res = await api.get(url, { responseType: 'blob', headers: { Accept: 'application/pdf' } })
-  const blob = new Blob([res.data], { type: 'application/pdf' })
-  const blobUrl = window.URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = blobUrl
-  a.download = filename
-  document.body.appendChild(a)
-  a.click()
-  a.remove()
-  window.URL.revokeObjectURL(blobUrl)
-}
-
 const downloadPdf = async () => {
   try {
-    await downloadBlob(`/admin/quotations/${route.params.id}/pdf`, `${form.value.number || 'estimate'}.pdf`)
+    await exportQuotationPdf(route.params.id as string, form.value.number)
   } catch {
     alert('تعذر تصدير PDF')
   }
@@ -919,7 +907,7 @@ const downloadPdf = async () => {
 
 const downloadInvoicePdf = async (inv: InvoiceRow) => {
   try {
-    await downloadBlob(`/admin/invoices/${inv.id}/pdf`, `${inv.number}.pdf`)
+    await exportInvoicePdf(inv.id, inv.number)
   } catch {
     alert('تعذر تصدير فاتورة PDF')
   }

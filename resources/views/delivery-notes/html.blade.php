@@ -37,6 +37,20 @@
         position: relative;
         padding-bottom: 78px;
     }
+    /* Applied in-browser before PDF capture (same idea as payment receipt). */
+    body.dn-capture .page-wrap {
+        min-height: auto !important;
+        display: block !important;
+        background: #fff !important;
+        padding: 0 !important;
+    }
+    body.dn-capture .sheet {
+        width: 794px !important;
+        max-width: 794px !important;
+        overflow: visible !important;
+        margin: 0 auto;
+        box-shadow: none !important;
+    }
     .en { direction: ltr; unicode-bidi: embed; display: inline-block; }
 
     .header {

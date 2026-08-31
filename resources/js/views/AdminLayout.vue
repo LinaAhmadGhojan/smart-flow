@@ -203,7 +203,7 @@
 
       <!-- Page content -->
       <main class="admin-content">
-        <RouterView />
+        <RouterView :key="route.fullPath" />
       </main>
     </div>
   </div>

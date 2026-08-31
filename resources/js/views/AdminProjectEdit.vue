@@ -1078,8 +1078,13 @@
               <h3 class="text-lg font-bold text-slate-900">{{ viewDn.number }}</h3>
             </div>
             <div class="flex items-center gap-2">
-              <button type="button" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-lg text-sm font-medium" @click="downloadDnPdf(viewDn)">
-                تصدير PDF
+              <button
+                type="button"
+                class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-lg text-sm font-medium disabled:opacity-60"
+                :disabled="dnPdfLoading || !viewDnFrameReady"
+                @click="downloadDnPdf(viewDn)"
+              >
+                {{ dnPdfLoading ? 'جاري التصدير...' : 'تصدير PDF' }}
               </button>
               <button type="button" class="text-slate-400 hover:text-slate-700 text-2xl leading-none px-1" @click="closeDnView">×</button>
             </div>
@@ -1095,6 +1100,7 @@
               :srcdoc="viewDnHtml"
               class="w-full min-h-[90vh] border-0 bg-slate-100"
               title="دليفري نوت"
+              @load="viewDnFrameReady = true"
             />
           </div>
         </div>
@@ -1209,6 +1215,8 @@ const dnSaving = ref(false)
 const viewDn = ref<any>(null)
 const viewDnHtml = ref('')
 const viewDnFrame = ref<HTMLIFrameElement | null>(null)
+const viewDnFrameReady = ref(false)
+const dnPdfLoading = ref(false)
 const viewDnLoading = ref(false)
 const dnItemOpen = ref<number | null>(null)
 const dnForm = ref({
@@ -1308,11 +1316,13 @@ const openDnCreate = () => {
 const closeDnView = () => {
   viewDn.value = null
   viewDnHtml.value = ''
+  viewDnFrameReady.value = false
 }
 
 const openDnView = async (dn: any) => {
   viewDn.value = dn
   viewDnHtml.value = ''
+  viewDnFrameReady.value = false
   viewDnLoading.value = true
   try {
     viewDnHtml.value = await fetchAdminHtml(deliveryNoteHtmlPath(route.params.id as string, dn.id))
@@ -1356,10 +1366,14 @@ const invoiceStatusClass = (s?: string) =>
   } as Record<string, string>)[s || ''] || 'bg-gray-100 text-gray-600'
 
 const downloadDnPdf = async (dn: any) => {
+  dnPdfLoading.value = true
   try {
-    await exportDeliveryNotePdf(route.params.id as string, dn.id, dn.number, viewDnFrame.value)
-  } catch {
-    alert('تعذر تصدير PDF')
+    const useFrame = viewDn.value?.id === dn.id ? viewDnFrame.value : null
+    await exportDeliveryNotePdf(route.params.id as string, dn.id, dn.number, useFrame)
+  } catch (e: any) {
+    alert(e.message || e.response?.data?.message || 'تعذر تصدير PDF')
+  } finally {
+    dnPdfLoading.value = false
   }
 }
 

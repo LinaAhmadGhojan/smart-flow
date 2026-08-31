@@ -9,7 +9,10 @@
       </RouterLink>
     </div>
 
-    <div v-if="error && !isNew" class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
+    <div v-if="success" class="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-lg mb-4">
+      {{ success }}
+    </div>
+    <div v-if="error" class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
       {{ error }}
     </div>
 
@@ -168,17 +171,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
-import { useRoute, useRouter, RouterLink } from 'vue-router'
+import { ref, onMounted, computed, watch } from 'vue'
+import { useRoute, useRouter, RouterLink, onBeforeRouteUpdate } from 'vue-router'
 import api from '@/lib/api'
 import { mediaUrl, handleMediaError } from '@/lib/media'
 
 const route = useRoute()
 const router = useRouter()
 
-const isNew = computed(() => !route.params.id )
+const isNew = computed(() => route.name === 'admin-product-new')
 const loading = ref(false)
 const error = ref('')
+const success = ref('')
 const categories = ref<any[]>([])
 const groups = ref<any[]>([])
 const imagePreview = ref<string | null>(null)
@@ -221,6 +225,27 @@ const removeFeature = (index: number) => {
   form.value.features.splice(index, 1)
 }
 
+const applyProductToForm = (product: any) => {
+  form.value = {
+    name: product.name,
+    name_ar: product.name_ar,
+    description: product.description,
+    description_ar: product.description_ar || product.description,
+    price: product.price,
+    image: product.image || '',
+    category_id: product.category_id || product.categoryId,
+    group_id: product.group_id || '',
+    features: product.features || [],
+    in_stock: product.in_stock ?? true,
+    is_visible: product.is_visible ?? true,
+    whatsapp_message: product.whatsapp_message || '',
+  }
+  if (product.image) {
+    imagePreview.value = mediaUrl(product.image)
+  }
+  imageFile.value = null
+}
+
 const fetchData = async () => {
   try {
     const [categoriesRes, groupsRes] = await Promise.all([
@@ -232,26 +257,7 @@ const fetchData = async () => {
 
     if (!isNew.value) {
       const productRes = await api.get(`/products/${route.params.id}`)
-      const product = productRes.data
-      form.value = {
-        name: product.name,
-        name_ar: product.name_ar,
-        description: product.description,
-        description_ar: product.description_ar || product.description_ar,
-        price: product.price,
-        image: product.image || '',
-        category_id: product.category_id || product.categoryId,
-        group_id: product.group_id || '',
-        features: product.features || [],
-        in_stock: product.in_stock ?? true,
-        is_visible: product.is_visible ?? true,
-        whatsapp_message: product.whatsapp_message || ''
-      }
-      
-      // Set image preview if exists
-      if (product.image) {
-        imagePreview.value = mediaUrl(product.image)
-      }
+      applyProductToForm(productRes.data)
     }
   } catch (err: any) {
     if (!isNew.value) {
@@ -263,6 +269,7 @@ const fetchData = async () => {
 const handleSubmit = async () => {
   loading.value = true
   error.value = ''
+  success.value = ''
 
   try {
     const formData = new FormData()
@@ -288,17 +295,30 @@ const handleSubmit = async () => {
     }
 
     if (isNew.value) {
-      await api.post('/products', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+      const res = await api.post('/products', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
       })
+      const productId = res.data?.id ?? res.data?.product?.id
+      if (!productId) {
+        throw new Error('Missing product id from server')
+      }
+      await router.replace({
+        name: 'admin-product-edit',
+        params: { id: String(productId) },
+      })
+      applyProductToForm(res.data?.product ?? res.data)
+      success.value = 'تم إنشاء المنتج بنجاح'
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     } else {
-      await api.post(`/products/${route.params.id}?_method=PUT`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+      const res = await api.post(`/products/${route.params.id}?_method=PUT`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
       })
+      applyProductToForm(res.data?.product ?? res.data)
+      success.value = 'تم تحديث المنتج بنجاح'
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     }
-    router.push('/admin/products')
   } catch (err: any) {
-    error.value = err.response?.data?.error || 'Failed to save product'
+    error.value = err.response?.data?.error || err.message || 'Failed to save product'
   } finally {
     loading.value = false
   }
@@ -306,5 +326,20 @@ const handleSubmit = async () => {
 
 onMounted(() => {
   fetchData()
+})
+
+watch(
+  () => route.params.id,
+  (id, prev) => {
+    if (id && id !== prev) {
+      fetchData()
+    }
+  },
+)
+
+onBeforeRouteUpdate(async (to, from) => {
+  if (to.name === 'admin-product-edit' && from.name === 'admin-product-new') {
+    await fetchData()
+  }
 })
 </script>

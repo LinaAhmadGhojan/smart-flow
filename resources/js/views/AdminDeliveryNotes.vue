@@ -79,7 +79,13 @@
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                     </svg>
                   </button>
-                  <button type="button" class="text-emerald-600 hover:text-emerald-800" title="PDF" @click="downloadPdf(dn)">
+                  <button
+                    type="button"
+                    class="text-emerald-600 hover:text-emerald-800 disabled:opacity-40"
+                    title="PDF"
+                    :disabled="pdfExportId === dn.id"
+                    @click="downloadPdf(dn)"
+                  >
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v12m0 0l-4-4m4 4l4-4M4 20h16"/>
                     </svg>
@@ -126,11 +132,19 @@
               :srcdoc="viewHtml"
               class="w-full min-h-[80vh] border-0"
               title="دليفري نوت"
+              @load="viewFrameReady = true"
             />
           </div>
           <div class="px-5 py-3 border-t flex gap-2 bg-white">
             <button type="button" class="flex-1 border py-2.5 rounded-lg text-sm" @click="closeView">إغلاق</button>
-            <button type="button" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-lg text-sm" @click="downloadPdf(viewTarget)">تحميل PDF</button>
+            <button
+              type="button"
+              class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-lg text-sm disabled:opacity-60"
+              :disabled="pdfLoading || !viewFrameReady"
+              @click="downloadPdf(viewTarget)"
+            >
+              {{ pdfLoading ? 'جاري التصدير...' : 'تحميل PDF' }}
+            </button>
           </div>
         </div>
       </div>
@@ -189,6 +203,9 @@ const viewTarget = ref<DeliveryNote | null>(null)
 const viewHtml = ref('')
 const viewFrame = ref<HTMLIFrameElement | null>(null)
 const viewLoading = ref(false)
+const viewFrameReady = ref(false)
+const pdfLoading = ref(false)
+const pdfExportId = ref<number | null>(null)
 
 const filtered = computed(() => {
   const q = search.value.trim().toLowerCase()
@@ -223,6 +240,7 @@ const fetchList = async () => {
 const openView = async (dn: DeliveryNote) => {
   viewTarget.value = dn
   viewHtml.value = ''
+  viewFrameReady.value = false
   viewLoading.value = true
   try {
     viewHtml.value = await fetchAdminHtml(deliveryNoteHtmlPath(dn.project_id, dn.id))
@@ -238,6 +256,7 @@ const openView = async (dn: DeliveryNote) => {
 const closeView = () => {
   viewTarget.value = null
   viewHtml.value = ''
+  viewFrameReady.value = false
 }
 const confirmDelete = (dn: DeliveryNote) => { deleteTarget.value = dn }
 
@@ -253,10 +272,16 @@ const doDelete = async () => {
 }
 
 const downloadPdf = async (dn: DeliveryNote) => {
+  pdfExportId.value = dn.id
+  pdfLoading.value = true
   try {
-    await exportDeliveryNotePdf(dn.project_id, dn.id, dn.number, viewFrame.value)
+    const useFrame = viewTarget.value?.id === dn.id ? viewFrame.value : null
+    await exportDeliveryNotePdf(dn.project_id, dn.id, dn.number, useFrame)
   } catch (e: any) {
     alert(e.message || e.response?.data?.message || 'تعذر تحميل PDF')
+  } finally {
+    pdfExportId.value = null
+    pdfLoading.value = false
   }
 }
 

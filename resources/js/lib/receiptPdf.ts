@@ -276,30 +276,44 @@ export function deliveryNotePdfFilename(number?: string): string {
 const DELIVERY_NOTE_W = 794
 const DELIVERY_NOTE_H = 1123
 
-const DN_SERVER_PDF_MODE_KEY = 'delivery-note-pdf-server-mode'
+function prepareDeliveryNoteForCapture(doc: Document): HTMLElement {
+  doc.body.classList.add('dn-capture')
 
-type DnServerPdfMode = 'chrome' | 'dompdf' | 'unknown'
-
-function getDnServerPdfMode(): DnServerPdfMode {
-  try {
-    const mode = sessionStorage.getItem(DN_SERVER_PDF_MODE_KEY)
-    if (mode === 'chrome' || mode === 'dompdf') {
-      return mode
-    }
-  } catch {
-    // ignore storage errors
+  const pageWrap = doc.querySelector('.page-wrap') as HTMLElement | null
+  if (pageWrap) {
+    pageWrap.style.background = '#ffffff'
+    pageWrap.style.padding = '0'
+    pageWrap.style.minHeight = 'auto'
+    pageWrap.style.display = 'block'
   }
-  return 'unknown'
+
+  const page = doc.querySelector('.sheet') as HTMLElement | null
+  if (!page) {
+    throw new Error('لم يتم العثور على محتوى دليفري نوت')
+  }
+
+  page.style.width = `${DELIVERY_NOTE_W}px`
+  page.style.maxWidth = `${DELIVERY_NOTE_W}px`
+  page.style.overflow = 'visible'
+  page.style.minHeight = `${DELIVERY_NOTE_H}px`
+
+  return page
 }
 
-function rememberDnServerPdfMode(mode: DnServerPdfMode): void {
-  if (mode === 'unknown') {
-    return
-  }
-  try {
-    sessionStorage.setItem(DN_SERVER_PDF_MODE_KEY, mode)
-  } catch {
-    // ignore storage errors
+function addDeliveryNoteImageToPdf(pdf: jsPDF, dataUrl: string, imgPxW: number, imgPxH: number): void {
+  const pageW = pdf.internal.pageSize.getWidth()
+  const pageH = pdf.internal.pageSize.getHeight()
+  const imgHmm = (imgPxH / imgPxW) * pageW
+  let yOffset = 0
+  let pageIndex = 0
+
+  while (yOffset < imgHmm - 0.5) {
+    if (pageIndex > 0) {
+      pdf.addPage()
+    }
+    pdf.addImage(dataUrl, 'PNG', 0, -yOffset, pageW, imgHmm, undefined, 'FAST')
+    yOffset += pageH
+    pageIndex += 1
   }
 }
 
@@ -307,7 +321,7 @@ function deliveryNoteFrameIsReady(frame: HTMLIFrameElement | null | undefined): 
   return Boolean(frame?.contentDocument?.querySelector('.sheet'))
 }
 
-async function prepareDeliveryNoteDocument(doc: Document, quick = false): Promise<void> {
+async function prepareDeliveryNoteDocument(doc: Document): Promise<void> {
   if (doc.fonts?.ready) {
     await doc.fonts.ready
   }
@@ -325,38 +339,47 @@ async function prepareDeliveryNoteDocument(doc: Document, quick = false): Promis
     )
   }
 
-  if (!quick) {
-    await new Promise((r) => setTimeout(r, 400))
-  }
+  await new Promise((r) => setTimeout(r, 600))
 }
 
-async function isChromeDeliveryNotePdf(blob: Blob): Promise<boolean> {
-  const head = await blob.slice(0, 8192).text()
-  if (head.includes('dompdf')) return false
-  if (head.includes('jsPDF')) return false
-  return head.includes('Skia') || head.includes('Chrome') || blob.size > 80000
+function createHiddenDeliveryNoteFrame(html: string): HTMLIFrameElement {
+  const frame = document.createElement('iframe')
+  frame.style.cssText =
+    'position:fixed;left:-9999px;top:0;width:794px;height:1200px;border:0;opacity:0;pointer-events:none'
+  frame.title = 'دليفري نوت'
+  frame.srcdoc = html
+  document.body.appendChild(frame)
+
+  return frame
+}
+
+async function waitForDeliveryNoteFrame(frame: HTMLIFrameElement): Promise<void> {
+  await new Promise<void>((resolve) => {
+    const done = () => resolve()
+    frame.addEventListener('load', done, { once: true })
+    setTimeout(done, 2500)
+  })
+
+  const doc = frame.contentDocument
+  if (doc) {
+    await prepareDeliveryNoteDocument(doc)
+  }
 }
 
 async function downloadDeliveryNotePdfFromFrame(
   frame: HTMLIFrameElement,
   filename: string,
-  quick = false,
 ): Promise<void> {
   const srcDoc = frame.contentDocument
   if (!srcDoc?.body) {
     throw new Error('تعذر قراءة دليفري نوت من الصفحة')
   }
 
-  await prepareDeliveryNoteDocument(srcDoc, quick)
+  await prepareDeliveryNoteDocument(srcDoc)
+  const page = prepareDeliveryNoteForCapture(srcDoc)
 
-  const page = srcDoc.querySelector('.sheet') as HTMLElement | null
-  if (!page) {
-    throw new Error('لم يتم العثور على محتوى دليفري نوت')
-  }
-
-  const rect = page.getBoundingClientRect()
-  const width = Math.max(Math.round(rect.width), DELIVERY_NOTE_W)
-  const height = Math.max(Math.round(rect.height), DELIVERY_NOTE_H)
+  const width = DELIVERY_NOTE_W
+  const height = Math.max(page.scrollHeight, page.offsetHeight, DELIVERY_NOTE_H)
 
   const dataUrl = await toPng(page, {
     width,
@@ -376,54 +399,30 @@ async function downloadDeliveryNotePdfFromFrame(
     compress: true,
   })
 
-  pdf.addImage(
-    dataUrl,
-    'PNG',
-    0,
-    0,
-    pdf.internal.pageSize.getWidth(),
-    pdf.internal.pageSize.getHeight(),
-    undefined,
-    'FAST',
-  )
+  addDeliveryNoteImageToPdf(pdf, dataUrl, width, height)
   pdf.save(filename)
+
+  srcDoc.body.classList.remove('dn-capture')
 }
 
 async function captureDeliveryNoteFrame(
   frame: HTMLIFrameElement | null | undefined,
   filename: string,
-  quick = false,
 ): Promise<boolean> {
   if (!deliveryNoteFrameIsReady(frame)) {
     return false
   }
 
-  await downloadDeliveryNotePdfFromFrame(frame, filename, quick)
-  return true
-}
-
-async function tryServerDeliveryNotePdf(
-  projectId: number | string,
-  noteId: number | string,
-  filename: string,
-): Promise<'downloaded' | Blob | null> {
   try {
-    const blob = await fetchAdminPdf(deliveryNotePdfPath(projectId, noteId))
-    if (await isChromeDeliveryNotePdf(blob)) {
-      rememberDnServerPdfMode('chrome')
-      downloadBlob(blob, filename)
-      return 'downloaded'
-    }
-
-    rememberDnServerPdfMode('dompdf')
-    return blob
+    await downloadDeliveryNotePdfFromFrame(frame, filename)
+    return true
   } catch {
-    return null
+    return false
   }
 }
 
 /**
- * Export delivery note PDF to match the on-screen preview.
+ * Export delivery note PDF — captures the same HTML as the eye preview (client-side only).
  */
 export async function exportDeliveryNotePdf(
   projectId: number | string,
@@ -432,55 +431,24 @@ export async function exportDeliveryNotePdf(
   frame?: HTMLIFrameElement | null,
 ): Promise<void> {
   const filename = deliveryNotePdfFilename(number)
-  const serverMode = getDnServerPdfMode()
 
   if (deliveryNoteFrameIsReady(frame)) {
-    await captureDeliveryNoteFrame(frame, filename, true)
-    return
-  }
-
-  let dompdfFallback: Blob | null = null
-
-  if (serverMode === 'chrome' || serverMode === 'unknown') {
-    const result = await tryServerDeliveryNotePdf(projectId, noteId, filename)
-    if (result === 'downloaded') {
-      return
-    }
-    dompdfFallback = result instanceof Blob ? result : null
+    const ok = await captureDeliveryNoteFrame(frame, filename)
+    if (ok) return
   }
 
   const html = await fetchAdminHtml(deliveryNoteHtmlPath(projectId, noteId))
-  const hiddenFrame = document.createElement('iframe')
-  hiddenFrame.style.cssText =
-    'position:fixed;left:-9999px;top:0;width:820px;height:1160px;border:0;opacity:0;pointer-events:none'
-  hiddenFrame.title = 'دليفري نوت'
-  hiddenFrame.srcdoc = html
-  document.body.appendChild(hiddenFrame)
+  const hiddenFrame = createHiddenDeliveryNoteFrame(html)
 
   try {
-    await new Promise<void>((resolve) => {
-      const done = () => resolve()
-      hiddenFrame.addEventListener('load', done, { once: true })
-      setTimeout(done, 3000)
-    })
-    const doc = hiddenFrame.contentDocument
-    if (doc) {
-      await prepareDeliveryNoteDocument(doc)
-    }
-    if (await captureDeliveryNoteFrame(hiddenFrame, filename)) {
-      return
-    }
+    await waitForDeliveryNoteFrame(hiddenFrame)
+    const ok = await captureDeliveryNoteFrame(hiddenFrame, filename)
+    if (ok) return
   } finally {
     hiddenFrame.remove()
   }
 
-  if (dompdfFallback) {
-    downloadBlob(dompdfFallback, filename)
-    return
-  }
-
-  const blob = await fetchAdminPdf(deliveryNotePdfPath(projectId, noteId))
-  downloadBlob(blob, filename)
+  throw new Error('تعذر تصدير PDF — انتظر تحميل المعاينة ثم حاول مرة أخرى')
 }
 
 export async function downloadDeliveryNotePdf(

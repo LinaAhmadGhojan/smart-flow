@@ -62,16 +62,6 @@
               <option value="cancelled">ملغي</option>
             </select>
           </div>
-          <div class="flex items-end">
-            <label class="flex items-center gap-2 cursor-pointer">
-              <input v-model="form.is_public" type="checkbox" class="w-4 h-4" :disabled="isLocked" />
-              <span class="text-sm">عرض في الموقع (فرونت)</span>
-            </label>
-          </div>
-          <div>
-            <label class="sf-label">ترتيب العرض</label>
-            <input v-model.number="form.order" type="number" min="0" class="sf-field" :disabled="isLocked" />
-          </div>
         </div>
         </div>
       </section>

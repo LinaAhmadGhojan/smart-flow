@@ -7,38 +7,48 @@
                 <tr>
                     <td class="logo-td">
                         @if(!empty($logoDataUri))
-                            <img src="{{ $logoDataUri }}" alt="">
+                            <img class="logo" src="{{ $logoDataUri }}" alt="">
                         @endif
                     </td>
                     <td class="brand-text">
                         <div class="brand-name">{{ $companyNameAr }}</div>
-                        <div class="contact-row"><img src="{{ $iconPhone }}" alt=""><span class="en">{{ $phone }}</span></div>
-                        <div class="contact-row"><img src="{{ $iconEmail }}" alt=""><span class="en">{{ $email }}</span></div>
-                        <div class="contact-row"><img src="{{ $iconLocation }}" alt=""><span>{{ $addressAr }}</span></div>
+                        <div class="brand-contact">
+                            <div class="row"><img src="{{ $iconPhone }}" alt=""><span class="en">{{ $phone }}</span></div>
+                            <div class="row"><img src="{{ $iconEmail }}" alt=""><span class="en">{{ $email }}</span></div>
+                            <div class="row"><img src="{{ $iconLocation }}" alt=""><span>{{ $addressAr }}</span></div>
+                        </div>
                     </td>
                 </tr>
             </table>
         </td>
         <td class="doc-cell">
-            <div class="doc-title-wrap">
-                <table class="doc-title-table">
-                    <tr>
-                        <td><div class="doc-title">تقرير زيارة موقع</div></td>
-                        <td>
-                            <div class="doc-ico">
-                                <svg viewBox="0 0 24 24"><path d="M8 6h5l3 3v9H8V6zm5 0v3h3M9 12h6M9 15h4"/></svg>
-                            </div>
-                        </td>
-                    </tr>
+            <div class="doc-title-row">
+                <div class="doc-ico-circle">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M8 5.5h8l2 2v11.5H8V5.5zm8 0v2.5h2" fill="#fff"/>
+                        <path d="M10 11.5h6M10 14h4.5M10 16.5h5" stroke="#fff" stroke-width="1.4" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <div class="doc-title">
+                    <div class="ar-title">تقرير زيارة موقع</div>
+                    <div class="en-title">SITE VISIT REPORT</div>
+                </div>
+            </div>
+            <div class="doc-meta">
+                <div class="meta-row">
+                    <span class="meta-lab">رقم التقرير</span>
+                    <div class="meta-box"><span class="en">{{ $reportNo }}</span></div>
+                </div>
+                <div class="meta-row">
+                    <span class="meta-lab">تاريخ الزيارة</span>
+                    <div class="meta-box"><span class="en">{{ $visitDateLabel }}</span></div>
+                </div>
+                <table class="meta-extra">
+                    <colgroup><col><col></colgroup>
+                    <tr><td class="lab">وقت الزيارة</td><td class="val">{{ $visitTimeLabel }}</td></tr>
+                    <tr><td class="lab">نوع الزيارة</td><td class="val">{{ $visitTypeLabel }}</td></tr>
                 </table>
             </div>
-            <table class="meta">
-                <colgroup><col><col></colgroup>
-                <tr><td class="lab">رقم التقرير</td><td class="val"><span class="en">{{ $reportNo }}</span></td></tr>
-                <tr><td class="lab">تاريخ الزيارة</td><td class="val"><span class="en">{{ $visitDateLabel }}</span></td></tr>
-                <tr><td class="lab">وقت الزيارة</td><td class="val">{{ $visitTimeLabel }}</td></tr>
-                <tr><td class="lab">نوع الزيارة</td><td class="val">{{ $visitTypeLabel }}</td></tr>
-            </table>
         </td>
     </tr>
 </table>
@@ -130,27 +140,31 @@
 <table class="signs">
     <tr>
         <td>
-            <table class="sig-head-table"><tr>
-                <td><svg class="sig-ico" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.2"/><path d="M5.5 19c.8-3.2 3.3-5 6.5-5s5.7 1.8 6.5 5"/></svg></td>
-                <td><div class="sig-ttl">توقيع المهندس المسؤول</div></td>
-            </tr></table>
+            <div class="sig-head">
+                <svg class="sig-ico" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.2"/><path d="M5.5 19c.8-3.2 3.3-5 6.5-5s5.7 1.8 6.5 5"/></svg>
+                <div class="sig-ttl">توقيع المهندس المسؤول</div>
+            </div>
             <div class="sig-line">الاسم : {{ $engineerName }}</div>
             <div class="sig-line">التوقيع :</div>
-            <div class="sig-line">التاريخ :</div>
+            <div class="sig-line">التاريخ : <span class="en">{{ $visitDateLabel }}</span></div>
         </td>
         <td>
-            <table class="sig-head-table"><tr>
-                <td><svg class="sig-ico" viewBox="0 0 24 24"><rect x="7" y="3.5" width="10" height="12" rx="1.2"/><path d="M9 7.5h6M9 10h6M9 12.5h4"/><path d="M8 16.5h8v2.2c0 .7-1.8 1.5-4 1.5s-4-.8-4-1.5V16.5z"/></svg></td>
-                <td><div class="sig-ttl">ختم الشركة</div></td>
-            </tr></table>
-            <div class="stamp-box"></div>
+            <div class="sig-head">
+                <svg class="sig-ico" viewBox="0 0 24 24"><rect x="7" y="3.5" width="10" height="12" rx="1.2"/><path d="M9 7.5h6M9 10h6M9 12.5h4"/><path d="M8 16.5h8v2.2c0 .7-1.8 1.5-4 1.5s-4-.8-4-1.5V16.5z"/></svg>
+                <div class="sig-ttl">توقيع الشركة</div>
+            </div>
+            <div class="stamp-box">
+                @if(!empty($signatureDataUri))
+                    <img src="{{ $signatureDataUri }}" alt="">
+                @endif
+            </div>
         </td>
         <td>
-            <table class="sig-head-table"><tr>
-                <td><svg class="sig-ico" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.2"/><path d="M5.5 19c.8-3.2 3.3-5 6.5-5s5.7 1.8 6.5 5"/></svg></td>
-                <td><div class="sig-ttl">توقيع واستلام المستلم</div></td>
-            </tr></table>
-            <div class="sig-line">الاسم :</div>
+            <div class="sig-head">
+                <svg class="sig-ico" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.2"/><path d="M5.5 19c.8-3.2 3.3-5 6.5-5s5.7 1.8 6.5 5"/></svg>
+                <div class="sig-ttl">توقيع واستلام المستلم</div>
+            </div>
+            <div class="sig-line">الاسم : {{ $clientName !== '—' ? $clientName : '' }}</div>
             <div class="sig-line">التوقيع :</div>
             <div class="sig-line">التاريخ :</div>
         </td>
@@ -159,21 +173,44 @@
 </div>
 
 <div class="footer">
-    <table class="footer-bar">
-        <tr>
-            <td class="footer-side">
-                @if(!empty($waveSvg))<img src="{{ $waveSvg }}" alt="">@endif
-            </td>
-            <td class="footer-center">
-                <svg class="footer-bolt" viewBox="0 0 24 24"><path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z"/></svg>
-                شكراً لتعاملكم معنا
-                <svg class="footer-bolt" viewBox="0 0 24 24"><path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z"/></svg>
-            </td>
-            <td class="footer-side">
-                @if(!empty($waveSvg))<img src="{{ $waveSvg }}" alt="">@endif
-            </td>
-        </tr>
-    </table>
+    <div class="thanks-bar">
+        <span class="line"></span>
+        <svg class="leaf" viewBox="0 0 24 24" fill="#1a437f">
+            <path d="M12 2C8 6 6 10 6 14c0 3.3 2.7 6 6 8 3.3-2 6-4.7 6-8 0-4-2-8-6-12z"/>
+            <path d="M12 8v12" stroke="#fff" stroke-width="1.6" fill="none"/>
+            <path d="M12 11 L9.5 14.5 L12 13.2 L14.5 17 Z" fill="#fff"/>
+        </svg>
+        شكراً لتعاملكم معنا
+        <svg class="leaf" viewBox="0 0 24 24" fill="#1a437f">
+            <path d="M12 2C8 6 6 10 6 14c0 3.3 2.7 6 6 8 3.3-2 6-4.7 6-8 0-4-2-8-6-12z"/>
+            <path d="M12 8v12" stroke="#fff" stroke-width="1.6" fill="none"/>
+            <path d="M12 11 L9.5 14.5 L12 13.2 L14.5 17 Z" fill="#fff"/>
+        </svg>
+        <span class="line"></span>
+    </div>
+    @if(!empty($waveSvg))
+    <div class="wave-wrap" aria-hidden="true">
+        <img src="{{ $waveSvg }}" alt="">
+        <svg class="circuit" viewBox="0 0 150 42" xmlns="http://www.w3.org/2000/svg">
+            <g fill="none" stroke="#9ec4ea" stroke-width="1.15">
+                <path d="M2 36 H26 V18 H48 V30 H78 V14 H108"/>
+                <path d="M16 36 V24 H38"/>
+                <path d="M48 18 H66 V8 H90"/>
+                <path d="M78 30 H96 V36 H124"/>
+                <path d="M108 14 V6 H132"/>
+            </g>
+            <g fill="#c5def6">
+                <circle cx="2" cy="36" r="2"/><circle cx="26" cy="36" r="2"/>
+                <circle cx="26" cy="18" r="2"/><circle cx="48" cy="18" r="2"/>
+                <circle cx="48" cy="30" r="2"/><circle cx="78" cy="30" r="2"/>
+                <circle cx="78" cy="14" r="2"/><circle cx="108" cy="14" r="2"/>
+                <circle cx="16" cy="24" r="1.6"/><circle cx="66" cy="8" r="1.6"/>
+                <circle cx="90" cy="8" r="1.6"/><circle cx="96" cy="36" r="1.6"/>
+                <circle cx="124" cy="36" r="1.6"/><circle cx="132" cy="6" r="1.6"/>
+            </g>
+        </svg>
+    </div>
+    @endif
 </div>
 
 </div>

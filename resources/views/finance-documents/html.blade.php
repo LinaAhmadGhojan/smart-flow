@@ -30,9 +30,11 @@
     .page-wrap {
         min-height: 100vh;
         display: flex;
-        justify-content: center;
+        flex-direction: column;
+        align-items: center;
         background: #f4f7fb;
         padding: 16px;
+        gap: 16px;
     }
     .sheet {
         width: 794px;
@@ -43,11 +45,26 @@
         position: relative;
         overflow: visible;
     }
+    body.doc-invoice .sheet {
+        padding-right: 36px;
+    }
+    .sheet-summary {
+        padding: 90px 36px 78px 36px;
+        display: flex;
+        flex-direction: column;
+    }
+    body.doc-invoice .sheet-summary {
+        padding-right: 54px;
+    }
+    .summary-content {
+        flex: 1;
+    }
     body.fd-capture .page-wrap {
         min-height: auto !important;
         display: block !important;
         background: #fff !important;
         padding: 0 !important;
+        gap: 0 !important;
     }
     body.fd-capture .sheet {
         width: 794px !important;
@@ -55,9 +72,9 @@
         overflow: visible !important;
         margin: 0 auto;
         box-shadow: none !important;
+        min-height: 1123px !important;
     }
 
-    .doc-first-pages { position: relative; }
     .watermark {
         position: absolute;
         top: 280px;
@@ -74,53 +91,238 @@
         object-fit: contain;
     }
 
-    .top { width: 100%; border-collapse: collapse; margin-bottom: 14px; direction: ltr; table-layout: fixed; }
-    .top td { vertical-align: top; border: none; padding: 0; }
-    .left-brand { width: 58%; padding-right: 12px; }
-    .right-doc { width: 42%; text-align: right; vertical-align: top !important; padding-top: 4px; }
-
-    .brand-inner { width: 100%; border-collapse: collapse; }
-    .brand-inner td { border: none; vertical-align: middle; padding: 0; }
-    .logo-td { width: 140px; padding-right: 12px; }
-    .brand img.logo { width: 140px; max-width: 140px; max-height: 110px; height: auto; display: block; object-fit: contain; }
-    .brand-name { font-size: 22px; font-weight: 700; color: #1a437f; line-height: 1.2; direction: rtl; text-align: left; margin-bottom: 4px; }
-    .brand-contact { font-size: 12px; color: #1a437f; font-weight: 600; }
-    .brand-contact .row { display: flex; align-items: center; gap: 8px; margin: 2px 0; direction: ltr; justify-content: flex-start; white-space: nowrap; }
-    .brand-contact img { width: 15px; height: 15px; }
-    .trn-line { font-size: 10px; color: #2f5f9e; font-weight: 700; margin-top: 3px; direction: ltr; text-align: left; }
-
-    .doc-title { font-size: 28px; font-weight: 700; margin: 0 0 8px; color: #222; }
-    .meta { margin: 2px 0; font-size: 11px; color: #333; }
-
-    .for { margin: 12px 0 14px; font-size: 12px; color: #333; }
-
-    .items { width: 100%; border-collapse: collapse; margin-bottom: 12px; position: relative; z-index: 1; }
-    .items th {
-        background: #f3f3f3; border-top: 1px solid #ddd; border-bottom: 1px solid #ddd;
-        text-align: left; padding: 7px 6px; font-size: 11px; color: #444; font-weight: 700;
+    .header {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 6px;
+        direction: ltr;
+        table-layout: fixed;
     }
-    .items td { border-bottom: 1px solid #eee; padding: 8px 6px; vertical-align: top; color: #333; }
-    .items .num { text-align: right; direction: ltr; white-space: nowrap; }
-    .items .thumb { width: 126px; height: 126px; object-fit: cover; border: 1px solid #ddd; border-radius: 6px; display: block; }
-    .items .thumb-empty { width: 126px; height: 126px; background: #f5f5f5; border: 1px solid #eee; border-radius: 6px; }
-    .items .section-row td {
-        background: #e8eef5; font-weight: 700; font-size: 13px; padding: 10px 8px;
-        border-top: 1px solid #c5d4e8; border-bottom: 1px solid #c5d4e8; color: #1e3a5f; text-align: center;
+    .header td { vertical-align: middle; border: none; padding: 0; }
+    .header-brand {
+        width: 32%;
+        padding: 0 14px 0 0;
+        vertical-align: middle !important;
+    }
+    .header-brand-inner {
+        display: inline-block;
+        width: auto;
+        max-width: 100%;
+        text-align: left;
+    }
+    .brand-head { margin-bottom: 4px; }
+    .brand-head .brand-name {
+        font-size: 18px;
+        font-weight: 700;
+        color: #1a437f;
+        line-height: 1.05;
+        text-align: left;
+        direction: rtl;
+        margin: 0;
+        white-space: nowrap;
+    }
+    .brand-head .brand-name-en {
+        font-size: 10px;
+        font-weight: 700;
+        color: #1a437f;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        text-align: left;
+        margin: 2px 0 0;
+        line-height: 1.1;
+    }
+    .brand-head-line {
+        height: 1px;
+        background: #1a437f;
+        margin: 3px 0 6px;
+        width: 100%;
+    }
+    .header-contact-rows {
+        font-size: 10px;
+        color: #1a437f;
+        font-weight: 600;
+        line-height: 1.2;
+    }
+    .header-contact-rows .row {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 7px;
+        margin: 0;
+        white-space: nowrap;
+        direction: ltr;
+    }
+    .header-contact-rows .row + .row { margin-top: 3px; }
+    .header-contact-rows img { width: 16px; height: 16px; flex-shrink: 0; }
+
+    .header-center {
+        width: 32%;
+        text-align: center;
+        vertical-align: middle !important;
+        padding: 0 12px;
+        border-left: 1.5px solid #d0d8e4;
+        border-right: 1.5px solid #d0d8e4;
+    }
+    .header-center img.logo {
+        width: 152px;
+        max-width: 152px;
+        max-height: 140px;
+        height: auto;
+        display: block;
+        object-fit: contain;
+        margin: 0 auto;
     }
 
-    .summary-page {
-        page-break-before: always;
-        break-before: page;
-        padding-top: 8px;
+    .doc-cell {
+        width: 36%;
+        direction: rtl;
+        padding: 0;
+        vertical-align: middle !important;
+        text-align: right;
+    }
+    .doc-right {
+        display: inline-block;
+        width: auto;
+        max-width: 100%;
+        margin-left: auto;
+        margin-right: 0;
+        text-align: right;
+    }
+    .doc-head { margin-bottom: 4px; }
+    .doc-head .ar-title {
+        font-size: 18px; font-weight: 700; color: #1a437f;
+        line-height: 1.05; text-align: right; margin: 0;
+        white-space: nowrap;
+    }
+    .doc-head .en-title {
+        font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+        color: #1a437f; text-align: right; margin: 2px 0 0;
+        line-height: 1.1;
+    }
+    .doc-head-line {
+        height: 1px;
+        background: #1a437f;
+        margin: 3px 0 4px;
+        width: 100%;
+    }
+    .meta-box {
+        display: inline-block;
+        width: auto;
+        max-width: 100%;
+        background: transparent;
+        border: none;
+        border-radius: 0;
+        padding: 0;
+    }
+    .meta-line {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        padding: 5px 0;
+        border-bottom: 1px solid #d8e4f0;
+        direction: rtl;
+        white-space: nowrap;
+    }
+    .meta-line:last-child { border-bottom: none; }
+    .meta-lab {
+        font-size: 10px;
+        font-weight: 600;
+        color: #333;
+        text-align: right;
+        flex: 0 0 auto;
+    }
+    .meta-val {
+        font-size: 10px;
+        font-weight: 700;
+        color: #1a437f;
+        direction: ltr;
+        text-align: left;
+        flex: 0 0 auto;
+    }
+    .meta-val.ar { direction: rtl; unicode-bidi: embed; }
+
+    .client-for-bar {
+        width: 100%;
+        margin-top: 10px;
+        margin-bottom: 2px;
         position: relative;
-        min-height: 520px;
-        padding-bottom: 78px;
+        z-index: 1;
+        text-align: right;
+        direction: rtl;
+    }
+    .client-for-bar .meta-line {
+        display: inline-flex;
+        width: auto;
+        max-width: 100%;
+        justify-content: flex-start;
+        gap: 8px;
+        padding: 6px 0 8px;
+        border-bottom: 1px solid #d8e4f0;
+    }
+
+    .items {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 0;
+        margin-bottom: 14px;
+        position: relative;
+        z-index: 1;
+        table-layout: fixed;
+        border: none;
+    }
+    .items th {
+        background: #1a437f;
+        color: #fff;
+        border: none;
+        border-top: 1.5px solid #1a437f;
+        border-bottom: 1.5px solid #1a437f;
+        text-align: center;
+        padding: 9px 6px 8px;
+        font-size: 10.5px;
+        font-weight: 700;
+        white-space: nowrap;
+        line-height: 1.2;
+        vertical-align: middle;
+    }
+    .items td {
+        border: none;
+        border-bottom: 1px solid #e2eaf4;
+        padding: 10px 6px;
+        vertical-align: middle;
+        color: #1a437f;
+        font-size: 10.5px;
+        line-height: 1.35;
+        word-wrap: break-word;
+        overflow-wrap: anywhere;
+    }
+    .items tbody tr:nth-child(even) td { background: #f8fbff; }
+    .items tbody tr:last-child td { border-bottom: 1px solid #b8cce8; }
+    .items .code { text-align: center; white-space: nowrap; font-weight: 600; }
+    .items .desc { text-align: left; vertical-align: top; }
+    .items .img-cell { text-align: center; vertical-align: middle; padding: 6px 4px; }
+    .items .num { text-align: right; direction: ltr; white-space: nowrap; font-weight: 600; }
+    .items .thumb {
+        width: 84px; height: 84px; object-fit: cover;
+        border: 1px solid #b8cce8; border-radius: 6px;
+        display: block; margin: 0 auto;
+    }
+    .items .thumb-empty {
+        width: 84px; height: 84px; background: #f5f8fc;
+        border: 1px solid #b8cce8; border-radius: 6px; margin: 0 auto;
+    }
+    .items .section-row td {
+        background: #eef4fb !important; font-weight: 700; font-size: 12px; padding: 9px 8px;
+        border: none;
+        border-bottom: 1px solid #c5d8ef;
+        color: #1a437f; text-align: center;
     }
 
     .totals { width: 45%; margin-left: auto; border-collapse: collapse; margin-bottom: 12px; }
-    .totals td { padding: 4px 6px; font-size: 11px; }
+    .totals td { padding: 4px 6px; font-size: 11px; color: #333; }
     .totals .label { text-align: right; color: #555; }
-    .totals .val { text-align: right; white-space: nowrap; width: 120px; direction: ltr; }
+    .totals .val { text-align: right; white-space: nowrap; width: 120px; direction: ltr; color: #333; }
     .totals .grand td {
         border-top: 2px solid #2177cf; border-bottom: 2px solid #2177cf;
         font-size: 14px; font-weight: 700; padding-top: 8px; padding-bottom: 8px; color: #2177cf;
@@ -173,6 +375,7 @@
         bottom: 0;
         height: 72px;
         overflow: hidden;
+        margin-top: auto;
     }
     .thanks-bar {
         position: absolute;
@@ -202,80 +405,112 @@
 
     @media print {
         @page { size: A4 portrait; margin: 0; }
-        html, body, .page-wrap { background: #fff !important; padding: 0 !important; margin: 0 !important; }
+        html, body, .page-wrap { background: #fff !important; padding: 0 !important; margin: 0 !important; gap: 0 !important; }
         .page-wrap { display: block !important; }
-        .sheet { width: 210mm !important; padding: 10px 12px 24px !important; margin: 0 !important; }
-        .summary-page { padding-bottom: 70px !important; min-height: 260mm !important; }
+        .sheet {
+            width: 210mm !important;
+            min-height: 297mm !important;
+            padding: 10px 12px 24px !important;
+            margin: 0 !important;
+            page-break-after: always;
+            break-after: page;
+        }
+        .sheet:last-child { page-break-after: auto; break-after: auto; }
+        .sheet-summary { padding: 90px 36px 70px 36px !important; }
+        body.doc-invoice .sheet { padding-right: 36px !important; }
+        body.doc-invoice .sheet-summary { padding-right: 54px !important; }
         * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
     }
 </style>
 </head>
-<body>
+<body class="{{ ($docType ?? '') === 'invoice' ? 'doc-invoice' : '' }}">
 <div class="page-wrap">
-<div class="sheet">
 
 @php
     $docTitleShort = ucfirst(strtolower($docTitleEn));
     $totalDiscount = round((float) ($discounts['line_discount_total'] ?? 0) + (float) ($discounts['global_discount'] ?? 0), 2);
 @endphp
 
-<div class="doc-first-pages">
+<div class="sheet">
 @if(!empty($logoDataUri))
 <div class="watermark"><img src="{{ $logoDataUri }}" alt=""></div>
 @endif
 
-<table class="top">
+<table class="header">
     <tr>
-        <td class="left-brand">
-            <table class="brand-inner">
-                <tr>
-                    <td class="logo-td">
-                        @if(!empty($logoDataUri))
-                            <img class="logo" src="{{ $logoDataUri }}" alt="">
-                        @endif
-                    </td>
-                    <td>
-                        <div class="brand-name ar">{{ $companyNameAr }}</div>
-                        <div class="brand-contact">
-                            <div class="row"><img src="{{ $iconPhone }}" alt=""><span class="en">{{ $phone }}</span></div>
-                            <div class="row"><img src="{{ $iconEmail }}" alt=""><span class="en">{{ $email }}</span></div>
-                            <div class="row"><img src="{{ $iconLocation }}" alt=""><span class="ar">{{ $addressAr }}</span></div>
-                            @if(!empty($trn))
-                                <div class="trn-line en">TRN: {{ $trn }}</div>
-                            @endif
-                        </div>
-                    </td>
-                </tr>
-            </table>
+        <td class="header-brand">
+            <div class="header-brand-inner">
+                <div class="brand-head">
+                    <div class="brand-name ar">{{ $companyNameAr }}</div>
+                    <div class="brand-name-en en">{{ $companyNameEn }}</div>
+                </div>
+                <div class="brand-head-line"></div>
+                <div class="header-contact-rows">
+                    <div class="row"><img src="{{ $iconPhone }}" alt=""><span class="en">{{ $phone }}</span></div>
+                    <div class="row"><img src="{{ $iconEmail }}" alt=""><span class="en">{{ $email }}</span></div>
+                    <div class="row"><img src="{{ $iconLocation }}" alt=""><span class="ar">{{ $addressAr }}</span></div>
+                </div>
+            </div>
         </td>
-        <td class="right-doc">
-            <p class="doc-title">{{ $docTitleShort }}</p>
-            <p class="meta"><strong>{{ $docTitleShort }} No:</strong> <span class="en">{{ $docNumber }}</span></p>
-            <p class="meta"><strong>Date:</strong> <span class="en">{{ $dateLabel }}</span></p>
-            @if(!empty($extraMetaRows))
-                @foreach($extraMetaRows as $row)
-                <p class="meta"><strong>{{ $row['label'] }}:</strong> <span class="en">{{ $row['value'] }}</span></p>
-                @endforeach
+        <td class="header-center">
+            @if(!empty($logoDataUri))
+                <img class="logo" src="{{ $logoDataUri }}" alt="">
             @endif
+        </td>
+        <td class="doc-cell">
+            <div class="doc-right">
+                <div class="doc-head">
+                    <div class="ar-title">{{ $docTitleAr }}</div>
+                    <div class="en-title en">{{ $docTitleEn }}</div>
+                </div>
+                <div class="doc-head-line"></div>
+                <div class="meta-box">
+                    <div class="meta-line">
+                        <span class="meta-lab">{{ $numberLabelAr }} / {{ $docTitleShort }} No</span>
+                        <span class="meta-val en">{{ $docNumber }}</span>
+                    </div>
+                    <div class="meta-line">
+                        <span class="meta-lab">التاريخ / Date</span>
+                        <span class="meta-val en">{{ $dateLabel }}</span>
+                    </div>
+                    @if(!empty($extraMetaRows))
+                        @foreach($extraMetaRows as $row)
+                        <div class="meta-line">
+                            <span class="meta-lab">{{ $row['label'] }}</span>
+                            <span class="meta-val en">{{ $row['value'] }}</span>
+                        </div>
+                        @endforeach
+                    @endif
+                </div>
+            </div>
         </td>
     </tr>
 </table>
 
-<div class="for">
-    <strong>For:</strong>
-    <span class="{{ !empty($clientNameIsArabic) ? 'ar' : '' }}">{{ $clientName }}</span>
-</div>
-
 @if(count($items))
+<div class="client-for-bar">
+    <div class="meta-line">
+        <span class="meta-lab">من / For</span>
+        <span class="meta-val {{ !empty($clientNameIsArabic) ? 'ar' : 'en' }}">{{ $clientName }}</span>
+    </div>
+</div>
 <table class="items">
+    <colgroup>
+        <col style="width:9%">
+        <col style="width:34%">
+        <col style="width:14%">
+        <col style="width:9%">
+        <col style="width:16%">
+        <col style="width:18%">
+    </colgroup>
     <thead>
         <tr>
-            <th style="width:10%">Code</th>
-            <th style="width:32%">Description</th>
-            <th style="width:18%">Image</th>
-            <th style="width:8%" class="num">Quantity</th>
-            <th style="width:12%" class="num">Rate</th>
-            <th style="width:14%" class="num">Amount</th>
+            <th>Code</th>
+            <th>Description</th>
+            <th>Image</th>
+            <th>Qty</th>
+            <th>Rate</th>
+            <th>Amount</th>
         </tr>
     </thead>
     <tbody>
@@ -286,9 +521,9 @@
         </tr>
         @else
         <tr>
-            <td>{{ $item['code'] }}</td>
-            <td class="{{ !empty($item['descriptionIsArabic']) ? 'ar' : '' }}">{!! nl2br(e($item['description'])) !!}</td>
-            <td>
+            <td class="code">{{ $item['code'] }}</td>
+            <td class="desc {{ !empty($item['descriptionIsArabic']) ? 'ar' : '' }}">{!! nl2br(e($item['description'])) !!}</td>
+            <td class="img-cell">
                 @if(!empty($item['imageDataUri']))
                     <img class="thumb" src="{{ $item['imageDataUri'] }}" alt="">
                 @else
@@ -306,10 +541,11 @@
 @endif
 </div>
 
-<div class="summary-page">
+<div class="sheet sheet-summary">
+<div class="summary-content">
 <table class="totals">
     @if($totalDiscount > 0)
-    <tr class="disc-row">
+    <tr>
         <td class="label">Subtotal</td>
         <td class="val">{{ $currency }} {{ number_format((float)$discounts['gross_subtotal'], 2) }}</td>
     </tr>
@@ -385,6 +621,7 @@
         </td>
     </tr>
 </table>
+</div>
 
 <div class="footer">
     <div class="thanks-bar">
@@ -428,7 +665,6 @@
 </div>
 </div>
 
-</div>
 </div>
 </body>
 </html>

@@ -2,7 +2,8 @@
   <div dir="rtl">
     <div class="sf-page-header">
       <div>
-        <h1 class="text-2xl font-bold text-gray-900">المشاريع | Projects</h1>
+        <h1 class="text-2xl font-bold text-gray-900">مشاريع التنفيذ | CRM Projects</h1>
+        <p class="text-sm text-gray-500 mt-1">مشاريع العملاء الداخلية — لا تظهر في الموقع. للموقع الخارجي استخدم «مشاريع الموقع».</p>
         <p class="text-gray-600 mt-1 text-sm">إدارة مشاريع العملاء — العروض والفواتير والملفات</p>
       </div>
       <router-link

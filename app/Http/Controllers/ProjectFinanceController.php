@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Invoice;
 use App\Models\Project;
+use App\Models\Quotation;
 use App\Models\ProjectDeliveryNote;
 use App\Models\ProjectExpense;
 use App\Models\ProjectPayment;
@@ -944,6 +945,7 @@ class ProjectFinanceController extends Controller
         $dash = '—';
         $clientPhone = $this->formatUaePhone((string) ($customer?->phone ?: ''));
         $deliveryPhone = $this->formatUaePhone((string) ($siteContact?->phone ?: ($customer?->phone ?: '')));
+        $amounts = $this->resolveDeliveryNoteAmounts($project);
 
         return [
             'noteNumber' => (string) ($note->number ?: 'DN'),
@@ -969,10 +971,10 @@ class ProjectFinanceController extends Controller
             'deliveryNotes' => (string) ($note->title ?: ''),
             'notes' => (string) ($note->notes ?: ''),
             'items' => $items,
-            'totalAmount' => '',
-            'discountAmount' => '',
-            'vatAmount' => '',
-            'grandTotal' => '',
+            'totalAmount' => $amounts['totalAmount'],
+            'discountAmount' => $amounts['discountAmount'],
+            'vatAmount' => $amounts['vatAmount'],
+            'grandTotal' => $amounts['grandTotal'],
             'iconCash' => $icons['cash'],
             'iconBank' => $icons['bank'],
             'iconCheque' => $icons['cheque'],
@@ -981,6 +983,61 @@ class ProjectFinanceController extends Controller
             'iconLocation' => $icons['location'],
             'waveSvg' => $icons['wave'],
             'fontEmbedCss' => $this->receiptFontEmbedCss(),
+        ];
+    }
+
+    /** @return array{totalAmount: string, discountAmount: string, vatAmount: string, grandTotal: string} */
+    private function resolveDeliveryNoteAmounts(Project $project): array
+    {
+        $empty = [
+            'totalAmount' => '',
+            'discountAmount' => '',
+            'vatAmount' => '',
+            'grandTotal' => '',
+        ];
+
+        $invoice = $project->invoices()
+            ->where('status', '!=', 'cancelled')
+            ->with('quotation.items')
+            ->orderByDesc('date')
+            ->orderByDesc('id')
+            ->first();
+
+        $quotation = $invoice?->quotation
+            ?? $project->quotations()
+                ->whereIn('status', ['accepted', 'sent', 'draft'])
+                ->with('items')
+                ->orderByDesc('date')
+                ->orderByDesc('id')
+                ->first();
+
+        if (!$quotation instanceof Quotation) {
+            return $empty;
+        }
+
+        $quotation->loadMissing('items');
+        $currency = (string) ($quotation->currency ?: 'AED');
+        $discounts = $quotation->discountBreakdown();
+        $gross = (float) ($discounts['gross_subtotal'] ?? 0);
+        $totalDiscount = round(
+            (float) ($discounts['line_discount_total'] ?? 0) + (float) ($discounts['global_discount'] ?? 0),
+            2
+        );
+        $vat = (float) ($quotation->tax_amount ?? 0);
+        $net = (float) ($discounts['net_before_tax'] ?? 0);
+        $grand = round($net + $vat, 2);
+
+        $fmt = static fn (float $amount): string => $currency . ' ' . number_format($amount, 2);
+
+        if ($gross <= 0 && $vat <= 0) {
+            return $empty;
+        }
+
+        return [
+            'totalAmount' => $gross > 0 ? $fmt($gross) : '',
+            'discountAmount' => $totalDiscount > 0 ? $fmt($totalDiscount) : '',
+            'vatAmount' => $vat > 0 ? $fmt($vat) : '',
+            'grandTotal' => $fmt($grand),
         ];
     }
 

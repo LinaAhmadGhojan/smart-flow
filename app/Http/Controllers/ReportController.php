@@ -264,6 +264,8 @@ class ReportController extends Controller
 
         $logoPath = $this->absoluteAssetPath($company['logo'] ?? null) ?? public_path('logo.jpeg');
 
+        $signaturePath = $this->absoluteAssetPath($company['signature'] ?? null);
+
         $icons = $this->reportIconDataUris();
 
 
@@ -344,7 +346,9 @@ class ReportController extends Controller
 
             'report' => $report,
 
-            'logoDataUri' => $this->toDataUri($logoPath, 220),
+            'logoDataUri' => $this->toDataUri($logoPath, 350),
+
+            'signatureDataUri' => $this->toDataUri($signaturePath, 180),
 
             'companyNameAr' => $companyNameAr,
 

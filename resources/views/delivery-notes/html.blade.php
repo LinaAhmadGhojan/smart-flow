@@ -211,6 +211,10 @@
     .stamp-box {
         border: 1.3px dashed #8faed0; height: 62px; border-radius: 4px; margin-top: 6px;
         background: #fff;
+        display: flex; align-items: center; justify-content: center; overflow: hidden;
+    }
+    .stamp-box img {
+        max-width: 100%; max-height: 100%; object-fit: contain; display: block;
     }
 
     .footer {
@@ -449,7 +453,11 @@
                 <svg class="sig-ico" viewBox="0 0 24 24"><rect x="7" y="3.5" width="10" height="12" rx="1.2"/><path d="M9 7.5h6M9 10h6M9 12.5h4"/><path d="M8 16.5h8v2.2c0 .7-1.8 1.5-4 1.5s-4-.8-4-1.5V16.5z"/></svg>
                 <div class="sig-ttl">توقيع الشركة</div>
             </div>
-            <div class="stamp-box"></div>
+            <div class="stamp-box">
+                @if(!empty($signatureDataUri))
+                    <img src="{{ $signatureDataUri }}" alt="">
+                @endif
+            </div>
         </td>
         <td>
             <div class="sig-head">

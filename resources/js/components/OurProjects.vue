@@ -219,7 +219,7 @@ function getEmbedUrl(url: string | null): string {
 
 onMounted(async () => {
   try {
-    const response = await axios.get('/api/projects')
+    const response = await axios.get('/api/project-masters')
     projects.value = Array.isArray(response.data) ? response.data : []
     projects.value.forEach((p) => { currentIndex.value[p.id] = 0 })
   } catch (error) {

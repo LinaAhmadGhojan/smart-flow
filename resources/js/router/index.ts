@@ -14,6 +14,8 @@ import AdminGroups from '@/views/AdminGroups.vue'
 import AdminGroupEdit from '@/views/AdminGroupEdit.vue'
 import AdminProjectsPage from '@/views/AdminProjectsPage.vue'
 import AdminProjectEdit from '@/views/AdminProjectEdit.vue'
+import AdminProjectMastersPage from '@/views/AdminProjectMastersPage.vue'
+import AdminProjectMasterEdit from '@/views/AdminProjectMasterEdit.vue'
 import AdminPayments from '@/views/AdminPayments.vue'
 import AdminPaymentReceiptView from '@/views/AdminPaymentReceiptView.vue'
 import AdminSettings from '@/views/AdminSettings.vue'
@@ -149,6 +151,21 @@ const router = createRouter({
           path: 'projects/:id',
           name: 'admin-project-edit',
           component: AdminProjectEdit,
+        },
+        {
+          path: 'project-masters',
+          name: 'admin-project-masters',
+          component: AdminProjectMastersPage,
+        },
+        {
+          path: 'project-masters/new',
+          name: 'admin-project-master-new',
+          component: AdminProjectMasterEdit,
+        },
+        {
+          path: 'project-masters/:id',
+          name: 'admin-project-master-edit',
+          component: AdminProjectMasterEdit,
         },
         {
           path: 'payments',

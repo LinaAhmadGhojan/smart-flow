@@ -7,6 +7,7 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\EngineerController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ProjectMasterController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectFinanceController;
 use App\Http\Controllers\OfferController;
@@ -56,9 +57,11 @@ Route::post('/settings', [SettingsController::class, 'update']);
 Route::post('/settings/branding', [SettingsController::class, 'updateBranding']);
 Route::post('/admin/settings/branding', [SettingsController::class, 'updateBranding']);
 
-// Public project routes
-Route::get('/projects', [ProjectController::class, 'index']);
-Route::get('/projects/{project}', [ProjectController::class, 'show']);
+// Public portfolio (website — separate from CRM projects)
+Route::get('/project-masters', [ProjectMasterController::class, 'index']);
+Route::get('/project-masters/{projectMaster}', [ProjectMasterController::class, 'show']);
+Route::get('/projects', [ProjectMasterController::class, 'index']);
+Route::get('/projects/{projectMaster}', [ProjectMasterController::class, 'show']);
 
 // Public reviews routes (العميل يشوف ويرسل)
 Route::get('/reviews', [ReviewController::class, 'index']);
@@ -115,6 +118,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/projects/{project}', [ProjectController::class, 'update']); // POST for FormData
     Route::put('/projects/{project}', [ProjectController::class, 'update']);
     Route::delete('/projects/{project}', [ProjectController::class, 'destroy']);
+
+    // Website portfolio (project masters — not CRM projects)
+    Route::get('/admin/project-masters', [ProjectMasterController::class, 'adminIndex']);
+    Route::get('/admin/project-masters/{projectMaster}', [ProjectMasterController::class, 'adminShow']);
+    Route::patch('/admin/project-masters/{projectMaster}/visibility', [ProjectMasterController::class, 'toggleVisibility']);
+    Route::post('/project-masters', [ProjectMasterController::class, 'store']);
+    Route::post('/project-masters/{projectMaster}', [ProjectMasterController::class, 'update']);
+    Route::put('/project-masters/{projectMaster}', [ProjectMasterController::class, 'update']);
+    Route::delete('/project-masters/{projectMaster}', [ProjectMasterController::class, 'destroy']);
 
     // Admin appointment routes (إدارة جدول المواعيد)
     Route::get('/admin/appointments/contacts', [AppointmentController::class, 'contacts']);

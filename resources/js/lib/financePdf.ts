@@ -3,6 +3,7 @@ import { toPng } from 'html-to-image'
 import { jsPDF } from 'jspdf'
 
 const DOC_W = 794
+const PAGE_H = 1123
 
 export function invoiceHtmlPath(invoiceId: number | string): string {
   return `/admin/invoices/${invoiceId}/html`
@@ -50,7 +51,7 @@ async function prepareDocument(doc: Document): Promise<void> {
   await new Promise((r) => setTimeout(r, 600))
 }
 
-function prepareSheetForCapture(doc: Document): HTMLElement {
+function prepareCaptureRoot(doc: Document): void {
   doc.body.classList.add('fd-capture')
   const pageWrap = doc.querySelector('.page-wrap') as HTMLElement | null
   if (pageWrap) {
@@ -59,37 +60,50 @@ function prepareSheetForCapture(doc: Document): HTMLElement {
     pageWrap.style.minHeight = 'auto'
     pageWrap.style.display = 'block'
   }
-  const sheet = doc.querySelector('.sheet') as HTMLElement | null
-  if (!sheet) {
-    throw new Error('لم يتم العثور على محتوى المستند')
-  }
-  sheet.style.width = `${DOC_W}px`
-  sheet.style.maxWidth = `${DOC_W}px`
-  sheet.style.overflow = 'visible'
-  return sheet
+  doc.querySelectorAll('.sheet').forEach((sheet) => {
+    const el = sheet as HTMLElement
+    el.style.width = `${DOC_W}px`
+    el.style.maxWidth = `${DOC_W}px`
+    el.style.overflow = 'visible'
+  })
 }
 
-function addTallImageToPdf(pdf: jsPDF, dataUrl: string, imgPxW: number, imgPxH: number): void {
+async function captureElementPng(el: HTMLElement): Promise<{ dataUrl: string; width: number; height: number }> {
+  const width = DOC_W
+  const height = Math.max(el.scrollHeight, el.offsetHeight, PAGE_H)
+
+  const dataUrl = await toPng(el, {
+    width,
+    height,
+    canvasWidth: width * 2,
+    canvasHeight: height * 2,
+    pixelRatio: 2,
+    cacheBust: true,
+    backgroundColor: '#ffffff',
+    skipAutoScale: true,
+  })
+
+  return { dataUrl, width, height }
+}
+
+function addPageImage(pdf: jsPDF, dataUrl: string, imgPxW: number, imgPxH: number, isFirst: boolean): void {
+  if (!isFirst) {
+    pdf.addPage()
+  }
+
   const pageW = pdf.internal.pageSize.getWidth()
   const pageH = pdf.internal.pageSize.getHeight()
   const imgHmm = (imgPxH / imgPxW) * pageW
-  let yOffset = 0
-  let pageIndex = 0
+  const drawH = Math.min(imgHmm, pageH)
+  const drawW = (drawH / imgHmm) * pageW
 
-  while (yOffset < imgHmm - 0.5) {
-    if (pageIndex > 0) {
-      pdf.addPage()
-    }
-    pdf.addImage(dataUrl, 'PNG', 0, -yOffset, pageW, imgHmm, undefined, 'FAST')
-    yOffset += pageH
-    pageIndex += 1
-  }
+  pdf.addImage(dataUrl, 'PNG', 0, 0, drawW, drawH, undefined, 'FAST')
 }
 
 async function captureHtmlToPdf(html: string, filename: string): Promise<void> {
   const frame = document.createElement('iframe')
   frame.style.cssText =
-    'position:fixed;left:-9999px;top:0;width:820px;height:1400px;border:0;opacity:0;pointer-events:none'
+    'position:fixed;left:-9999px;top:0;width:820px;height:2400px;border:0;opacity:0;pointer-events:none'
   frame.srcdoc = html
   document.body.appendChild(frame)
 
@@ -106,23 +120,20 @@ async function captureHtmlToPdf(html: string, filename: string): Promise<void> {
     }
 
     await prepareDocument(doc)
-    const sheet = prepareSheetForCapture(doc)
-    const width = DOC_W
-    const height = Math.max(sheet.scrollHeight, sheet.offsetHeight, 1123)
+    prepareCaptureRoot(doc)
 
-    const dataUrl = await toPng(sheet, {
-      width,
-      height,
-      canvasWidth: width * 2,
-      canvasHeight: height * 2,
-      pixelRatio: 2,
-      cacheBust: true,
-      backgroundColor: '#ffffff',
-      skipAutoScale: true,
-    })
+    const sheets = Array.from(doc.querySelectorAll('.sheet')) as HTMLElement[]
+    if (!sheets.length) {
+      throw new Error('لم يتم العثور على محتوى المستند')
+    }
 
     const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4', compress: true })
-    addTallImageToPdf(pdf, dataUrl, width, height)
+
+    for (let i = 0; i < sheets.length; i += 1) {
+      const shot = await captureElementPng(sheets[i])
+      addPageImage(pdf, shot.dataUrl, shot.width, shot.height, i === 0)
+    }
+
     pdf.save(filename)
   } finally {
     frame.remove()

@@ -7,5 +7,17 @@
     },
     "arbold": {
         "normal": "arbold_normal_641c0331732864792db2a87e08a994fb"
+    },
+    "cairo": {
+        "normal": "C:\\Users\\DELL\\Documents\\smartflowuae.com\\public_html\\storage\\fonts/cairo_normal_e11411d949264728abbf85ac5f527ad1",
+        "bold": "cairo_bold_89c0a9609c8978fcb12f8010c27d0d96"
+    },
+    "tajawal": {
+        "normal": "C:\\Users\\DELL\\Documents\\smartflowuae.com\\public_html\\storage\\fonts/tajawal_normal_6b015b87265129cea10f67ffc2e93abb",
+        "bold": "tajawal_bold_525f08c85e07b2c56aba595811b78e01"
+    },
+    "cairofallback": {
+        "normal": "C:\\Users\\DELL\\Documents\\smartflowuae.com\\public_html\\storage\\fonts/cairofallback_normal_172f54f6fc85c29f8535137c9c425646",
+        "bold": "cairofallback_bold_6750f8cb919b6c1250aa6a413b15ee7d"
     }
 }

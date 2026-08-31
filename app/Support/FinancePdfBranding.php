@@ -112,15 +112,18 @@ class FinancePdfBranding
 
         return [
             'iconPhone' => $svg(
-                '<path d="M11 4 C9.4 4 8.2 5.3 8.4 6.9 C9 11.2 11.1 15.1 14.3 18.3 C17.5 21.5 21.4 23.6 25.7 24.2 C27.3 24.4 28.6 23.2 28.6 21.6 V19.1 C28.6 18.3 28.1 17.7 27.3 17.4 L24.1 16.4 C23.5 16.2 22.8 16.4 22.4 16.9 L20.9 18.7 C18.3 17.5 16.1 15.3 14.9 12.7 L16.7 11.2 C17.2 10.8 17.4 10.1 17.2 9.5 L16.2 6.3 C16 5.5 15.4 5 14.6 5 Z" fill="' . $blue . '"/>'
+                '<circle cx="16" cy="16" r="16" fill="' . $blue . '"/>'
+                . '<path d="M13.2 11.2c-.7 0-1.2.6-1.1 1.3.4 2.5 1.8 4.8 3.7 6.7s4.2 3.3 6.7 3.7c.7.1 1.3-.4 1.3-1.1v-1.8c0-.5-.3-.9-.8-1l-2-.6c-.4-.1-.9.1-1.1.5l-.7 1c-1.5-.8-2.7-2-3.5-3.5l1-.7c.3-.4.4-.9 0-1.2l-.6-2c-.1-.5-.5-.8-1-.8h-1.8z" fill="#fff"/>'
             ),
             'iconEmail' => $svg(
-                '<rect x="4" y="8" width="24" height="18" rx="2.2" stroke="' . $blue . '" stroke-width="2" fill="none"/>'
-                . '<path d="M5.5 10.5 L16 18 L26.5 10.5" stroke="' . $blue . '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>'
+                '<circle cx="16" cy="16" r="16" fill="' . $blue . '"/>'
+                . '<rect x="9" y="11" width="14" height="10" rx="1.5" stroke="#fff" stroke-width="1.4" fill="none"/>'
+                . '<path d="M9.8 12.2 L16 16.5 L22.2 12.2" stroke="#fff" stroke-width="1.4" stroke-linecap="round" fill="none"/>'
             ),
             'iconLocation' => $svg(
-                '<path d="M16 3 C11.6 3 8 6.7 8 11.2 C8 17.4 16 26 16 26 C16 26 24 17.4 24 11.2 C24 6.7 20.4 3 16 3 Z" fill="' . $blue . '"/>'
-                . '<circle cx="16" cy="11" r="3.2" fill="#fff"/>'
+                '<circle cx="16" cy="16" r="16" fill="' . $blue . '"/>'
+                . '<path d="M16 8.5c-2.8 0-5 2.3-5 5.1c0 3.8 5 9.4 5 9.4s5-5.6 5-9.4c0-2.8-2.2-5.1-5-5.1z" fill="#fff"/>'
+                . '<circle cx="16" cy="13.6" r="1.8" fill="' . $blue . '"/>'
             ),
             'waveSvg' => $pngUri($iconsDir . DIRECTORY_SEPARATOR . 'wave.png') ?: 'data:image/svg+xml;base64,' . base64_encode(
                 '<?xml version="1.0" encoding="UTF-8"?>'

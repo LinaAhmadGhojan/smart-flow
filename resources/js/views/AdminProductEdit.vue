@@ -16,6 +16,15 @@
       {{ error }}
     </div>
 
+    <div class="relative">
+      <div
+        v-if="pageLoading"
+        class="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 rounded-xl bg-white/80 backdrop-blur-[1px]"
+      >
+        <div class="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
+        <p class="text-sm text-gray-600">جاري تحميل البيانات...</p>
+      </div>
+
     <form @submit.prevent="handleSubmit" class="sf-card p-4 sm:p-6 md:p-8 space-y-6 w-full">
       <div class="sf-form-grid">
         <div class="min-w-0">
@@ -160,13 +169,23 @@
         </RouterLink>
         <button
           type="submit"
-          :disabled="loading"
+          :disabled="loading || pageLoading"
           class="px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-medium rounded-lg"
         >
           {{ loading ? 'Saving...' : (isNew ? 'Create | إنشاء' : 'Update | تحديث') }}
         </button>
+        <button
+          v-if="nextProduct"
+          type="button"
+          :disabled="loading || pageLoading"
+          class="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-medium rounded-lg"
+          @click="goToNextProduct"
+        >
+          {{ pageLoading ? 'جاري التحميل...' : 'التالي' }}
+        </button>
       </div>
     </form>
+    </div>
   </div>
 </template>
 
@@ -175,18 +194,33 @@ import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute, useRouter, RouterLink, onBeforeRouteUpdate } from 'vue-router'
 import api from '@/lib/api'
 import { mediaUrl, handleMediaError } from '@/lib/media'
+import {
+  getNextProduct,
+  readProductNavList,
+  saveProductNavList,
+  type ProductNavItem,
+} from '@/lib/adminProductNav'
 
 const route = useRoute()
 const router = useRouter()
 
 const isNew = computed(() => route.name === 'admin-product-new')
 const loading = ref(false)
+const pageLoading = ref(false)
 const error = ref('')
 const success = ref('')
 const categories = ref<any[]>([])
 const groups = ref<any[]>([])
 const imagePreview = ref<string | null>(null)
 const imageFile = ref<File | null>(null)
+const productNavList = ref<ProductNavItem[]>(readProductNavList())
+
+const nextProduct = computed(() => {
+  if (isNew.value) return null
+  const currentId = Number(route.params.id)
+  if (!currentId) return null
+  return getNextProduct(currentId, productNavList.value)
+})
 
 const form = ref({
   name: '',
@@ -242,11 +276,32 @@ const applyProductToForm = (product: any) => {
   }
   if (product.image) {
     imagePreview.value = mediaUrl(product.image)
+  } else {
+    imagePreview.value = null
   }
   imageFile.value = null
 }
 
+const goToNextProduct = async () => {
+  const next = nextProduct.value
+  if (!next || pageLoading.value || loading.value) return
+
+  pageLoading.value = true
+  success.value = ''
+  error.value = ''
+
+  try {
+    await router.push({
+      name: 'admin-product-edit',
+      params: { id: String(next.id) },
+    })
+  } catch {
+    pageLoading.value = false
+  }
+}
+
 const fetchData = async () => {
+  pageLoading.value = true
   try {
     const [categoriesRes, groupsRes] = await Promise.all([
       api.get('/categories'),
@@ -254,6 +309,17 @@ const fetchData = async () => {
     ])
     categories.value = categoriesRes.data
     groups.value = Array.isArray(groupsRes.data) ? groupsRes.data : []
+
+    if (!productNavList.value.length) {
+      const productsRes = await api.get('/products')
+      const list = productsRes.data.products || productsRes.data
+      productNavList.value = (Array.isArray(list) ? list : []).map((p: any) => ({
+        id: p.id,
+        name: p.name,
+        name_ar: p.name_ar,
+      }))
+      saveProductNavList(productNavList.value)
+    }
 
     if (!isNew.value) {
       const productRes = await api.get(`/products/${route.params.id}`)
@@ -263,6 +329,8 @@ const fetchData = async () => {
     if (!isNew.value) {
       error.value = err.response?.data?.error || 'Failed to load data'
     }
+  } finally {
+    pageLoading.value = false
   }
 }
 
@@ -332,6 +400,10 @@ watch(
   () => route.params.id,
   (id, prev) => {
     if (id && id !== prev) {
+      productNavList.value = readProductNavList()
+      success.value = ''
+      error.value = ''
+      window.scrollTo({ top: 0, behavior: 'smooth' })
       fetchData()
     }
   },

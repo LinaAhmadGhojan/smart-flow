@@ -106,7 +106,7 @@
               </a>
             </div>
 
-            <div class="pt-2 flex items-center justify-between gap-3">
+            <div class="pt-2 flex items-center justify-between gap-3 flex-wrap">
               <div v-if="gallery(project).length > 1" class="flex gap-1">
                 <button
                   type="button"
@@ -123,26 +123,183 @@
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
                 </button>
               </div>
-              <a
-                :href="`https://wa.me/971562566232?text=${encodeURIComponent('مرحباً، أنا مهتم بمشروع: ' + (project.title_ar || project.title))}`"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="ms-auto bg-green-600 hover:bg-green-700 text-white text-sm px-4 py-2 rounded-lg font-medium inline-flex items-center gap-2"
-              >
-                استفسر
-              </a>
+              <div class="flex items-center gap-2 ms-auto flex-wrap justify-end">
+                <button
+                  type="button"
+                  class="border border-blue-200 text-blue-700 hover:bg-blue-50 text-sm px-4 py-2 rounded-lg font-medium transition-colors"
+                  @click="openDetails(project)"
+                >
+                  {{ isAr ? 'عرض التفاصيل' : 'View Details' }}
+                </button>
+                <a
+                  :href="`https://wa.me/971562566232?text=${encodeURIComponent('مرحباً، أنا مهتم بمشروع: ' + (project.title_ar || project.title))}`"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="bg-green-600 hover:bg-green-700 text-white text-sm px-4 py-2 rounded-lg font-medium inline-flex items-center gap-2"
+                >
+                  {{ isAr ? 'استفسر' : 'Inquire' }}
+                </a>
+              </div>
             </div>
           </div>
         </article>
       </div>
     </div>
+
+    <Teleport to="body">
+      <div
+        v-if="detailsProject"
+        class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50"
+        :dir="isAr ? 'rtl' : 'ltr'"
+        @click.self="closeDetails"
+      >
+        <div
+          class="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+          role="dialog"
+          aria-modal="true"
+        >
+          <div class="sticky top-0 bg-white border-b border-gray-100 px-5 py-4 flex items-start justify-between gap-3 z-10">
+            <div class="min-w-0">
+              <h3 class="text-xl font-bold text-gray-900 leading-snug">
+                {{ detailsProject.title_ar || detailsProject.title }}
+              </h3>
+              <p v-if="detailsProject.title_ar && detailsProject.title" class="text-sm text-gray-500 mt-0.5">
+                {{ detailsProject.title }}
+              </p>
+            </div>
+            <button
+              type="button"
+              class="shrink-0 w-9 h-9 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 text-2xl leading-none"
+              aria-label="Close"
+              @click="closeDetails"
+            >×</button>
+          </div>
+
+          <div class="p-5 space-y-5">
+            <div v-if="gallery(detailsProject).length" class="rounded-xl overflow-hidden bg-gray-100">
+              <img
+                v-if="activeMedia(detailsProject)?.kind === 'image'"
+                :src="mediaUrl(activeMedia(detailsProject)!.path)"
+                :alt="detailsProject.title_ar || detailsProject.title"
+                class="w-full max-h-80 object-cover"
+                @error="handleMediaError"
+              />
+              <iframe
+                v-else-if="activeMedia(detailsProject)?.kind === 'video'"
+                :src="getEmbedUrl(activeMedia(detailsProject)!.path)"
+                class="w-full aspect-video"
+                allowfullscreen
+                frameborder="0"
+              />
+            </div>
+
+            <div v-if="detailsProject.location" class="flex items-center gap-2 text-blue-700 text-sm">
+              <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+              </svg>
+              {{ detailsProject.location }}
+            </div>
+
+            <div v-if="detailsProject.is_featured" class="inline-flex items-center gap-1.5 text-amber-700 bg-amber-50 border border-amber-200 text-xs font-bold px-3 py-1 rounded-full">
+              ★ {{ isAr ? 'مشروع مميز' : 'Featured Project' }}
+            </div>
+
+            <div>
+              <h4 class="text-sm font-semibold text-gray-900 mb-2">
+                {{ isAr ? 'عن المشروع' : 'About this project' }}
+              </h4>
+              <p class="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">
+                {{ (isAr ? detailsProject.description_ar : detailsProject.description) || detailsProject.description_ar || detailsProject.description || (isAr ? 'لا يوجد وصف.' : 'No description.') }}
+              </p>
+            </div>
+
+            <div v-if="!isAr && detailsProject.description_ar" class="border-t border-gray-100 pt-4">
+              <h4 class="text-sm font-semibold text-gray-900 mb-2" dir="rtl">الوصف (عربي)</h4>
+              <p class="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap" dir="rtl">
+                {{ detailsProject.description_ar }}
+              </p>
+            </div>
+
+            <div v-if="isAr && detailsProject.description && detailsProject.description !== detailsProject.description_ar" class="border-t border-gray-100 pt-4">
+              <h4 class="text-sm font-semibold text-gray-900 mb-2" dir="ltr">Description (English)</h4>
+              <p class="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap" dir="ltr">
+                {{ detailsProject.description }}
+              </p>
+            </div>
+
+            <div v-if="galleryImages(detailsProject).length > 1" class="border-t border-gray-100 pt-4">
+              <h4 class="text-sm font-semibold text-gray-900 mb-3">
+                {{ isAr ? 'صور المشروع' : 'Project Photos' }}
+              </h4>
+              <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                <button
+                  v-for="(img, idx) in galleryImages(detailsProject)"
+                  :key="img.id || idx"
+                  type="button"
+                  class="rounded-lg overflow-hidden border-2 transition-colors"
+                  :class="(detailsIndex === idx) ? 'border-blue-500' : 'border-transparent'"
+                  @click="detailsIndex = idx"
+                >
+                  <img
+                    :src="mediaUrl(img.path)"
+                    :alt="img.label"
+                    class="w-full h-24 object-cover"
+                    @error="handleMediaError"
+                  />
+                </button>
+              </div>
+            </div>
+
+            <div v-if="docs(detailsProject).length" class="border-t border-gray-100 pt-4">
+              <h4 class="text-sm font-semibold text-gray-900 mb-2">
+                {{ isAr ? 'ملفات' : 'Files' }}
+              </h4>
+              <div class="flex flex-wrap gap-2">
+                <a
+                  v-for="doc in docs(detailsProject)"
+                  :key="doc.id"
+                  :href="mediaUrl(doc.path)"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="text-xs px-3 py-1.5 rounded-lg bg-gray-50 border border-gray-200 text-gray-700 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-700"
+                >
+                  {{ doc.label || (isAr ? 'ملف' : 'File') }}
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <div class="sticky bottom-0 bg-white border-t border-gray-100 px-5 py-4 flex flex-wrap gap-2 justify-end">
+            <button
+              type="button"
+              class="px-4 py-2 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 text-sm font-medium"
+              @click="closeDetails"
+            >
+              {{ isAr ? 'إغلاق' : 'Close' }}
+            </button>
+            <a
+              :href="whatsappLink(detailsProject)"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm font-medium"
+            >
+              {{ isAr ? 'استفسر عبر واتساب' : 'Inquire on WhatsApp' }}
+            </a>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </section>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import axios from 'axios'
 import { mediaUrl, handleMediaError } from '@/lib/media'
+import { useLocale } from '@/composables/useLocale'
+
+const { isAr } = useLocale()
 
 interface ProjectFile {
   id: number
@@ -169,6 +326,30 @@ interface Project {
 const projects = ref<Project[]>([])
 const loading = ref(true)
 const currentIndex = ref<Record<number, number>>({})
+const detailsProject = ref<Project | null>(null)
+const detailsIndex = ref(0)
+
+const galleryImages = (p: Project) => (p.files || []).filter((f) => f.kind === 'image')
+
+const openDetails = (project: Project) => {
+  detailsProject.value = project
+  detailsIndex.value = currentIndex.value[project.id] || 0
+  document.body.style.overflow = 'hidden'
+}
+
+const closeDetails = () => {
+  detailsProject.value = null
+  document.body.style.overflow = ''
+}
+
+const whatsappLink = (p: Project) =>
+  `https://wa.me/971562566232?text=${encodeURIComponent('مرحباً، أنا مهتم بمشروع: ' + (p.title_ar || p.title))}`
+
+watch(detailsIndex, (idx) => {
+  if (detailsProject.value) {
+    currentIndex.value[detailsProject.value.id] = idx
+  }
+})
 
 const gallery = (p: Project): ProjectFile[] => {
   const media = (p.files || []).filter((f) => f.kind === 'image' || f.kind === 'video')
@@ -190,7 +371,8 @@ const docs = (p: Project) => (p.files || []).filter((f) => f.kind === 'document'
 const activeMedia = (p: Project) => {
   const items = gallery(p)
   if (!items.length) return null
-  return items[currentIndex.value[p.id] || 0] || items[0]
+  const idx = detailsProject.value?.id === p.id ? detailsIndex.value : (currentIndex.value[p.id] || 0)
+  return items[idx] || items[0]
 }
 
 const setIndex = (id: number, idx: number) => {

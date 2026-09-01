@@ -96,7 +96,12 @@
                 </label>
               </td>
               <td class="px-4 py-3">
-                <div class="flex items-center justify-center gap-2">
+                <div class="flex items-center justify-center gap-2 flex-wrap">
+                  <button
+                    type="button"
+                    class="px-3 py-1.5 rounded-lg bg-gray-50 text-gray-700 text-sm hover:bg-gray-100 border border-gray-200"
+                    @click="openDetails(item)"
+                  >عرض التفاصيل</button>
                   <RouterLink
                     :to="`/admin/project-masters/${item.id}`"
                     class="px-3 py-1.5 rounded-lg bg-blue-50 text-blue-700 text-sm hover:bg-blue-100"
@@ -113,6 +118,78 @@
         </table>
       </div>
     </div>
+
+    <Teleport to="body">
+      <div v-if="detailsOpen" class="sf-modal-backdrop" dir="rtl" @click.self="detailsOpen = false">
+        <div class="sf-modal-panel max-w-lg w-full max-h-[85vh] overflow-y-auto text-right">
+          <div class="flex items-start justify-between gap-3 mb-4">
+            <h2 class="text-lg font-bold text-gray-900">تفاصيل المشروع</h2>
+            <button type="button" class="text-gray-400 hover:text-gray-600 text-xl leading-none" @click="detailsOpen = false">×</button>
+          </div>
+
+          <div v-if="detailsLoading" class="py-10 text-center text-gray-500">جاري التحميل...</div>
+
+          <div v-else-if="detailsItem" class="space-y-4 text-sm">
+            <div>
+              <p class="text-xs text-gray-500 mb-1">العنوان (عربي)</p>
+              <p class="font-semibold text-gray-900">{{ detailsItem.title_ar || '—' }}</p>
+            </div>
+            <div>
+              <p class="text-xs text-gray-500 mb-1">Title (English)</p>
+              <p class="text-gray-800">{{ detailsItem.title || '—' }}</p>
+            </div>
+            <div>
+              <p class="text-xs text-gray-500 mb-1">الموقع</p>
+              <p class="text-gray-800">{{ detailsItem.location || '—' }}</p>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <p class="text-xs text-gray-500 mb-1">الترتيب</p>
+                <p class="text-gray-800">{{ detailsItem.order ?? 0 }}</p>
+              </div>
+              <div>
+                <p class="text-xs text-gray-500 mb-1">الظهور</p>
+                <p class="text-gray-800">{{ detailsItem.is_visible ? 'ظاهر بالموقع' : 'مخفي' }}</p>
+              </div>
+            </div>
+            <div>
+              <p class="text-xs text-gray-500 mb-1">مميز</p>
+              <p class="text-gray-800">{{ detailsItem.is_featured ? 'نعم' : 'لا' }}</p>
+            </div>
+            <div>
+              <p class="text-xs text-gray-500 mb-1">الوصف (عربي)</p>
+              <p class="text-gray-800 whitespace-pre-wrap leading-relaxed">{{ detailsItem.description_ar || '—' }}</p>
+            </div>
+            <div>
+              <p class="text-xs text-gray-500 mb-1">Description (English)</p>
+              <p class="text-gray-800 whitespace-pre-wrap leading-relaxed">{{ detailsItem.description || '—' }}</p>
+            </div>
+            <div v-if="detailsItem.files?.length">
+              <p class="text-xs text-gray-500 mb-2">الملفات / الصور</p>
+              <ul class="space-y-1">
+                <li v-for="f in detailsItem.files" :key="f.id" class="text-gray-700">
+                  • {{ f.label }} <span class="text-gray-400">({{ f.kind }})</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="mt-6 flex gap-2 justify-end">
+            <button type="button" class="px-4 py-2 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50" @click="detailsOpen = false">
+              إغلاق
+            </button>
+            <RouterLink
+              v-if="detailsItem"
+              :to="`/admin/project-masters/${detailsItem.id}`"
+              class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
+              @click="detailsOpen = false"
+            >
+              تعديل
+            </RouterLink>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
@@ -124,6 +201,7 @@ import { mediaUrl, handleMediaError } from '@/lib/media'
 
 interface MasterFile {
   id: number
+  label: string
   path: string
   kind: string
 }
@@ -132,6 +210,8 @@ interface ProjectMaster {
   id: number
   title: string
   title_ar: string
+  description?: string
+  description_ar?: string
   location?: string | null
   order?: number
   is_featured: boolean
@@ -144,6 +224,9 @@ const items = ref<ProjectMaster[]>([])
 const loading = ref(true)
 const search = ref('')
 const activeFilter = ref<'all' | 'visible' | 'hidden'>('all')
+const detailsOpen = ref(false)
+const detailsLoading = ref(false)
+const detailsItem = ref<ProjectMaster | null>(null)
 let searchTimer: ReturnType<typeof setTimeout> | null = null
 
 const filters = [
@@ -177,6 +260,22 @@ const fetchItems = async () => {
 const debouncedFetch = () => {
   if (searchTimer) clearTimeout(searchTimer)
   searchTimer = setTimeout(fetchItems, 300)
+}
+
+const openDetails = async (item: ProjectMaster) => {
+  detailsOpen.value = true
+  detailsLoading.value = true
+  detailsItem.value = null
+  try {
+    const { data } = await api.get(`/admin/project-masters/${item.id}`)
+    detailsItem.value = data
+  } catch (e) {
+    console.error(e)
+    alert('تعذر تحميل التفاصيل')
+    detailsOpen.value = false
+  } finally {
+    detailsLoading.value = false
+  }
 }
 
 const toggleVisibility = async (item: ProjectMaster, visible: boolean) => {

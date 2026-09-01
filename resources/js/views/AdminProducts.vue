@@ -245,6 +245,7 @@ import { RouterLink } from 'vue-router'
 import api from '@/lib/api'
 import { mediaUrl, handleMediaError } from '@/lib/media'
 import { filterProducts as filterProductList, type SearchableProduct } from '@/lib/productSearch'
+import { saveProductNavList } from '@/lib/adminProductNav'
 
 interface Category {
   id: number
@@ -307,6 +308,20 @@ const getCategoryName = (categoryId: number) => {
 watch(search, () => {
   currentPage.value = 1
 })
+
+watch(
+  filteredProducts,
+  (list) => {
+    saveProductNavList(
+      list.map((p) => ({
+        id: p.id,
+        name: p.name,
+        name_ar: p.name_ar,
+      })),
+    )
+  },
+  { immediate: true },
+)
 
 const fetchData = async () => {
   try {

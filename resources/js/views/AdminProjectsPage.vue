@@ -84,7 +84,12 @@
               <td class="px-4 py-3 text-center text-sm">{{ p.quotations_count ?? 0 }}</td>
               <td class="px-4 py-3 text-center text-sm">{{ p.invoices_count ?? 0 }}</td>
               <td class="px-4 py-3">
-                <div class="flex items-center justify-center gap-2">
+                <div class="flex items-center justify-center gap-2 flex-wrap">
+                  <button
+                    type="button"
+                    class="px-3 py-1.5 rounded-lg bg-gray-50 text-gray-700 text-sm hover:bg-gray-100 border border-gray-200"
+                    @click="openDetails(p)"
+                  >عرض التفاصيل</button>
                   <router-link :to="`/admin/projects/${p.id}`" class="text-blue-600 hover:text-blue-800 p-1" title="عرض / تعديل">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                   </router-link>
@@ -98,6 +103,81 @@
         </table>
       </div>
     </div>
+
+    <Teleport to="body">
+      <div v-if="detailsOpen" class="sf-modal-backdrop" dir="rtl" @click.self="detailsOpen = false">
+        <div class="sf-modal-panel max-w-lg w-full max-h-[85vh] overflow-y-auto text-right">
+          <div class="flex items-start justify-between gap-3 mb-4">
+            <h2 class="text-lg font-bold text-gray-900">تفاصيل المشروع</h2>
+            <button type="button" class="text-gray-400 hover:text-gray-600 text-xl leading-none" @click="detailsOpen = false">×</button>
+          </div>
+
+          <div v-if="detailsLoading" class="py-10 text-center text-gray-500">جاري التحميل...</div>
+
+          <div v-else-if="detailsItem" class="space-y-4 text-sm">
+            <div>
+              <p class="text-xs text-gray-500 mb-1">المشروع</p>
+              <p class="font-semibold text-gray-900">{{ detailsItem.title_ar || detailsItem.title || '—' }}</p>
+              <p v-if="detailsItem.title_ar && detailsItem.title" class="text-gray-500 text-xs mt-0.5">{{ detailsItem.title }}</p>
+            </div>
+            <div>
+              <p class="text-xs text-gray-500 mb-1">العميل</p>
+              <p class="text-gray-800">{{ detailsItem.customer?.name || '—' }}</p>
+            </div>
+            <div>
+              <p class="text-xs text-gray-500 mb-1">الموقع</p>
+              <p class="text-gray-800">{{ detailsItem.location || '—' }}</p>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <p class="text-xs text-gray-500 mb-1">الحالة</p>
+                <p class="text-gray-800">{{ statusLabel(detailsItem.status) }}</p>
+              </div>
+              <div>
+                <p class="text-xs text-gray-500 mb-1">رأس المال</p>
+                <p class="text-gray-800">{{ detailsItem.capital_amount != null ? `${detailsItem.capital_amount} AED` : '—' }}</p>
+              </div>
+            </div>
+            <div class="grid grid-cols-3 gap-2 text-center">
+              <div class="rounded-lg bg-gray-50 p-2">
+                <p class="text-xs text-gray-500">عروض</p>
+                <p class="font-bold text-gray-900">{{ detailsItem.quotations?.length ?? 0 }}</p>
+              </div>
+              <div class="rounded-lg bg-gray-50 p-2">
+                <p class="text-xs text-gray-500">فواتير</p>
+                <p class="font-bold text-gray-900">{{ detailsItem.invoices?.length ?? 0 }}</p>
+              </div>
+              <div class="rounded-lg bg-gray-50 p-2">
+                <p class="text-xs text-gray-500">مدفوعات</p>
+                <p class="font-bold text-gray-900">{{ detailsItem.payments?.length ?? 0 }}</p>
+              </div>
+            </div>
+            <div>
+              <p class="text-xs text-gray-500 mb-1">الوصف (عربي)</p>
+              <p class="text-gray-800 whitespace-pre-wrap leading-relaxed">{{ detailsItem.description_ar || '—' }}</p>
+            </div>
+            <div>
+              <p class="text-xs text-gray-500 mb-1">Description</p>
+              <p class="text-gray-800 whitespace-pre-wrap leading-relaxed">{{ detailsItem.description || '—' }}</p>
+            </div>
+          </div>
+
+          <div class="mt-6 flex gap-2 justify-end">
+            <button type="button" class="px-4 py-2 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50" @click="detailsOpen = false">
+              إغلاق
+            </button>
+            <router-link
+              v-if="detailsItem"
+              :to="`/admin/projects/${detailsItem.id}`"
+              class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
+              @click="detailsOpen = false"
+            >
+              فتح التعديل
+            </router-link>
+          </div>
+        </div>
+      </div>
+    </Teleport>
 
     <Teleport to="body">
       <div v-if="deleteTarget" class="sf-modal-backdrop" dir="rtl">
@@ -129,12 +209,30 @@ interface ProjectRow {
   invoices_count?: number
 }
 
+interface ProjectDetails {
+  id: number
+  title: string
+  title_ar: string
+  description?: string | null
+  description_ar?: string | null
+  location?: string | null
+  status: string
+  capital_amount?: number | string | null
+  customer?: { name: string } | null
+  quotations?: unknown[]
+  invoices?: unknown[]
+  payments?: unknown[]
+}
+
 const projects = ref<ProjectRow[]>([])
 const loading = ref(true)
 const tab = ref<'active' | 'completed'>('active')
 const statusFilter = ref('')
 const search = ref('')
 const deleteTarget = ref<ProjectRow | null>(null)
+const detailsOpen = ref(false)
+const detailsLoading = ref(false)
+const detailsItem = ref<ProjectDetails | null>(null)
 let debounceTimer: ReturnType<typeof setTimeout> | null = null
 
 const statusLabel = (s: string) => ({
@@ -180,6 +278,22 @@ const setTab = (t: 'active' | 'completed') => {
 const debouncedFetch = () => {
   if (debounceTimer) clearTimeout(debounceTimer)
   debounceTimer = setTimeout(fetchProjects, 300)
+}
+
+const openDetails = async (p: ProjectRow) => {
+  detailsOpen.value = true
+  detailsLoading.value = true
+  detailsItem.value = null
+  try {
+    const { data } = await api.get(`/admin/projects/${p.id}`)
+    detailsItem.value = data
+  } catch (e) {
+    console.error(e)
+    alert('تعذر تحميل التفاصيل')
+    detailsOpen.value = false
+  } finally {
+    detailsLoading.value = false
+  }
 }
 
 const confirmDelete = (p: ProjectRow) => { deleteTarget.value = p }

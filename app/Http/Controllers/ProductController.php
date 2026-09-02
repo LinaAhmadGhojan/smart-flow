@@ -31,7 +31,7 @@ class ProductController extends Controller
             'description' => 'nullable|string',
             'description_ar' => 'nullable|string',
             'price' => 'required|numeric',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:4096',
             'category_id' => 'required|exists:categories,id',
             'group_id' => 'nullable|exists:product_groups,id',
             'features' => 'nullable|string',
@@ -107,7 +107,7 @@ class ProductController extends Controller
             'description' => 'nullable|string',
             'description_ar' => 'nullable|string',
             'price' => 'required|numeric',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:4096',
             'category_id' => 'required|exists:categories,id',
             'group_id' => 'nullable|exists:product_groups,id',
             'features' => 'nullable|string',
@@ -187,7 +187,7 @@ class ProductController extends Controller
     public function uploadImage(Request $request)
     {
         $request->validate([
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:4096',
         ]);
 
         if ($request->hasFile('image')) {

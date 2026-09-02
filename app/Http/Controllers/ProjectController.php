@@ -222,7 +222,7 @@ class ProjectController extends Controller
             'is_public' => 'nullable',
             'media_type' => 'nullable|in:image,video,text',
             'media_url' => 'nullable|string',
-            'media_file' => 'nullable|file|mimes:jpeg,png,jpg,gif,webp,mp4,mov,avi|max:20480',
+            'media_file' => 'nullable|file|mimes:jpeg,png,jpg,gif,webp,mp4,mov,avi',
             'order' => 'nullable|integer',
             'is_featured' => 'nullable',
             'contacts' => 'nullable',

@@ -114,7 +114,7 @@ class ProjectMasterController extends Controller
             'maps_url' => 'nullable|string|max:2000',
             'media_type' => 'nullable|in:image,video,text',
             'media_url' => 'nullable|string',
-            'media_file' => 'nullable|file|mimes:jpeg,png,jpg,gif,webp,mp4,mov,avi|max:20480',
+            'media_file' => 'nullable|file|mimes:jpeg,png,jpg,gif,webp,mp4,mov,avi',
             'order' => 'nullable|integer',
             'is_featured' => 'nullable',
             'is_visible' => 'nullable',

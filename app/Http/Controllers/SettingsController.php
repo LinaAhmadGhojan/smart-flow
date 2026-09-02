@@ -102,8 +102,8 @@ class SettingsController extends Controller
     {
         try {
             $request->validate([
-                'logo' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
-                'signature' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+                'logo' => 'nullable|image|mimes:jpeg,png,jpg,webp',
+                'signature' => 'nullable|image|mimes:jpeg,png,jpg,webp',
                 'signature_name' => 'nullable|string|max:255',
             ]);
 

@@ -127,7 +127,7 @@
               لا توجد صورة
             </div>
             <input type="file" accept="image/*" @change="handleImageUpload" class="sf-field" />
-            <p class="text-xs text-gray-500 mt-2">JPG, PNG, WebP</p>
+            <p class="text-xs text-gray-500 mt-2">JPG, PNG, WebP — max 4MB (auto-compressed)</p>
           </div>
         </div>
       </div>
@@ -194,6 +194,7 @@ import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute, useRouter, RouterLink, onBeforeRouteUpdate } from 'vue-router'
 import api from '@/lib/api'
 import { mediaUrl, handleMediaError } from '@/lib/media'
+import { compressImage } from '@/lib/compressImage'
 import {
   getNextProduct,
   readProductNavList,
@@ -237,11 +238,21 @@ const form = ref({
   whatsapp_message: ''
 })
 
-const handleImageUpload = (event: Event) => {
+const handleImageUpload = async (event: Event) => {
   const target = event.target as HTMLInputElement
   const file = target.files?.[0]
-  
-  if (file) {
+  if (!file) return
+
+  try {
+    // Compress before upload — large phone photos are why Hostinger takes minutes
+    const compressed = await compressImage(file)
+    imageFile.value = compressed
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      imagePreview.value = e.target?.result as string
+    }
+    reader.readAsDataURL(compressed)
+  } catch {
     imageFile.value = file
     const reader = new FileReader()
     reader.onload = (e) => {

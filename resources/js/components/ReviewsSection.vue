@@ -1,5 +1,5 @@
 ﻿<template>
-  <section class="py-20 bg-gradient-to-b from-slate-50 to-white" dir="rtl">
+  <section class="py-20 bg-gradient-to-b from-slate-50 to-white" :dir="isAr ? 'rtl' : 'ltr'">
     <div class="container mx-auto px-4 max-w-6xl">
 
       <!-- العنوان -->
@@ -7,8 +7,8 @@
         <span class="inline-block bg-blue-100 text-blue-700 text-xs font-semibold px-4 py-1.5 rounded-full mb-4 tracking-wide uppercase">
           Client Reviews
         </span>
-        <h2 class="text-4xl font-extrabold text-slate-800 mb-3">آراء عملاء Smart Flow</h2>
-        <p class="text-gray-500 text-base max-w-xl mx-auto">تجارب حقيقية من شركاء نجاحنا</p>
+        <h2 class="text-4xl font-extrabold text-slate-800 mb-3">{{ t('reviewsTitle') }}</h2>
+        <p class="text-gray-500 text-base max-w-xl mx-auto">{{ t('reviewsSubtitle') }}</p>
 
         <!-- متوسط النجوم -->
         <div v-if="stats.count > 0" class="mt-6 inline-flex items-center gap-3 bg-white border border-yellow-200 shadow-sm px-6 py-3 rounded-2xl">
@@ -16,7 +16,7 @@
             <span v-for="s in 5" :key="s" class="text-xl" :class="s <= Math.round(stats.average) ? 'text-yellow-400' : 'text-gray-200'">★</span>
           </div>
           <span class="text-2xl font-bold text-slate-800">{{ stats.average }}</span>
-          <span class="text-sm text-gray-400">/ 5 &nbsp;·&nbsp; {{ stats.count }} تقييم</span>
+          <span class="text-sm text-gray-400">/ 5 &nbsp;·&nbsp; {{ stats.count }} {{ t('reviewsCount') }}</span>
         </div>
       </div>
 
@@ -141,7 +141,7 @@
         </div>
       </div>
 
-      <p v-else class="text-center text-gray-400 mb-16 py-8">لا توجد تقييمات بعد. كن أول من يقيّم!</p>
+      <p v-else class="text-center text-gray-400 mb-16 py-8">{{ t('noReviewsYet') }}</p>
 
       <!-- ======== مودال الفيديو ======== -->
       <Teleport to="body">
@@ -174,48 +174,48 @@
       <!-- فورم الإرسال -->
       <div class="max-w-xl mx-auto bg-gradient-to-br from-blue-50 to-slate-50 rounded-3xl p-5 sm:p-8 border border-blue-100 shadow-sm">
         <div class="text-center mb-6">
-          <h3 class="text-xl font-bold text-slate-800">شاركنا تجربتك</h3>
-          <p class="text-sm text-gray-500 mt-1">رأيك يهمنا — Leave a Review</p>
+          <h3 class="text-xl font-bold text-slate-800">{{ t('shareExperience') }}</h3>
+          <p class="text-sm text-gray-500 mt-1">{{ t('shareExperienceHint') }}</p>
         </div>
 
         <div v-if="submitted" class="text-center py-6">
           <svg class="w-16 h-16 text-green-500 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
           </svg>
-          <p class="text-green-700 font-semibold text-lg">شكراً على تقييمك! تم النشر.</p>
+          <p class="text-green-700 font-semibold text-lg">{{ t('thanksReview') }}</p>
         </div>
 
         <form v-else @submit.prevent="submitReview" class="space-y-4">
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">
-              اسمك (اختياري)</label>
+              {{ t('yourNameOptional') }}</label>
             <input
               v-model="form.reviewer_name"
               type="text"
-              placeholder="أو اترك فارغاً للنشر مجهولاً"
+              :placeholder="t('anonymousPh')"
               class="sf-field"
             />
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">التقييم</label>
+            <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('rating') }}</label>
             <StarRating v-model:value="form.rating" />
             <p v-if="formErrors.rating" class="text-red-500 text-xs mt-1">{{ formErrors.rating }}</p>
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">تعليقك</label>
+            <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('yourComment') }}</label>
             <textarea
               v-model="form.comment"
               rows="4"
-              placeholder="شاركنا رأيك في خدماتنا..."
+              :placeholder="t('commentPh')"
               class="sf-field sf-field--textarea"
             ></textarea>
             <p v-if="formErrors.comment" class="text-red-500 text-xs mt-1">{{ formErrors.comment }}</p>
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">صورتك (اختياري)</label>
+            <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('yourPhotoOptional') }}</label>
             <input
               type="file"
               accept="image/jpeg,image/png,image/jpg,image/webp"
@@ -228,7 +228,7 @@
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">فيديو (اختياري)</label>
+            <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('yourVideoOptional') }}</label>
             <input
               type="file"
               accept="video/mp4,video/quicktime,video/avi,video/webm"
@@ -249,7 +249,7 @@
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
             </svg>
-            إرسال التقييم</button>
+            {{ t('submitReview') }}</button>
         </form>
       </div>
 
@@ -260,6 +260,9 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import StarRating from '@/components/StarRating.vue'
+import { useLocale } from '@/composables/useLocale'
+
+const { t, isAr } = useLocale()
 
 interface Review {
   id: number

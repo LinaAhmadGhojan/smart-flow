@@ -3,9 +3,9 @@
     <div class="container mx-auto px-4">
       <div class="text-center mb-12">
         <h2 class="text-4xl font-bold text-blue-900 mb-1">
-          مشاريعنا</h2>
+          {{ t('ourProjects') }}</h2>
         <p class="text-xl text-gray-600">
-          أعمالنا المميزة في مختلف المجالات
+          {{ t('ourProjectsSubtitle') }}
         </p>
       </div>
 
@@ -14,7 +14,7 @@
       </div>
 
       <div v-else-if="!projects.length" class="text-center py-12 text-gray-400">
-        لا مشاريع معروضة حالياً
+        {{ t('noProjectsShown') }}
       </div>
 
       <div v-else class="grid gap-8 md:grid-cols-2 xl:grid-cols-3">
@@ -28,7 +28,7 @@
             <img
               v-if="activeMedia(project)?.kind === 'image'"
               :src="mediaUrl(activeMedia(project)!.path)"
-              :alt="project.title_ar || project.title"
+              :alt="isAr ? (project.title_ar || project.title) : (project.title || project.title_ar)"
               class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               @error="handleMediaError"
             />
@@ -73,10 +73,13 @@
           <div class="p-5 space-y-3">
             <div>
               <h3 class="text-xl font-bold text-gray-900 leading-snug">
-                {{ project.title_ar || project.title }}
+                {{ isAr ? (project.title_ar || project.title) : (project.title || project.title_ar) }}
               </h3>
-              <p v-if="project.title_ar && project.title" class="text-sm text-gray-500 mt-0.5">
+              <p v-if="isAr && project.title && project.title_ar && project.title !== project.title_ar" class="text-sm text-gray-500 mt-0.5">
                 {{ project.title }}
+              </p>
+              <p v-else-if="!isAr && project.title_ar && project.title && project.title !== project.title_ar" class="text-sm text-gray-500 mt-0.5">
+                {{ project.title_ar }}
               </p>
             </div>
 
@@ -89,7 +92,7 @@
             </p>
 
             <p class="text-gray-600 text-sm leading-relaxed line-clamp-3">
-              {{ project.description_ar || project.description }}
+              {{ isAr ? (project.description_ar || project.description) : (project.description || project.description_ar) }}
             </p>
 
             <div v-if="docs(project).length" class="flex flex-wrap gap-2 pt-1">
@@ -284,7 +287,7 @@ import axios from 'axios'
 import { mediaUrl, handleMediaError } from '@/lib/media'
 import { useLocale } from '@/composables/useLocale'
 
-const { isAr } = useLocale()
+const { t, isAr } = useLocale()
 
 interface ProjectFile {
   id: number

@@ -79,7 +79,25 @@ html[dir='rtl'] body {
   }
 
   .lang-toggle {
-    @apply inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-white/20 bg-white/10 text-sm font-semibold text-white hover:border-white/40 hover:bg-white/15 transition-colors;
+    @apply inline-flex items-center justify-center gap-1.5 min-w-[3.25rem] px-3.5 py-2.5 rounded-xl
+      border-2 border-white bg-white text-[var(--sf-navy)]
+      text-sm font-extrabold tracking-wider shadow-md
+      hover:bg-blue-50 hover:border-blue-100 hover:shadow-lg
+      transition-all;
+  }
+
+  .lang-toggle:hover {
+    transform: translateY(-1px);
+  }
+
+  .lang-toggle__globe {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+  }
+
+  .lang-toggle__code {
+    @apply text-[15px] font-extrabold tracking-wider leading-none;
   }
 
   .lang-toggle__icon {

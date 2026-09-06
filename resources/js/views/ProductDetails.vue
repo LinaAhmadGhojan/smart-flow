@@ -12,14 +12,14 @@
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
           </svg>
-          العودة للرئيسية
+          {{ t('backHome') }}
         </router-link>
 
         <!-- Loading State -->
         <div v-if="loading" class="flex items-center justify-center py-12">
           <div class="text-center">
             <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-            <p class="mt-4 text-gray-600">جاري التحميل...</p>
+            <p class="mt-4 text-gray-600">{{ t('loading') }}</p>
           </div>
         </div>
 
@@ -53,13 +53,10 @@
                 </svg>
                 <div>
                   <p class="font-bold text-lg">
-                    {{ product.in_stock ? 'متوفر الآن' : 'غير متوفر' }}
+                    {{ product.in_stock ? t('availableNow') : t('outOfStock') }}
                   </p>
                   <p class="text-sm">
-                    {{ product.in_stock 
-                      ? 'المنتج متاح للطلب الفوري' 
-                      : 'المنتج غير متاح حالياً, اترك بيانات للتنبيه' 
-                    }}
+                    {{ product.in_stock ? t('availableOrder') : t('notAvailableNotify') }}
                   </p>
                 </div>
               </div>
@@ -69,8 +66,8 @@
           <!-- Right Column - Details -->
           <div>
             <!-- Title -->
-            <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-6 font-arabic">
-              {{ product.name_ar || product.name }}
+            <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-6" :class="isAr ? 'font-arabic' : ''">
+              {{ localized(product) }}
             </h1>
 
             <!-- Category -->
@@ -79,7 +76,7 @@
                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"/>
                 </svg>
-                {{ categoryMap[product.category_id].name_ar || categoryMap[product.category_id].name }}
+                {{ localized(categoryMap[product.category_id]) }}
               </span>
             </div>
 
@@ -87,7 +84,7 @@
             <div class="rounded-2xl p-8 mb-8" style="background: linear-gradient(to bottom right, #e8eef9, #d4dff5);">
               <template v-if="activeOffer">
                 <div class="flex flex-wrap items-center gap-3 mb-3">
-                  <p class="text-gray-600 text-sm mb-0">السعر بعد الخصم</p>
+                  <p class="text-gray-600 text-sm mb-0">{{ t('priceAfterDiscount') }}</p>
                   <span
                     v-if="activeOffer.discount_percentage"
                     class="inline-flex items-center rounded-full bg-red-600 text-white text-sm font-bold px-3 py-1"
@@ -108,7 +105,7 @@
                 </div>
               </template>
               <template v-else>
-                <p class="text-gray-600 text-sm mb-1">السعر</p>
+                <p class="text-gray-600 text-sm mb-1">{{ t('price') }}</p>
                 <div class="text-5xl font-bold" style="color: #203c85;">
                   {{ formatPrice(product.price) }} <span class="text-2xl">AED</span>
                 </div>
@@ -116,16 +113,16 @@
             </div>
 
             <!-- Description -->
-            <div v-if="product.description_ar || product.description" class="mb-8">
-              <h3 class="text-2xl font-bold text-gray-900 mb-1">الوصف</h3>
+            <div v-if="productDescription" class="mb-8">
+              <h3 class="text-2xl font-bold text-gray-900 mb-1">{{ t('description') }}</h3>
               <p class="text-gray-700 text-lg leading-relaxed whitespace-pre-line">
-                {{ product.description_ar || product.description }}
+                {{ productDescription }}
               </p>
             </div>
 
             <!-- Features -->
             <div v-if="product.features && product.features.length > 0" class="mb-8">
-              <h3 class="text-2xl font-bold text-gray-900 mb-1">المميزات</h3>
+              <h3 class="text-2xl font-bold text-gray-900 mb-1">{{ t('features') }}</h3>
               <div class="space-y-3">
                 <div
                   v-for="(feature, idx) in product.features"
@@ -142,7 +139,7 @@
 
             <!-- Brand Info -->
             <div v-if="product.brand" class="mb-8 p-6 bg-white rounded-xl border border-gray-200">
-              <p class="text-gray-600 text-sm mb-1">الماركة</p>
+              <p class="text-gray-600 text-sm mb-1">{{ t('brand') }}</p>
               <p class="text-2xl font-bold text-gray-900">{{ product.brand }}</p>
             </div>
 
@@ -158,7 +155,7 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 3v5a1 1 0 001 1h5"/>
                 </svg>
-                تحميل ملف الشيت (PDF)
+                {{ t('productCatalogPdf') }}
               </a>
             </div>
 
@@ -177,7 +174,7 @@
                 <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
                 </svg>
-                {{ product.in_stock ? 'اطلب الآن عبر واتساب' : 'استفسر عبر واتساب' }}
+                {{ product.in_stock ? t('orderNowWhatsapp') : t('inquireWhatsapp') }}
               </a>
 
               <!-- View All Products Button -->
@@ -188,7 +185,7 @@
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
                 </svg>
-                عرض جميع المنتجات
+                {{ t('viewAllProducts') }}
               </router-link>
             </div>
           </div>
@@ -199,13 +196,13 @@
           <svg class="w-16 h-16 mx-auto text-gray-400 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4v2m0 4v2M6.343 17.657l1.414-1.414m2.828 0l1.415 1.415m2.828 0l1.414-1.414m2.829 0l1.415 1.415M9 11a3 3 0 106 0 3 3 0 00-6 0z"/>
           </svg>
-          <h3 class="text-2xl font-bold text-gray-900 mb-1">المنتج غير موجود</h3>
-          <p class="text-gray-600 mb-6">عذراً, المنتج الذي تبحث عنه غير متوفر</p>
+          <h3 class="text-2xl font-bold text-gray-900 mb-1">{{ t('productNotFound') }}</h3>
+          <p class="text-gray-600 mb-6">{{ t('productNotFoundHint') }}</p>
           <router-link
             to="/"
             class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
           >
-            العودة للرئيسية
+            {{ t('backHome') }}
           </router-link>
         </div>
       </div>
@@ -221,6 +218,7 @@ import { useRoute } from 'vue-router'
 import Header from '@/components/Header.vue'
 import Footer from '@/components/Footer.vue'
 import { mediaUrl } from '@/lib/media'
+import { useLocale } from '@/composables/useLocale'
 
 interface Product {
   id: number
@@ -259,6 +257,7 @@ interface CompanyInfo {
 }
 
 const route = useRoute()
+const { t, isAr, localized } = useLocale()
 
 const formatPrice = (price: string | number): string => {
   const numPrice = typeof price === 'string' ? parseFloat(price) : price
@@ -270,6 +269,16 @@ const activeOffer = ref<ActiveOffer | null>(null)
 const categories = ref<Category[]>([])
 const companyInfo = ref<CompanyInfo | null>(null)
 const loading = ref(true)
+
+const productDescription = computed(() => {
+  const p = product.value
+  if (!p) return ''
+  return (
+    isAr.value
+      ? p.description_ar || p.description
+      : p.description || p.description_ar || ''
+  ).trim()
+})
 
 const mainImage = computed(() => {
   return mediaUrl(product.value?.image)
@@ -293,13 +302,14 @@ const whatsappNumber = computed(() => {
 })
 
 const getWhatsAppLink = (prod: Product) => {
+  const name = localized(prod)
   if (activeOffer.value) {
     const message = prod.whatsapp_message ||
-      `مرحباً، أرغب في الاستفسار عن العرض: ${prod.name_ar} (${prod.name}) - السعر: ${formatPrice(activeOffer.value.discounted_price)} AED`
+      `${t('whatsappOfferPrefix')} ${name} - ${t('price')}: ${formatPrice(activeOffer.value.discounted_price)} AED`
     return `https://wa.me/${whatsappNumber.value}?text=${encodeURIComponent(message)}`
   }
   const message = prod.whatsapp_message ||
-    `مرحباً، أرغب في الاستفسار عن المنتج: ${prod.name_ar} (${prod.name}) - السعر: ${formatPrice(prod.price)} AED`
+    `${t('whatsappInquirePrefix')} ${name} - ${t('price')}: ${formatPrice(prod.price)} AED`
   return `https://wa.me/${whatsappNumber.value}?text=${encodeURIComponent(message)}`
 }
 

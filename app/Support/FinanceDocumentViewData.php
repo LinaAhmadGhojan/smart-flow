@@ -48,8 +48,9 @@ class FinanceDocumentViewData
             'clientName' => (string) $invoice->client_name,
             'clientNameIsArabic' => self::isArabic($invoice->client_name),
             'trns' => trim((string) ($invoice->trns ?: ($quotation?->trns ?? ''))),
-            'notes' => (string) ($invoice->notes ?: ''),
+            'notes' => self::formatNotesHtml((string) ($invoice->notes ?: '')),
             'notesIsArabic' => self::isArabic($invoice->notes),
+            'notesIsHtml' => self::looksLikeHtml((string) ($invoice->notes ?: '')),
             'currency' => $currency,
             'items' => $items,
             'discounts' => $discounts,
@@ -88,8 +89,9 @@ class FinanceDocumentViewData
             'clientName' => (string) $quotation->client_name,
             'clientNameIsArabic' => self::isArabic($quotation->client_name),
             'trns' => trim((string) ($quotation->trns ?? '')),
-            'notes' => (string) ($quotation->comments ?: ''),
+            'notes' => self::formatNotesHtml((string) ($quotation->comments ?: '')),
             'notesIsArabic' => self::isArabic($quotation->comments),
+            'notesIsHtml' => true,
             'currency' => $currency,
             'items' => $items,
             'discounts' => $discounts,
@@ -171,6 +173,85 @@ class FinanceDocumentViewData
     private static function isArabic(?string $text): bool
     {
         return (bool) preg_match('/[\x{0600}-\x{06FF}]/u', (string) $text);
+    }
+
+    private static function looksLikeHtml(string $text): bool
+    {
+        return (bool) preg_match('/<(p|div|br|ol|ul|li|strong|b|em|i|u|span|a|blockquote|h[1-6])\b/i', $text);
+    }
+
+    /**
+     * Render comments for PDF: keep safe HTML from the rich editor, or
+     * convert plain text and bold leading numbering (1- / 1. / 1)).
+     */
+    public static function formatNotesHtml(string $notes): string
+    {
+        $notes = trim($notes);
+        if ($notes === '') {
+            return '';
+        }
+
+        if (self::looksLikeHtml($notes)) {
+            return self::sanitizeNotesHtml($notes);
+        }
+
+        $lines = preg_split("/\r\n|\r|\n/", $notes) ?: [];
+        $parts = [];
+        foreach ($lines as $line) {
+            if (trim($line) === '') {
+                $parts[] = '<br>';
+                continue;
+            }
+            $esc = e($line);
+            $esc = preg_replace(
+                '/^(\s*)(\d+[\-\.\)\:]?|[٠-٩]+[\-\.\)\:]?)\s+/u',
+                '$1<strong class="c-num">$2</strong>&nbsp;',
+                $esc,
+                1
+            ) ?? $esc;
+            $parts[] = '<p>' . $esc . '</p>';
+        }
+
+        return implode('', $parts);
+    }
+
+    public static function sanitizeNotesHtml(string $html): string
+    {
+        $allowed = '<p><br><strong><b><em><i><u><ol><ul><li><span><div><h1><h2><h3><blockquote><a>';
+        $clean = strip_tags($html, $allowed);
+        // Drop inline event handlers / javascript: urls
+        $clean = preg_replace('/\son\w+\s*=\s*("|\').*?\1/iu', '', $clean) ?? $clean;
+        $clean = preg_replace('/javascript\s*:/iu', '', $clean) ?? $clean;
+        // Keep only safe href on links
+        $clean = preg_replace_callback(
+            '/<a\b([^>]*)>/iu',
+            static function (array $m): string {
+                $attrs = $m[1];
+                $href = '';
+                if (preg_match('/\bhref\s*=\s*("|\')(.*?)\1/iu', $attrs, $hm)) {
+                    $candidate = trim($hm[2]);
+                    if (preg_match('#^(https?://|/|#|mailto:)#iu', $candidate)) {
+                        $href = htmlspecialchars($candidate, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+                    }
+                }
+                return $href !== '' ? '<a href="' . $href . '" target="_blank" rel="noopener noreferrer">' : '<a>';
+            },
+            $clean
+        ) ?? $clean;
+
+        // Ensure leading numbers inside paragraphs/list items are bold
+        $clean = preg_replace_callback(
+            '/(<(?:p|li)[^>]*>)(\s*)(\d+[\-\.\)\:]?|[٠-٩]+[\-\.\)\:]?)(\s+)/u',
+            static function (array $m): string {
+                if (str_contains($m[0], 'c-num')) {
+                    return $m[0];
+                }
+                return $m[1] . $m[2] . '<strong class="c-num">' . $m[3] . '</strong>' . $m[4];
+            },
+            $clean
+        ) ?? $clean;
+
+        return $clean;
     }
 
     private static function invoicePaidAmount(Invoice $invoice, float $grand): float

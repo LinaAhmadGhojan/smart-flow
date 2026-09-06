@@ -307,6 +307,10 @@
         width: 84px; height: 84px; background: #f5f8fc;
         border: 1px solid #b8cce8; border-radius: 6px; margin: 0 auto;
     }
+    .items tbody tr {
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
     .items .section-row td {
         background: #eef4fb !important; font-weight: 700; font-size: 12px; padding: 9px 8px;
         border: none;
@@ -314,37 +318,87 @@
         color: #1a437f; text-align: center;
     }
 
-    .totals { width: 45%; margin-left: auto; border-collapse: collapse; margin-bottom: 12px; }
-    .totals td { padding: 4px 6px; font-size: 11px; color: #333; }
-    .totals .label { text-align: right; color: #555; }
-    .totals .val { text-align: right; white-space: nowrap; width: 120px; direction: ltr; color: #333; }
-    .totals .grand td {
-        border-top: 2px solid #2177cf; border-bottom: 2px solid #2177cf;
-        font-size: 14px; font-weight: 700; padding-top: 8px; padding-bottom: 8px; color: #2177cf;
+    .totals-wrap {
+        width: 52%;
+        margin-left: auto;
+        margin-bottom: 14px;
+        border: 1.3px solid #1a437f;
+        border-radius: 8px;
+        overflow: hidden;
+        background: #fff;
+    }
+    .totals-h {
+        background: #1a437f;
+        color: #fff;
+        font-weight: 800;
+        font-size: 11px;
+        padding: 7px 10px;
+        text-align: center;
+        letter-spacing: 0.2px;
+    }
+    .totals {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 0;
+    }
+    .totals td {
+        border: 1px solid #8faed0;
+        padding: 6px 8px;
+        font-size: 10.5px;
+        color: #1a437f;
+    }
+    .totals .label {
+        font-weight: 700;
+        text-align: right;
+        width: 58%;
+        background: #fff;
+        color: #1a437f;
+    }
+    .totals .val {
+        text-align: center;
+        direction: ltr;
+        white-space: nowrap;
+        font-weight: 700;
+        color: #1a437f;
+        width: 42%;
     }
     .totals tr.disc-row .label,
-    .totals tr.disc-row .val { color: #c0392b; font-weight: 700; }
+    .totals tr.disc-row .val {
+        color: #c0392b;
+        font-weight: 800;
+    }
+    .totals tr.grand td {
+        background: #1a437f;
+        color: #fff;
+        font-weight: 800;
+        font-size: 12px;
+        border-color: #1a437f;
+        padding-top: 8px;
+        padding-bottom: 8px;
+    }
 
     .comments-h {
-        font-weight: 700;
-        font-size: 12px;
-        margin: 14px 0 6px;
-        color: #333;
+        font-weight: 800;
+        font-size: 13px;
+        margin: 18px 0 10px;
+        color: #1a437f;
         width: 100%;
         clear: both;
+        border-bottom: 2px solid #d6e4f5;
+        padding-bottom: 6px;
     }
     .comments {
         display: block;
         width: 100%;
         max-width: 100%;
         box-sizing: border-box;
-        white-space: pre-line;
+        white-space: normal;
         word-break: normal;
         overflow-wrap: break-word;
-        font-size: 11px;
-        color: #444;
-        margin-bottom: 12px;
-        line-height: 1.65;
+        font-size: 12px;
+        color: #222;
+        margin-bottom: 14px;
+        line-height: 1.85;
         text-align: left;
         direction: ltr;
     }
@@ -352,6 +406,61 @@
         direction: rtl;
         text-align: right;
         unicode-bidi: embed;
+    }
+    .comments p {
+        margin: 0 0 8px;
+        padding: 0;
+    }
+    .comments ol,
+    .comments ul {
+        margin: 0 0 10px;
+        padding-inline-start: 1.4em;
+    }
+    .comments li {
+        margin: 0 0 6px;
+        padding: 0;
+        line-height: 1.85;
+    }
+    .comments .c-num,
+    .comments strong.c-num,
+    .comments b.c-num {
+        font-weight: 800 !important;
+        color: #123a72 !important;
+        font-size: 1.08em;
+    }
+    .comments strong,
+    .comments b {
+        font-weight: 800;
+        color: #1a2f55;
+    }
+    .comments em,
+    .comments i {
+        font-style: italic;
+    }
+    .comments u {
+        text-decoration: underline;
+    }
+    .comments h1,
+    .comments h2,
+    .comments h3 {
+        margin: 0 0 8px;
+        color: #123a72;
+        font-weight: 800;
+        line-height: 1.4;
+    }
+    .comments h1 { font-size: 16px; }
+    .comments h2 { font-size: 14px; }
+    .comments h3 { font-size: 13px; }
+    .comments blockquote {
+        margin: 0 0 10px;
+        padding: 6px 12px;
+        border-inline-start: 3px solid #93c5fd;
+        background: #f8fafc;
+        color: #334155;
+    }
+    .comments a {
+        color: #1d4ed8;
+        text-decoration: underline;
     }
 
     .foot-company {
@@ -438,13 +547,29 @@
         .sheet {
             width: 210mm !important;
             min-height: 297mm !important;
-            padding: 10px 36px 24px !important;
+            padding: 10px 36px 78px !important;
             margin: 0 !important;
             page-break-after: always;
             break-after: page;
         }
         .sheet:last-child { page-break-after: auto; break-after: auto; }
-        .sheet-summary { padding: 90px 36px 70px 36px !important; }
+        .sheet-summary { padding: 90px 36px 78px 36px !important; }
+        table.items tbody tr,
+        .comments p,
+        .comments li,
+        .sign-table,
+        .foot-company {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+        }
+        /* Footer only on last sheet (summary) — never fixed (fixed repeats every page) */
+        .sheet:not(.sheet-summary) .footer { display: none !important; }
+        .sheet-summary .footer {
+            position: absolute !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+        }
         * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
     }
 </style>
@@ -578,27 +703,29 @@
 
 <div class="sheet sheet-summary">
 <div class="summary-content">
+<div class="totals-wrap">
+<div class="totals-h">الإجماليات / Summary</div>
 <table class="totals">
     @if($totalDiscount > 0)
     <tr>
-        <td class="label">Subtotal</td>
+        <td class="label">إجمالي المبلغ / Subtotal</td>
         <td class="val">{{ $currency }} {{ number_format((float)$discounts['gross_subtotal'], 2) }}</td>
     </tr>
     <tr class="disc-row">
-        <td class="label">Discount</td>
+        <td class="label">الخصم / Discount</td>
         <td class="val">− {{ $currency }} {{ number_format($totalDiscount, 2) }}</td>
     </tr>
     @endif
     <tr>
-        <td class="label">Subtotal</td>
+        <td class="label">الإجمالي قبل الضريبة / Subtotal</td>
         <td class="val">{{ $currency }} {{ number_format((float)$discounts['net_before_tax'], 2) }}</td>
     </tr>
     <tr>
-        <td class="label">TAX {{ rtrim(rtrim(number_format((float)$taxPercent, 2), '0'), '.') }}%</td>
+        <td class="label">ضريبة القيمة المضافة / TAX {{ rtrim(rtrim(number_format((float)$taxPercent, 2), '0'), '.') }}%</td>
         <td class="val">{{ $currency }} {{ number_format((float)$taxAmount, 2) }}</td>
     </tr>
     <tr>
-        <td class="label">Total</td>
+        <td class="label">الإجمالي / Total</td>
         <td class="val">{{ $currency }} {{ number_format((float)$discounts['net_before_tax'] + (float)$taxAmount, 2) }}</td>
     </tr>
     @if((float)$withholdingPercent > 0 || (float)$withholdingAmount > 0)
@@ -609,7 +736,7 @@
     @endif
     @if(!empty($showPaid))
     <tr>
-        <td class="label">Paid</td>
+        <td class="label">المدفوع / Paid</td>
         <td class="val">{{ $currency }} {{ number_format((float)$paid, 2) }}</td>
     </tr>
     @endif
@@ -618,10 +745,11 @@
         <td class="val">{{ $currency }} {{ number_format((float)$grandTotal, 2) }}</td>
     </tr>
 </table>
+</div>
 
 @if(!empty($notes))
-<div class="comments-h">Comments</div>
-<div class="comments {{ !empty($notesIsArabic) ? 'ar' : '' }}">{{ $notes }}</div>
+<div class="comments-h">{{ !empty($notesIsArabic) ? 'الملاحظات والشروط' : 'Comments' }}</div>
+<div class="comments {{ !empty($notesIsArabic) ? 'ar' : '' }}">{!! $notes !!}</div>
 @endif
 
 <div class="foot-company">{{ $companyLegalName }}</div>

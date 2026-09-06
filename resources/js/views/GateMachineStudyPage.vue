@@ -7,13 +7,13 @@
         <div class="mb-10 max-w-3xl mx-auto">
           <router-link to="/" class="inline-flex items-center gap-2 text-[var(--sf-accent)] hover:text-[var(--sf-navy)] mb-6 text-sm font-semibold transition-colors">
             <span aria-hidden="true">→</span>
-            العودة للرئيسية</router-link>
+            {{ t('backHome') }}</router-link>
 
           <div class="text-center">
-            <p class="sf-eyebrow">دراسة ماكينة باب</p>
-            <h1 class="sf-heading">طلب دراسة ماكينة باب — موقع خارجي</h1>
+            <p class="sf-eyebrow">{{ t('gateStudyEyebrow') }}</p>
+            <h1 class="sf-heading">{{ t('gateStudyTitle') }}</h1>
             <p class="sf-subheading mt-3">
-              عبّي البيانات التالية لفريقنا يدرس موقع الباب ويقترح ماكينة مناسبة
+              {{ t('gateStudySubtitle') }}
             </p>
           </div>
         </div>
@@ -24,9 +24,9 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h2 class="text-2xl font-bold text-[var(--sf-navy)] mb-2">تم استلام طلبك بنجاح!</h2>
-          <p class="text-gray-600 mb-6">سنتواصل معك قريباً لمتابعة دراسة ماكينة الباب.</p>
-          <router-link to="/" class="btn-primary">العودة للرئيسية</router-link>
+          <h2 class="text-2xl font-bold text-[var(--sf-navy)] mb-2">{{ t('requestReceived') }}</h2>
+          <p class="text-gray-600 mb-6">{{ t('gateRequestReceivedHint') }}</p>
+          <router-link to="/" class="btn-primary">{{ t('backHome') }}</router-link>
         </div>
 
         <form v-else @submit.prevent="handleSubmit" class="max-w-3xl mx-auto space-y-6">
@@ -35,50 +35,50 @@
           </div>
 
           <section class="bg-white rounded-2xl shadow p-6">
-            <h3 class="section-title">1. بيانات التواصل</h3>
+            <h3 class="section-title">{{ t('contactData') }}</h3>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">الاسم *</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('fullName') }}</label>
                 <input v-model="form.customer_name" type="text" required class="sf-field" />
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">رقم الهاتف / واتساب *</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('phoneWhatsapp') }}</label>
                 <input v-model="form.customer_phone" type="tel" required class="sf-field" />
               </div>
             </div>
             <div class="mt-4">
-              <label class="block text-sm font-medium text-gray-700 mb-1">موقع الباب (العنوان) *</label>
-              <input v-model="form.site_location" type="text" required placeholder="المدينة / المنطقة / تفاصيل الموقع الخارجي" class="sf-field" />
+              <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('gateLocation') }}</label>
+              <input v-model="form.site_location" type="text" required :placeholder="t('gateLocationPh')" class="sf-field" />
             </div>
           </section>
 
           <section class="bg-white rounded-2xl shadow p-6">
-            <h3 class="section-title">2. مواصفات الباب</h3>
+            <h3 class="section-title">{{ t('doorSpecs') }}</h3>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">وزن الباب (كغ)</label>
-                <input v-model="form.door_weight" type="text" placeholder="مثال: 150" class="sf-field" />
+                <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('doorWeight') }}</label>
+                <input v-model="form.door_weight" type="text" :placeholder="t('example150')" class="sf-field" />
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">عرض الباب (سم)</label>
-                <input v-model="form.door_width" type="text" placeholder="مثال: 400" class="sf-field" />
+                <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('doorWidth') }}</label>
+                <input v-model="form.door_width" type="text" :placeholder="t('example400')" class="sf-field" />
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">ارتفاع الباب (سم)</label>
-                <input v-model="form.door_height" type="text" placeholder="مثال: 220" class="sf-field" />
+                <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('doorHeight') }}</label>
+                <input v-model="form.door_height" type="text" :placeholder="t('example220')" class="sf-field" />
               </div>
             </div>
             <div class="mt-4">
-              <label class="block text-sm font-medium text-gray-700 mb-1">المعدن / نوع الباب</label>
-              <input v-model="form.door_material" type="text" placeholder="حديد / ألومنيوم / ستainless / خشب..." class="sf-field" />
+              <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('doorMaterial') }}</label>
+              <input v-model="form.door_material" type="text" :placeholder="t('doorMaterialPh')" class="sf-field" />
             </div>
           </section>
 
           <section class="bg-white rounded-2xl shadow p-6">
-            <h3 class="section-title">3. الكهرباء والتمديدات</h3>
+            <h3 class="section-title">{{ t('powerWiring') }}</h3>
             <div class="space-y-4">
               <div>
-                <p class="text-sm text-gray-500 mb-2">هل يوجد نقطة كهربائية عند موقع الباب؟</p>
+                <p class="text-sm text-gray-500 mb-2">{{ t('hasElectricalPoint') }}</p>
                 <div class="flex flex-wrap gap-3">
                   <label v-for="opt in yesNoOptions" :key="'elec-' + opt.value" class="option-card" :class="{ 'option-card--active': form.has_electrical_point === opt.value }">
                     <input type="radio" :value="opt.value" v-model="form.has_electrical_point" class="sr-only" />
@@ -87,7 +87,7 @@
                 </div>
               </div>
               <div>
-                <p class="text-sm text-gray-500 mb-2">هل يوجد تمديدات خاصة بماكينة الباب؟</p>
+                <p class="text-sm text-gray-500 mb-2">{{ t('hasMachineWiring') }}</p>
                 <div class="flex flex-wrap gap-3">
                   <label v-for="opt in yesNoOptions" :key="'wire-' + opt.value" class="option-card" :class="{ 'option-card--active': form.has_machine_wiring === opt.value }">
                     <input type="radio" :value="opt.value" v-model="form.has_machine_wiring" class="sr-only" />
@@ -99,16 +99,16 @@
           </section>
 
           <section class="bg-white rounded-2xl shadow p-6">
-            <h3 class="section-title">4. ملاحظات إضافية</h3>
-            <textarea v-model="form.notes" rows="3" class="sf-field" placeholder="أي تفاصيل إضافية عن الباب أو الموقع..."></textarea>
+            <h3 class="section-title">{{ t('extraNotes') }}</h3>
+            <textarea v-model="form.notes" rows="3" class="sf-field" :placeholder="t('extraNotesPh')"></textarea>
           </section>
 
           <div class="flex flex-col sm:flex-row gap-3">
             <button type="submit" :disabled="loading" class="flex-1 btn-primary justify-center py-3.5 text-base disabled:opacity-50">
-              {{ loading ? 'جاري الإرسال...' : 'إرسال الطلب' }}
+              {{ loading ? t('sending') : t('submitRequest') }}
             </button>
             <button type="button" class="flex-1 btn-whatsapp justify-center py-3.5 text-base" @click="openWhatsapp">
-              أو تواصل عبر واتساب
+              {{ t('orWhatsapp') }}
             </button>
           </div>
         </form>
@@ -124,12 +124,15 @@ import { ref, computed, onMounted } from 'vue'
 import Header from '@/components/Header.vue'
 import Footer from '@/components/Footer.vue'
 import api from '@/lib/api'
+import { useLocale } from '@/composables/useLocale'
 
-const yesNoOptions = [
-  { value: 'yes', label: 'نعم' },
-  { value: 'no', label: 'لا' },
-  { value: 'unknown', label: 'لا أعلم' },
-]
+const { t } = useLocale()
+
+const yesNoOptions = computed(() => [
+  { value: 'yes', label: t('yes') },
+  { value: 'no', label: t('no') },
+  { value: 'unknown', label: t('unknown') },
+])
 
 const form = ref({
   customer_name: '',

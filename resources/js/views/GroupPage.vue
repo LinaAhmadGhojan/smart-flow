@@ -7,7 +7,7 @@
         <div class="mb-8 flex flex-wrap items-center justify-between gap-4">
           <div class="min-w-0 flex-1">
             <router-link to="/#products" class="text-sm text-blue-600 hover:underline">
-              ← العودة للمجموعات
+              {{ isAr ? '←' : '→' }} {{ t('backToGroups') }}
             </router-link>
 
             <div class="mt-4 overflow-hidden rounded-2xl border border-slate-200 bg-white">
@@ -15,20 +15,24 @@
                 <img
                   v-if="group?.image"
                   :src="mediaUrl(group.image)"
-                  :alt="group ? (group.name_ar || group.name) : ''"
+                  :alt="group ? localized(group) : ''"
                   class="w-full h-full object-cover"
                   @error="handleMediaError"
                 />
                 <div v-else class="w-full h-full flex items-center justify-center text-slate-400">
-                  المجموعات
+                  {{ t('groups') }}
                 </div>
               </div>
               <div class="p-5 sm:p-6">
                 <h1 class="text-start text-2xl sm:text-3xl font-bold text-blue-900">
-                  {{ group ? (group.name_ar || group.name) : 'منتجات المجموعة' }}
+                  {{ group ? localized(group) : t('productsInGroup') }}
                 </h1>
                 <p v-if="group" class="text-slate-500 mt-2 max-w-2xl">
-                  {{ group.description_ar || group.description || '' }}
+                  {{
+                    isAr
+                      ? group.description_ar || group.description || ''
+                      : group.description || group.description_ar || ''
+                  }}
                 </p>
               </div>
             </div>
@@ -37,7 +41,7 @@
             to="/products"
             class="inline-flex items-center px-4 py-2 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 text-sm font-medium"
           >
-            كل المنتجات
+            {{ t('allProducts') }}
           </router-link>
         </div>
 
@@ -46,7 +50,7 @@
         </div>
 
         <div v-else-if="!products.length" class="text-center py-20 text-slate-500">
-          لا توجد منتجات في هذه المجموعة
+          {{ t('noProducts') }}
         </div>
 
         <div v-else class="sf-catalog-grid items-stretch">
@@ -58,14 +62,14 @@
             <div class="sf-media-square shrink-0">
               <img
                 :src="mediaUrl(product.image)"
-                :alt="product.name_ar || product.name"
+                :alt="localized(product)"
                 @error="handleMediaError"
               />
             </div>
 
             <div class="p-4 border-t border-gray-200 flex flex-col flex-1 min-h-0">
               <h3 class="text-lg font-semibold text-blue-900 mb-1 line-clamp-2">
-                {{ product.name_ar || product.name }}
+                {{ localized(product) }}
               </h3>
 
               <div class="mb-3 flex-1 min-h-[4.5rem]">
@@ -77,7 +81,7 @@
                   :to="`/products/${product.id}`"
                   class="inline-block mt-1 text-sm font-medium text-blue-600 hover:text-blue-800"
                 >
-                  اقرأ التفاصيل
+                  {{ t('readDetails') }}
                 </router-link>
               </div>
 
@@ -90,7 +94,7 @@
                       product.data_sheet ? 'w-1/2' : 'w-full',
                     ]"
                   >
-                    تفاصيل
+                    {{ t('viewDetails') }}
                   </router-link>
                   <a
                     v-if="product.data_sheet"
@@ -99,7 +103,7 @@
                     rel="noopener noreferrer"
                     class="w-1/2 inline-flex items-center justify-center gap-1.5 border border-[#203c85] text-[#203c85] hover:bg-[#e8eef9] text-center px-3 py-2 rounded-lg font-medium transition-colors text-sm"
                   >
-                    ملف الشيت
+                    {{ t('productCatalog') }}
                   </a>
                 </div>
                 <a
@@ -109,7 +113,7 @@
                   class="flex w-full items-center justify-center gap-2 text-white px-4 py-2 rounded-lg font-medium text-sm"
                   style="background-color: #203c85"
                 >
-                  اطلب عبر واتساب
+                  {{ t('orderWhatsapp') }}
                 </a>
               </div>
             </div>
@@ -128,6 +132,7 @@ import { useRoute } from 'vue-router'
 import Header from '@/components/Header.vue'
 import Footer from '@/components/Footer.vue'
 import { mediaUrl, handleMediaError } from '@/lib/media'
+import { useLocale } from '@/composables/useLocale'
 
 interface Product {
   id: number
@@ -153,6 +158,7 @@ interface Group {
 }
 
 const route = useRoute()
+const { t, isAr, localized } = useLocale()
 const group = ref<Group | null>(null)
 const loading = ref(true)
 const companyWhatsapp = ref('971562566232')
@@ -160,12 +166,16 @@ const companyWhatsapp = ref('971562566232')
 const products = computed(() => group.value?.products || [])
 
 const cardDescription = (product: Product) =>
-  (product.description_ar || product.description || '').trim()
+  (
+    isAr.value
+      ? product.description_ar || product.description
+      : product.description || product.description_ar || ''
+  ).trim()
 
 const getWhatsAppLink = (product: Product) => {
   const message =
     product.whatsapp_message ||
-    `مرحباً، أرغب في الاستفسار عن المنتج: ${product.name_ar || product.name}`
+    `${t('whatsappInquirePrefix')} ${localized(product)}`
   return `https://wa.me/${companyWhatsapp.value}?text=${encodeURIComponent(message)}`
 }
 

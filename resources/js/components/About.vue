@@ -11,15 +11,15 @@
           <h3 class="text-2xl md:text-3xl font-bold text-[var(--sf-navy)] mb-5">
             {{
               isAr
-                ? (companyInfo?.companyname_ar || 'سمارت فلو للتجارة العامة')
-                : (companyInfo?.companyName || 'SmartFlow General Trading')
+                ? (companyInfo?.companyname_ar || t('defaultCompanyAr'))
+                : (companyInfo?.companyName || t('defaultCompanyEn'))
             }}
           </h3>
           <p class="text-lg text-slate-700 leading-relaxed mb-8">
             {{
               isAr
-                ? (companyInfo?.aboutAr || 'نحن شركة رائدة في مجال توفير الحلول الذكية والأنظمة الكهربائية المتطورة. نفخر بتقديم أفضل المنتجات والخدمات لعملائنا في دولة الإمارات العربية المتحدة.')
-                : (companyInfo?.aboutEn || 'We are a leading company in providing smart solutions and advanced electrical systems. We pride ourselves on delivering the best products and services to our clients in the United Arab Emirates.')
+                ? (companyInfo?.aboutAr || t('defaultAboutAr'))
+                : (companyInfo?.aboutEn || t('defaultAboutEn'))
             }}
           </p>
 

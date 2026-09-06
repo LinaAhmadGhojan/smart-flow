@@ -11,37 +11,47 @@
             />
             <div>
               <h3 class="text-xl font-bold">{{ companyInfo?.companyName || 'SMARTFLOW' }}</h3>
-              <p class="text-sm text-blue-200">{{ companyInfo?.tagline_ar || companyInfo?.tagline || 'منزلك آمن معنا' }}</p>
+              <p class="text-sm text-blue-200">
+                {{
+                  isAr
+                    ? companyInfo?.tagline_ar || companyInfo?.tagline || t('defaultTagline')
+                    : companyInfo?.tagline || companyInfo?.tagline_ar || t('defaultTagline')
+                }}
+              </p>
             </div>
           </div>
           <p class="text-blue-100">
-            {{ companyInfo?.footerDescAr || 'شريكك الموثوق في الحلول الذكية' }}
+            {{
+              isAr
+                ? companyInfo?.footerDescAr || t('trustedPartner')
+                : companyInfo?.footerDesc || companyInfo?.footerDescAr || t('trustedPartner')
+            }}
           </p>
         </div>
 
         <div>
-          <h4 class="text-lg font-bold mb-1">روابط سريعة</h4>
+          <h4 class="text-lg font-bold mb-1">{{ t('quickLinks') }}</h4>
           <ul class="space-y-2">
             <li>
               <button @click="scrollToSection('home')" class="text-blue-100 hover:text-white transition-colors">
-                الرئيسية
+                {{ t('home') }}
               </button>
             </li>
             <li>
               <button @click="scrollToSection('products')" class="text-blue-100 hover:text-white transition-colors">
-                المنتجات
+                {{ t('products') }}
               </button>
             </li>
             <li>
               <button @click="scrollToSection('contact')" class="text-blue-100 hover:text-white transition-colors">
-                اتصل بنا
+                {{ t('contactUs') }}
               </button>
             </li>
           </ul>
         </div>
 
         <div>
-          <h4 class="text-lg font-bold mb-1">تواصل معنا</h4>
+          <h4 class="text-lg font-bold mb-1">{{ t('contactUs') }}</h4>
           <div class="space-y-3 text-blue-100">
             <div class="flex items-center gap-2">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -64,7 +74,7 @@
       </div>
 
       <div class="border-t border-blue-800 mt-8 pt-8 text-center text-blue-200">
-        <p>© {{ currentYear }} {{ companyInfo?.companyName || 'SMARTFLOW' }}. جميع الحقوق محفوظة</p>
+        <p>© {{ currentYear }} {{ companyInfo?.companyName || 'SMARTFLOW' }}. {{ t('allRights') }}</p>
       </div>
     </div>
   </footer>
@@ -72,11 +82,13 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { useLocale } from '@/composables/useLocale'
 
 interface CompanyInfo {
   companyName: string
   tagline: string
   tagline_ar?: string
+  footerDesc?: string
   footerDescAr?: string
   contact: {
     phone: string
@@ -84,8 +96,8 @@ interface CompanyInfo {
   }
 }
 
+const { t, isAr } = useLocale()
 const companyInfo = ref<CompanyInfo | null>(null)
-
 const currentYear = computed(() => new Date().getFullYear())
 
 const scrollToSection = (id: string) => {

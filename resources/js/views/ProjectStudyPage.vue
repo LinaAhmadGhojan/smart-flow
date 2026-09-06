@@ -7,13 +7,13 @@
         <div class="mb-10 max-w-3xl mx-auto">
           <router-link to="/" class="inline-flex items-center gap-2 text-[var(--sf-accent)] hover:text-[var(--sf-navy)] mb-6 text-sm font-semibold transition-colors">
             <span aria-hidden="true">→</span>
-            العودة للرئيسية</router-link>
+            {{ t('backHome') }}</router-link>
 
           <div class="text-center">
-            <p class="sf-eyebrow">دراسة مشروع</p>
-            <h1 class="sf-heading">استبيان متطلبات أنظمة المنزل الذكي</h1>
+            <p class="sf-eyebrow">{{ t('projectStudyEyebrow') }}</p>
+            <h1 class="sf-heading">{{ t('projectStudyTitle') }}</h1>
             <p class="sf-subheading mt-3">
-              عبّي البيانات التالية وفريقنا رح يتواصل معك لدراسة مشروعك بأفضل شكل
+              {{ t('projectStudySubtitle') }}
             </p>
           </div>
         </div>
@@ -25,10 +25,10 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h2 class="text-2xl font-bold text-[var(--sf-navy)] mb-2">تم استلام طلبك بنجاح!</h2>
-          <p class="text-gray-600 mb-6">سنتواصل معك قريباً لمتابعة تفاصيل مشروعك.</p>
+          <h2 class="text-2xl font-bold text-[var(--sf-navy)] mb-2">{{ t('requestReceived') }}</h2>
+          <p class="text-gray-600 mb-6">{{ t('requestReceivedHint') }}</p>
           <router-link to="/" class="btn-primary">
-            العودة للرئيسية
+            {{ t('backHome') }}
           </router-link>
         </div>
 
@@ -40,8 +40,8 @@
 
           <!-- 1. House status -->
           <section class="bg-white rounded-2xl shadow p-6">
-            <h3 class="section-title">1. حالة المنزل</h3>
-            <p class="text-sm text-gray-500 mb-3">هل المنزل قيد الإنشاء أم قائم بالفعل؟</p>
+            <h3 class="section-title">{{ t('houseStatus') }}</h3>
+            <p class="text-sm text-gray-500 mb-3">{{ t('houseStatusHint') }}</p>
             <div class="flex flex-col sm:flex-row gap-3">
               <label class="option-card" :class="{ 'option-card--active': form.house_status === 'under_construction' }">
                 <input
@@ -51,7 +51,7 @@
                   class="sr-only"
                   @change="handleHouseStatusChange"
                 />
-                قيد الإنشاء
+                {{ t('underConstruction') }}
               </label>
               <label class="option-card" :class="{ 'option-card--active': form.house_status === 'existing' }">
                 <input
@@ -61,17 +61,16 @@
                   class="sr-only"
                   @change="handleHouseStatusChange"
                 />
-                قائم بالفعل
+                {{ t('existingHouse') }}
               </label>
             </div>
 
             <div v-if="form.house_status === 'existing'" class="mt-4 bg-green-50 border border-green-200 rounded-lg p-4 text-sm text-green-900">
               <p class="mb-3">
-                بما إن المنزل قائم بالفعل، تم تحويلك إلى واتساب للتواصل المباشر مع فريقنا وتحديد موعد الزيارة.
-                إذا لم يفتح واتساب تلقائياً، اضغط الزر بالأسفل.
+                {{ t('existingHouseHint') }}
               </p>
               <button type="button" class="btn-whatsapp" @click="openWhatsappForExisting">
-                فتح واتساب الآن
+                {{ t('openWhatsappNow') }}
               </button>
             </div>
           </section>
@@ -198,25 +197,28 @@ import { ref, computed, onMounted } from 'vue'
 import Header from '@/components/Header.vue'
 import Footer from '@/components/Footer.vue'
 import api from '@/lib/api'
+import { useLocale } from '@/composables/useLocale'
 
-const systemOptions = [
-  { value: 'cameras', label: 'نظام الكاميرات' },
-  { value: 'internet', label: 'توزيع الإنترنت على كامل الفيلا' },
-  { value: 'intercom', label: 'نظام الإنتركم' },
-  { value: 'lighting', label: 'التحكم بالإضاءة' },
-  { value: 'ac', label: 'التحكم بالمكيف' },
-  { value: 'curtains', label: 'التحكم بالستائر' },
-  { value: 'garage', label: 'ماكينة/بوابة الكراج' },
-  { value: 'audio', label: 'نظام الصوت' },
-  { value: 'other', label: 'أخرى' },
-]
+const { t } = useLocale()
 
-const planOptions = [
-  { value: 'architectural', label: 'المخطط المعماري' },
-  { value: 'electrical', label: 'مخطط الكهرباء' },
-  { value: 'ac', label: 'مخطط التكييف' },
-  { value: 'communications', label: 'مخطط الاتصالات' },
-]
+const systemOptions = computed(() => [
+  { value: 'cameras', label: t('sys_cameras') },
+  { value: 'internet', label: t('sys_internet') },
+  { value: 'intercom', label: t('sys_intercom') },
+  { value: 'lighting', label: t('sys_lighting') },
+  { value: 'ac', label: t('sys_ac') },
+  { value: 'curtains', label: t('sys_curtains') },
+  { value: 'garage', label: t('sys_garage') },
+  { value: 'audio', label: t('sys_audio') },
+  { value: 'other', label: t('sys_other') },
+])
+
+const planOptions = computed(() => [
+  { value: 'architectural', label: t('plan_architectural') },
+  { value: 'electrical', label: t('plan_electrical') },
+  { value: 'ac', label: t('plan_ac') },
+  { value: 'communications', label: t('plan_communications') },
+])
 
 const form = ref({
   house_status: '' as 'under_construction' | 'existing' | '',

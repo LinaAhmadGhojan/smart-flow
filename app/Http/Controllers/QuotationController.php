@@ -46,6 +46,9 @@ class QuotationController extends Controller
     public function store(Request $request)
     {
         $data = $this->validated($request);
+        if (array_key_exists('comments', $data) && is_string($data['comments'])) {
+            $data['comments'] = FinanceDocumentViewData::sanitizeNotesHtml($data['comments']);
+        }
 
         $quotation = DB::transaction(function () use ($data) {
             $quotation = Quotation::create([
@@ -76,6 +79,9 @@ class QuotationController extends Controller
     public function update(Request $request, Quotation $quotation)
     {
         $data = $this->validated($request, $quotation->id);
+        if (array_key_exists('comments', $data) && is_string($data['comments'])) {
+            $data['comments'] = FinanceDocumentViewData::sanitizeNotesHtml($data['comments']);
+        }
 
         DB::transaction(function () use ($quotation, $data) {
             $quotation->update([
@@ -200,7 +206,7 @@ class QuotationController extends Controller
             'customer_id' => 'nullable|exists:customers,id',
             'project_id' => 'nullable|exists:projects,id',
             'status' => 'nullable|in:draft,sent,accepted,cancelled',
-            'comments' => 'nullable|string|max:10000',
+            'comments' => 'nullable|string|max:50000',
             'currency' => 'nullable|string|max:10',
             'tax_percent' => 'nullable|numeric|min:0|max:100',
             'withholding_tax_percent' => 'nullable|numeric|min:0|max:100',

@@ -174,8 +174,8 @@
         </div>
 
         <div>
-          <label class="block text-xs text-gray-500 mb-1">Comments</label>
-          <textarea v-model="form.comments" rows="3" class="sf-field" placeholder="ملاحظات تظهر في الـ PDF"></textarea>
+          <label class="block text-xs text-gray-500 mb-1">الملاحظات والشروط (تظهر في PDF)</label>
+          <RichTextEditor v-model="form.comments" placeholder="اكتب الشروط هنا أو الصق من Word…" />
         </div>
       </div>
 
@@ -404,6 +404,7 @@ import {
 } from '@/lib/productSearch'
 import { exportInvoicePdf, exportQuotationPdf } from '@/lib/financePdf'
 import { allocateGlobalDiscount, computeGlobalDiscount } from '@/lib/quotationDiscount'
+import RichTextEditor from '@/components/RichTextEditor.vue'
 
 interface LineItem {
   code: string

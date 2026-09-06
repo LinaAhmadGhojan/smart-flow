@@ -7,8 +7,17 @@
     "file": "assets/logo-CWYCaVRp.svg",
     "src": "logo.svg"
   },
+  "node_modules/@vueup/vue-quill/node_modules/quill/quill.js": {
+    "file": "assets/quill-Dwf9RLkG.js",
+    "name": "quill",
+    "src": "node_modules/@vueup/vue-quill/node_modules/quill/quill.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/main.ts"
+    ]
+  },
   "node_modules/canvg/lib/index.es.js": {
-    "file": "assets/index.es-CTnk3Pji.js",
+    "file": "assets/index.es-CVdK9NHO.js",
     "name": "index.es",
     "src": "node_modules/canvg/lib/index.es.js",
     "isDynamicEntry": true,
@@ -29,12 +38,12 @@
     "isDynamicEntry": true
   },
   "resources/css/app.css": {
-    "file": "assets/app-4yhtyc86.css",
+    "file": "assets/app-DmFJ17X2.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
   "resources/js/main.ts": {
-    "file": "assets/main-rUoccril.js",
+    "file": "assets/main-D2q-5L2Q.js",
     "name": "main",
     "src": "resources/js/main.ts",
     "isEntry": true,
@@ -42,12 +51,13 @@
       "node_modules/html2canvas/dist/html2canvas.esm.js",
       "node_modules/dompurify/dist/purify.es.mjs",
       "node_modules/canvg/lib/index.es.js",
+      "node_modules/@vueup/vue-quill/node_modules/quill/quill.js",
       "resources/js/views/AllOffersPage.vue",
       "resources/js/views/ProjectStudyPage.vue",
       "resources/js/views/GateMachineStudyPage.vue"
     ],
     "css": [
-      "assets/main-CZeiuHGI.css"
+      "assets/main-COl--7uq.css"
     ],
     "assets": [
       "assets/logo-D4e6ppla.jpeg",
@@ -55,7 +65,7 @@
     ]
   },
   "resources/js/views/AllOffersPage.vue": {
-    "file": "assets/AllOffersPage-dZdUOHWl.js",
+    "file": "assets/AllOffersPage-BovW7HyT.js",
     "name": "AllOffersPage",
     "src": "resources/js/views/AllOffersPage.vue",
     "isDynamicEntry": true,
@@ -64,7 +74,7 @@
     ]
   },
   "resources/js/views/GateMachineStudyPage.vue": {
-    "file": "assets/GateMachineStudyPage-efzMpHlS.js",
+    "file": "assets/GateMachineStudyPage-Df3yS7Ee.js",
     "name": "GateMachineStudyPage",
     "src": "resources/js/views/GateMachineStudyPage.vue",
     "isDynamicEntry": true,
@@ -72,11 +82,11 @@
       "resources/js/main.ts"
     ],
     "css": [
-      "assets/GateMachineStudyPage-CJojpkkp.css"
+      "assets/GateMachineStudyPage-fUmc1ZC0.css"
     ]
   },
   "resources/js/views/ProjectStudyPage.vue": {
-    "file": "assets/ProjectStudyPage-BYJRGpW8.js",
+    "file": "assets/ProjectStudyPage-CDNHKPxT.js",
     "name": "ProjectStudyPage",
     "src": "resources/js/views/ProjectStudyPage.vue",
     "isDynamicEntry": true,
@@ -84,7 +94,7 @@
       "resources/js/main.ts"
     ],
     "css": [
-      "assets/ProjectStudyPage-CvD2ExKA.css"
+      "assets/ProjectStudyPage-C3X9egEK.css"
     ]
   }
 }

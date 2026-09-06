@@ -29,7 +29,7 @@
             </td>
             <td class="num">{{ rtrim(rtrim(number_format((float)$item['quantity'], 2, '.', ''), '0'), '.') }}</td>
             <td class="num">{{ $currency }} {{ number_format((float)$item['rate'], 2) }}</td>
-            <td class="num">{{ $currency }} {{ number_format((float)($item['final_amount'] ?? $item['amount']), 2) }}</td>
+            <td class="num">{{ $currency }} {{ number_format((float)($item['line_subtotal'] ?? ((float)$item['quantity'] * (float)$item['rate'])), 2) }}</td>
         </tr>
         @endif
         @endforeach

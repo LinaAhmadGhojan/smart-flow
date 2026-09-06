@@ -68,21 +68,14 @@
       </div>
     </div>
 
-    <Teleport to="body">
-      <div v-if="deleteTarget" class="sf-modal-backdrop" dir="rtl">
-        <div class="sf-modal-panel max-w-sm text-center">
-          <svg class="w-14 h-14 text-red-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-          </svg>
-          <p class="text-lg font-bold text-gray-900 mb-2">حذف المجموعة؟</p>
-          <p class="text-gray-500 text-sm mb-6">{{ deleteTarget.name_ar || deleteTarget.name }}</p>
-          <div class="flex gap-3">
-            <button type="button" @click="deleteTarget = null" class="flex-1 border border-gray-300 py-2.5 rounded-lg text-sm text-gray-700 hover:bg-gray-50">إلغاء</button>
-            <button type="button" @click="doDelete" :disabled="deleteLoading" class="flex-1 bg-red-600 hover:bg-red-700 disabled:opacity-60 text-white py-2.5 rounded-lg text-sm font-medium">حذف</button>
-          </div>
-        </div>
-      </div>
-    </Teleport>
+    <ConfirmDeleteModal
+      :open="!!deleteTarget"
+      title="حذف المجموعة؟"
+      :message="deleteTarget ? (deleteTarget.name_ar || deleteTarget.name) : ''"
+      :loading="deleteLoading"
+      @cancel="deleteTarget = null"
+      @confirm="doDelete"
+    />
   </div>
 </template>
 
@@ -91,6 +84,7 @@ import { ref, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import api from '@/lib/api'
 import { mediaUrl, handleMediaError } from '@/lib/media'
+import ConfirmDeleteModal from '@/components/ConfirmDeleteModal.vue'
 
 interface Group {
   id: number

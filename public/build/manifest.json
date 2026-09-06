@@ -8,7 +8,7 @@
     "src": "logo.svg"
   },
   "node_modules/@vueup/vue-quill/node_modules/quill/quill.js": {
-    "file": "assets/quill-Dwf9RLkG.js",
+    "file": "assets/quill-DLOhLPOV.js",
     "name": "quill",
     "src": "node_modules/@vueup/vue-quill/node_modules/quill/quill.js",
     "isDynamicEntry": true,
@@ -17,7 +17,7 @@
     ]
   },
   "node_modules/canvg/lib/index.es.js": {
-    "file": "assets/index.es-CVdK9NHO.js",
+    "file": "assets/index.es-Bpw8_kT1.js",
     "name": "index.es",
     "src": "node_modules/canvg/lib/index.es.js",
     "isDynamicEntry": true,
@@ -38,12 +38,12 @@
     "isDynamicEntry": true
   },
   "resources/css/app.css": {
-    "file": "assets/app-DmFJ17X2.css",
+    "file": "assets/app-f-slNbpN.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
   "resources/js/main.ts": {
-    "file": "assets/main-D2q-5L2Q.js",
+    "file": "assets/main-DC5QXMvW.js",
     "name": "main",
     "src": "resources/js/main.ts",
     "isEntry": true,
@@ -57,7 +57,7 @@
       "resources/js/views/GateMachineStudyPage.vue"
     ],
     "css": [
-      "assets/main-COl--7uq.css"
+      "assets/main-BrVy04HY.css"
     ],
     "assets": [
       "assets/logo-D4e6ppla.jpeg",
@@ -65,7 +65,7 @@
     ]
   },
   "resources/js/views/AllOffersPage.vue": {
-    "file": "assets/AllOffersPage-BovW7HyT.js",
+    "file": "assets/AllOffersPage-mC6ntRPu.js",
     "name": "AllOffersPage",
     "src": "resources/js/views/AllOffersPage.vue",
     "isDynamicEntry": true,
@@ -74,7 +74,7 @@
     ]
   },
   "resources/js/views/GateMachineStudyPage.vue": {
-    "file": "assets/GateMachineStudyPage-Df3yS7Ee.js",
+    "file": "assets/GateMachineStudyPage-Dt0j8weD.js",
     "name": "GateMachineStudyPage",
     "src": "resources/js/views/GateMachineStudyPage.vue",
     "isDynamicEntry": true,
@@ -86,7 +86,7 @@
     ]
   },
   "resources/js/views/ProjectStudyPage.vue": {
-    "file": "assets/ProjectStudyPage-CDNHKPxT.js",
+    "file": "assets/ProjectStudyPage-Dn6EddLF.js",
     "name": "ProjectStudyPage",
     "src": "resources/js/views/ProjectStudyPage.vue",
     "isDynamicEntry": true,

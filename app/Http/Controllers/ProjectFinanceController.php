@@ -211,6 +211,27 @@ class ProjectFinanceController extends Controller
         return response()->json(['finance' => $project->fresh()->finance_summary]);
     }
 
+    public function destroyPaymentGlobal(ProjectPayment $payment)
+    {
+        if ($payment->project_id) {
+            $project = Project::find($payment->project_id);
+            if ($project && $project->status === 'completed') {
+                return response()->json(['message' => 'المشروع مكتمل ولا يمكن تعديله.'], 422);
+            }
+            $this->unlinkStoragePath($payment->receipt_path);
+            $payment->delete();
+
+            return response()->json([
+                'finance' => $project?->fresh()?->finance_summary,
+            ]);
+        }
+
+        $this->unlinkStoragePath($payment->receipt_path);
+        $payment->delete();
+
+        return response()->json(['finance' => null]);
+    }
+
     public function htmlPayment(Project $project, ProjectPayment $payment)
     {
         if ($payment->project_id !== $project->id) {

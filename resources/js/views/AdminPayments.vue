@@ -327,18 +327,14 @@
       </div>
     </Teleport>
 
-    <Teleport to="body">
-      <div v-if="deleteTarget" class="sf-modal-backdrop" dir="rtl">
-        <div class="sf-modal-panel max-w-sm text-center">
-          <p class="text-lg font-bold mb-2">حذف الدفعة؟</p>
-          <p class="text-sm text-gray-500 mb-6">{{ money(deleteTarget.amount) }} — {{ formatDate(deleteTarget.paid_at) }}</p>
-          <div class="flex gap-3">
-            <button type="button" @click="deleteTarget = null" class="flex-1 border py-2.5 rounded-lg text-sm">إلغاء</button>
-            <button type="button" @click="doDelete" class="flex-1 bg-red-600 text-white py-2.5 rounded-lg text-sm">حذف</button>
-          </div>
-        </div>
-      </div>
-    </Teleport>
+    <ConfirmDeleteModal
+      :open="!!deleteTarget"
+      title="حذف الدفعة؟"
+      :message="deleteTarget ? `${money(deleteTarget.amount)} — ${formatDate(deleteTarget.paid_at)}` : ''"
+      :loading="deleteLoading"
+      @cancel="deleteTarget = null"
+      @confirm="doDelete"
+    />
   </div>
 </template>
 
@@ -347,6 +343,7 @@ import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '@/lib/api'
 import { exportReceiptPdf } from '@/lib/receiptPdf'
+import ConfirmDeleteModal from '@/components/ConfirmDeleteModal.vue'
 
 const router = useRouter()
 
@@ -404,6 +401,7 @@ const search = ref('')
 const showCreate = ref(false)
 const saving = ref(false)
 const deleteTarget = ref<PaymentRow | null>(null)
+const deleteLoading = ref(false)
 const editingPayment = ref<PaymentRow | null>(null)
 
 const customerQuery = ref('')
@@ -786,12 +784,15 @@ const viewPdf = (p: PaymentRow) => {
 
 const doDelete = async () => {
   if (!deleteTarget.value) return
+  deleteLoading.value = true
   try {
-    await api.delete(`/admin/projects/${deleteTarget.value.project_id}/payments/${deleteTarget.value.id}`)
+    await api.delete(`/admin/payments/${deleteTarget.value.id}`)
     list.value = list.value.filter((x) => x.id !== deleteTarget.value!.id)
     deleteTarget.value = null
   } catch (e: any) {
     alert(e.response?.data?.message || 'تعذر الحذف')
+  } finally {
+    deleteLoading.value = false
   }
 }
 

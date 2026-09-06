@@ -5,13 +5,13 @@ import { jsPDF } from 'jspdf'
 /** A4 CSS px @ 96dpi — matches finance HTML sheet */
 const DOC_W = 794
 const PAGE_H = 1123
-const FOOTER_H = 76
+const FOOTER_H = 72
 const PAD_X = 36
 const PAD_TOP = 12
 /** Normal pages: small bottom gap (no footer) */
 const PAD_BOTTOM_NORMAL = 24
-/** Last page only: reserve space for footer */
-const PAD_BOTTOM_FOOTER = FOOTER_H + 18
+/** Last page only: reserve space for footer (keep tight so content+footer stay together) */
+const PAD_BOTTOM_FOOTER = FOOTER_H + 8
 const PIXEL_RATIO = 2
 
 export function invoiceHtmlPath(invoiceId: number | string): string {
@@ -76,11 +76,17 @@ function contentBottom(page: HTMLElement): number {
   let max = 0
   for (const child of Array.from(page.children)) {
     const el = child as HTMLElement
-    if (el.classList.contains('footer')) continue
+    if (el.classList.contains('footer') || el.classList.contains('watermark')) continue
     const bottom = el.offsetTop + el.offsetHeight
     if (bottom > max) max = bottom
   }
   return max
+}
+
+function isMovablePageChild(el: HTMLElement): boolean {
+  if (el.classList.contains('watermark') || el.classList.contains('footer')) return false
+  if (el.tagName === 'TABLE' && el.classList.contains('header')) return false
+  return true
 }
 
 function pageOverflows(page: HTMLElement, bottomPad?: number): boolean {
@@ -118,25 +124,42 @@ function finalizeLastPageFooter(
   if (!pages.length || !footerSrc) return
 
   const last = pages[pages.length - 1]
-  attachFooter(last, footerSrc)
-
-  // If content collides with footer band, move trailing non-header blocks to a new last page
-  if (!pageOverflows(last, PAD_BOTTOM_FOOTER)) return
-
   last.querySelectorAll(':scope > .footer').forEach((f) => f.remove())
-  last.style.paddingBottom = `${PAD_BOTTOM_NORMAL}px`
-  last.dataset.bottomPad = String(PAD_BOTTOM_NORMAL)
+  last.style.paddingBottom = `${PAD_BOTTOM_FOOTER}px`
+  last.dataset.bottomPad = String(PAD_BOTTOM_FOOTER)
 
+  // Content already leaves room for thank-you footer → keep them on same page
+  if (!pageOverflows(last, PAD_BOTTOM_FOOTER)) {
+    attachFooter(last, footerSrc)
+    return
+  }
+
+  // Free footer band by moving trailing blocks WITH the footer to a new last page.
+  // Never create a blank page that only has the footer.
   const moved: HTMLElement[] = []
-  while (pageOverflows(last, PAD_BOTTOM_NORMAL) && last.children.length > 0) {
+  while (pageOverflows(last, PAD_BOTTOM_FOOTER) && last.children.length > 0) {
     const kids = Array.from(last.children) as HTMLElement[]
-    const victim = kids[kids.length - 1]
-    if (!victim || victim.classList.contains('watermark') || victim.tagName === 'TABLE' && victim.classList.contains('header')) {
-      break
+    let victim: HTMLElement | null = null
+    for (let i = kids.length - 1; i >= 0; i -= 1) {
+      if (isMovablePageChild(kids[i])) {
+        victim = kids[i]
+        break
+      }
     }
+    if (!victim) break
     last.removeChild(victim)
     moved.unshift(victim)
   }
+
+  if (!moved.length) {
+    // Nothing movable — keep footer on this page (slight overlap better than empty page)
+    attachFooter(last, footerSrc)
+    return
+  }
+
+  // Previous page continues without footer
+  last.style.paddingBottom = `${PAD_BOTTOM_NORMAL}px`
+  last.dataset.bottomPad = String(PAD_BOTTOM_NORMAL)
 
   const host = last.parentElement
   const next = makePage(doc, PAD_BOTTOM_FOOTER)
@@ -144,7 +167,9 @@ function finalizeLastPageFooter(
   pages.push(next)
   if (watermarkSrc) next.appendChild(cloneEl(watermarkSrc))
   for (const el of moved) next.appendChild(el)
-  attachFooter(next, footerSrc)
+
+  // Recurse in case moved blocks still need another split
+  finalizeLastPageFooter(pages, doc, footerSrc, watermarkSrc)
 }
 
 function buildItemsPages(
@@ -223,8 +248,22 @@ function buildItemsPages(
     if (!pageOverflows(page)) continue
 
     tbody.removeChild(tr)
+
+    // Keep section titles with the first product under them (no orphan heading at page bottom)
+    const carry: HTMLElement[] = []
+    while (tbody.lastElementChild?.classList.contains('section-row')) {
+      carry.unshift(tbody.removeChild(tbody.lastElementChild) as HTMLElement)
+    }
+
+    // Drop empty items table left behind after moving the orphan section
+    if (!tbody.children.length) {
+      const emptyTable = tbody.parentElement
+      if (emptyTable?.parentElement === page) page.removeChild(emptyTable)
+    }
+
     startContinuationPage()
     tbody = mountTable()
+    for (const section of carry) tbody.appendChild(section)
     tbody.appendChild(tr)
   }
 

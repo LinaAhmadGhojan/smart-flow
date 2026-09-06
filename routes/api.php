@@ -199,6 +199,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Project finance: payments, expenses, delivery notes
     Route::get('/admin/payments', [ProjectFinanceController::class, 'indexPayments']);
     Route::post('/admin/payments', [ProjectFinanceController::class, 'storePaymentGlobal']);
+    Route::delete('/admin/payments/{payment}', [ProjectFinanceController::class, 'destroyPaymentGlobal']);
     Route::get('/admin/delivery-notes', [ProjectFinanceController::class, 'indexDeliveryNotes']);
     Route::post('/admin/projects/{project}/payments', [ProjectFinanceController::class, 'storePayment']);
     Route::patch('/admin/projects/{project}/payments/{payment}', [ProjectFinanceController::class, 'updatePayment']);

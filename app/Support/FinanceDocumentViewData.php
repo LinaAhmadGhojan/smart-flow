@@ -153,6 +153,10 @@ class FinanceDocumentViewData
         return $rows->map(function (QuotationItem $item) use ($currency, $globalShareById, $globalPctLabel) {
             $imagePath = $item->is_section ? null : FinancePdfBranding::absoluteAssetPath($item->product?->image);
             $globalShare = $item->is_section ? 0.0 : (float) ($globalShareById[$item->id] ?? 0);
+            $qty = (float) $item->quantity;
+            $rate = (float) $item->rate;
+            // Products table shows gross line total (rate × qty). Discounts only in Summary.
+            $lineSubtotal = $item->is_section ? 0.0 : round($qty * $rate, 2);
             $finalAmount = max(0, round((float) $item->amount - $globalShare, 2));
             $description = ProductDescription::withoutFeaturesSection($item->description);
 
@@ -163,6 +167,7 @@ class FinanceDocumentViewData
                 'descriptionIsArabic' => self::isArabic($description),
                 'quantity' => $item->quantity,
                 'rate' => $item->rate,
+                'line_subtotal' => $lineSubtotal,
                 'final_amount' => $finalAmount,
                 'amount' => $item->amount,
                 'imageDataUri' => FinancePdfBranding::toDataUri($imagePath, 320),

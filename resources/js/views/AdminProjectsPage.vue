@@ -179,24 +179,21 @@
       </div>
     </Teleport>
 
-    <Teleport to="body">
-      <div v-if="deleteTarget" class="sf-modal-backdrop" dir="rtl">
-        <div class="sf-modal-panel max-w-sm text-center">
-          <p class="text-lg font-bold mb-2">حذف المشروع؟</p>
-          <p class="text-gray-500 text-sm mb-6">{{ deleteTarget.title_ar || deleteTarget.title }}</p>
-          <div class="flex gap-3">
-            <button type="button" class="flex-1 border py-2.5 rounded-lg" @click="deleteTarget = null">إلغاء</button>
-            <button type="button" class="flex-1 bg-red-600 text-white py-2.5 rounded-lg" @click="doDelete">حذف</button>
-          </div>
-        </div>
-      </div>
-    </Teleport>
+    <ConfirmDeleteModal
+      :open="!!deleteTarget"
+      title="حذف المشروع؟"
+      :message="deleteTarget ? (deleteTarget.title_ar || deleteTarget.title) : ''"
+      :loading="deleteLoading"
+      @cancel="deleteTarget = null"
+      @confirm="doDelete"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import api from '@/lib/api'
+import ConfirmDeleteModal from '@/components/ConfirmDeleteModal.vue'
 
 interface ProjectRow {
   id: number
@@ -230,6 +227,7 @@ const tab = ref<'active' | 'completed'>('active')
 const statusFilter = ref('')
 const search = ref('')
 const deleteTarget = ref<ProjectRow | null>(null)
+const deleteLoading = ref(false)
 const detailsOpen = ref(false)
 const detailsLoading = ref(false)
 const detailsItem = ref<ProjectDetails | null>(null)
@@ -300,12 +298,15 @@ const confirmDelete = (p: ProjectRow) => { deleteTarget.value = p }
 
 const doDelete = async () => {
   if (!deleteTarget.value) return
+  deleteLoading.value = true
   try {
     await api.delete(`/projects/${deleteTarget.value.id}`)
     projects.value = projects.value.filter((p) => p.id !== deleteTarget.value!.id)
     deleteTarget.value = null
   } catch {
     alert('تعذر حذف المشروع')
+  } finally {
+    deleteLoading.value = false
   }
 }
 

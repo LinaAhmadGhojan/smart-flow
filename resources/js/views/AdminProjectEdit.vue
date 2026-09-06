@@ -387,7 +387,7 @@
                     <button type="button" class="p-1.5 rounded-lg text-emerald-600 hover:bg-emerald-50" title="تصدير PDF" @click="downloadPaymentPdf(p)">
                       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v12m0 0l-4-4m4 4l4-4M4 20h16"/></svg>
                     </button>
-                    <button v-if="!isLocked" type="button" class="p-1.5 rounded-lg text-red-500 hover:bg-red-50" title="حذف" @click="removePayment(p.id)">
+                    <button v-if="!isLocked" type="button" class="p-1.5 rounded-lg text-red-500 hover:bg-red-50" title="حذف" @click="confirmRemovePayment(p)">
                       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                     </button>
                   </div>
@@ -440,7 +440,7 @@
                   <span v-else class="text-gray-300">—</span>
                 </td>
                 <td class="px-4 py-3 text-center">
-                  <button v-if="!isLocked" type="button" class="p-1.5 rounded-lg text-red-500 hover:bg-red-50" title="حذف" @click="removeExpense(e.id)">
+                  <button v-if="!isLocked" type="button" class="p-1.5 rounded-lg text-red-500 hover:bg-red-50" title="حذف" @click="confirmRemoveExpense(e.id)">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                   </button>
                 </td>
@@ -523,7 +523,7 @@
                 </td>
                 <td class="px-4 py-3 font-bold text-indigo-700">{{ money(s.calculated_amount) }}</td>
                 <td class="px-4 py-3 text-center">
-                  <button v-if="!isLocked" type="button" class="p-1.5 rounded-lg text-red-500 hover:bg-red-50" title="حذف" @click="removeShare(s.id)">
+                  <button v-if="!isLocked" type="button" class="p-1.5 rounded-lg text-red-500 hover:bg-red-50" title="حذف" @click="confirmRemoveShare(s.id)">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                   </button>
                 </td>
@@ -598,7 +598,7 @@
                     <button type="button" class="p-1.5 rounded-lg text-emerald-600 hover:bg-emerald-50" title="PDF للعميل" @click="downloadDnPdf(dn)">
                       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v12m0 0l-4-4m4 4l4-4M4 20h16"/></svg>
                     </button>
-                    <button v-if="!isLocked" type="button" class="p-1.5 rounded-lg text-red-500 hover:bg-red-50" title="حذف" @click="removeDeliveryNote(dn.id)">
+                    <button v-if="!isLocked" type="button" class="p-1.5 rounded-lg text-red-500 hover:bg-red-50" title="حذف" @click="confirmRemoveDeliveryNote(dn.id)">
                       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                     </button>
                   </div>
@@ -1096,6 +1096,15 @@
         </div>
       </div>
     </Teleport>
+
+    <ConfirmDeleteModal
+      :open="!!deleteConfirm"
+      :title="deleteConfirm?.title || 'تأكيد الحذف؟'"
+      :message="deleteConfirm?.message || ''"
+      :loading="deleteConfirmLoading"
+      @cancel="deleteConfirm = null"
+      @confirm="runConfirmedDelete"
+    />
   </div>
 </template>
 
@@ -1104,6 +1113,7 @@ import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import api, { fetchAdminHtml } from '@/lib/api'
 import { exportReceiptPdf, exportDeliveryNotePdf, deliveryNoteHtmlPath } from '@/lib/receiptPdf'
+import ConfirmDeleteModal from '@/components/ConfirmDeleteModal.vue'
 
 interface Customer { id: number; name: string; phone?: string; email?: string }
 interface ProjectFileRow { id: number; label: string; path: string; visibility: string; kind: string }
@@ -1686,14 +1696,60 @@ const addPayment = async () => {
   }
 }
 
-const removePayment = async (id: number) => {
-  if (!confirm('حذف الدفعة؟')) return
+const deleteConfirm = ref<{
+  kind: 'payment' | 'expense' | 'share' | 'delivery'
+  id: number
+  title: string
+  message?: string
+} | null>(null)
+const deleteConfirmLoading = ref(false)
+
+const confirmRemovePayment = (p: { id: number; amount: number; paid_at: string }) => {
+  deleteConfirm.value = {
+    kind: 'payment',
+    id: p.id,
+    title: 'حذف الدفعة؟',
+    message: `${money(p.amount)} — ${p.paid_at}`,
+  }
+}
+
+const confirmRemoveExpense = (id: number) => {
+  deleteConfirm.value = { kind: 'expense', id, title: 'حذف المصروف؟' }
+}
+
+const confirmRemoveShare = (id: number) => {
+  deleteConfirm.value = { kind: 'share', id, title: 'حذف هذا الشخص من توزيع الربح؟' }
+}
+
+const confirmRemoveDeliveryNote = (id: number) => {
+  deleteConfirm.value = { kind: 'delivery', id, title: 'حذف Delivery Note؟' }
+}
+
+const runConfirmedDelete = async () => {
+  if (!deleteConfirm.value) return
+  const { kind, id } = deleteConfirm.value
+  deleteConfirmLoading.value = true
   try {
-    const res = await api.delete(`/admin/projects/${route.params.id}/payments/${id}`)
-    payments.value = payments.value.filter((p) => p.id !== id)
-    applyFinance(res.data.finance)
-  } catch {
-    alert('تعذر الحذف')
+    if (kind === 'payment') {
+      const res = await api.delete(`/admin/payments/${id}`)
+      payments.value = payments.value.filter((p) => p.id !== id)
+      if (res.data.finance) applyFinance(res.data.finance)
+    } else if (kind === 'expense') {
+      const res = await api.delete(`/admin/projects/${route.params.id}/expenses/${id}`)
+      expenses.value = expenses.value.filter((e) => e.id !== id)
+      applyFinance(res.data.finance)
+    } else if (kind === 'share') {
+      const res = await api.delete(`/admin/projects/${route.params.id}/profit-shares/${id}`)
+      applyFinance(res.data.finance)
+    } else if (kind === 'delivery') {
+      await api.delete(`/admin/projects/${route.params.id}/delivery-notes/${id}`)
+      deliveryNotes.value = deliveryNotes.value.filter((d) => d.id !== id)
+    }
+    deleteConfirm.value = null
+  } catch (e: any) {
+    alert(e.response?.data?.message || 'تعذر الحذف')
+  } finally {
+    deleteConfirmLoading.value = false
   }
 }
 
@@ -1735,17 +1791,6 @@ const addExpense = async () => {
   }
 }
 
-const removeExpense = async (id: number) => {
-  if (!confirm('حذف المصروف؟')) return
-  try {
-    const res = await api.delete(`/admin/projects/${route.params.id}/expenses/${id}`)
-    expenses.value = expenses.value.filter((e) => e.id !== id)
-    applyFinance(res.data.finance)
-  } catch {
-    alert('تعذر الحذف')
-  }
-}
-
 const addShare = async () => {
   if (!shareForm.value.name.trim() || !shareForm.value.value) {
     alert('أدخل الاسم والقيمة')
@@ -1769,16 +1814,6 @@ const addShare = async () => {
     alert(e.response?.data?.message || 'تعذر حفظ الحصة')
   } finally {
     shareSaving.value = false
-  }
-}
-
-const removeShare = async (id: number) => {
-  if (!confirm('حذف هذا الشخص من توزيع الربح؟')) return
-  try {
-    const res = await api.delete(`/admin/projects/${route.params.id}/profit-shares/${id}`)
-    applyFinance(res.data.finance)
-  } catch {
-    alert('تعذر الحذف')
   }
 }
 
@@ -1814,16 +1849,6 @@ const addDeliveryNote = async () => {
     alert(e.response?.data?.message || 'تعذر حفظ Delivery Note')
   } finally {
     dnSaving.value = false
-  }
-}
-
-const removeDeliveryNote = async (id: number) => {
-  if (!confirm('حذف Delivery Note؟')) return
-  try {
-    await api.delete(`/admin/projects/${route.params.id}/delivery-notes/${id}`)
-    deliveryNotes.value = deliveryNotes.value.filter((d) => d.id !== id)
-  } catch {
-    alert('تعذر الحذف')
   }
 }
 

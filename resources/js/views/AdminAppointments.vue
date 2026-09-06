@@ -139,7 +139,7 @@
               </div>
               <div class="flex flex-col gap-2 shrink-0 text-xs">
                 <button type="button" class="text-blue-600 hover:underline" @click="startEdit(appt)">تعديل</button>
-                <button type="button" class="text-red-600 hover:underline" @click="deleteAppt(appt)">حذف</button>
+                <button type="button" class="text-red-600 hover:underline" @click="deleteTarget = appt">حذف</button>
               </div>
             </div>
           </div>
@@ -286,12 +286,22 @@
         </div>
       </div>
     </Teleport>
+
+    <ConfirmDeleteModal
+      :open="!!deleteTarget"
+      title="حذف هذا الموعد نهائياً؟"
+      :message="deleteTarget ? `${formatFullDate(deleteTarget.date)} — ${formatTime(deleteTarget.start_time)}` : ''"
+      :loading="deleteLoading"
+      @cancel="deleteTarget = null"
+      @confirm="doDeleteAppt"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, reactive, onMounted } from 'vue'
 import api from '@/lib/api'
+import ConfirmDeleteModal from '@/components/ConfirmDeleteModal.vue'
 import { whatsappLink, mailtoLink } from '@/lib/contact'
 
 interface Slot {
@@ -575,13 +585,20 @@ const submitForm = async () => {
   }
 }
 
-const deleteAppt = async (appt: Slot) => {
-  if (!confirm('حذف هذا الموعد نهائياً؟')) return
+const deleteTarget = ref<Slot | null>(null)
+const deleteLoading = ref(false)
+
+const doDeleteAppt = async () => {
+  if (!deleteTarget.value) return
+  deleteLoading.value = true
   try {
-    await api.delete(`/admin/appointments/${appt.id}`)
-    slots.value = slots.value.filter((s) => s.id !== appt.id)
+    await api.delete(`/admin/appointments/${deleteTarget.value.id}`)
+    slots.value = slots.value.filter((s) => s.id !== deleteTarget.value!.id)
+    deleteTarget.value = null
   } catch (err) {
     alert('تعذر حذف الموعد')
+  } finally {
+    deleteLoading.value = false
   }
 }
 

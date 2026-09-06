@@ -85,24 +85,21 @@
       </div>
     </div>
 
-    <Teleport to="body">
-      <div v-if="deleteTarget" class="sf-modal-backdrop" dir="rtl">
-        <div class="sf-modal-panel max-w-sm text-center">
-          <p class="text-lg font-bold text-gray-900 mb-2">حذف عرض السعر؟</p>
-          <p class="text-gray-500 text-sm mb-6">{{ deleteTarget.number }} — {{ deleteTarget.client_name }}</p>
-          <div class="flex gap-3">
-            <button type="button" @click="deleteTarget = null" class="flex-1 border border-gray-300 py-2.5 rounded-lg text-sm">إلغاء</button>
-            <button type="button" @click="doDelete" :disabled="deleteLoading" class="flex-1 bg-red-600 text-white py-2.5 rounded-lg text-sm font-medium disabled:opacity-60">حذف</button>
-          </div>
-        </div>
-      </div>
-    </Teleport>
+    <ConfirmDeleteModal
+      :open="!!deleteTarget"
+      title="حذف عرض السعر؟"
+      :message="deleteTarget ? `${deleteTarget.number} — ${deleteTarget.client_name}` : ''"
+      :loading="deleteLoading"
+      @cancel="deleteTarget = null"
+      @confirm="doDelete"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import api from '@/lib/api'
+import ConfirmDeleteModal from '@/components/ConfirmDeleteModal.vue'
 import { exportQuotationPdf } from '@/lib/financePdf'
 
 interface Quotation {

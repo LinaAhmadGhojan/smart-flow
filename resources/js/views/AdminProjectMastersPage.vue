@@ -190,6 +190,14 @@
         </div>
       </div>
     </Teleport>
+
+    <ConfirmDeleteModal
+      :open="!!deleteTarget"
+      :title="deleteTarget ? ('حذف «' + deleteTarget.title_ar + '» من مشاريع الموقع؟') : 'تأكيد الحذف؟'"
+      :loading="deleteLoading"
+      @cancel="deleteTarget = null"
+      @confirm="doDelete"
+    />
   </div>
 </template>
 
@@ -198,6 +206,7 @@ import { ref, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import api from '@/lib/api'
 import { mediaUrl, handleMediaError } from '@/lib/media'
+import ConfirmDeleteModal from '@/components/ConfirmDeleteModal.vue'
 
 interface MasterFile {
   id: number
@@ -289,14 +298,25 @@ const toggleVisibility = async (item: ProjectMaster, visible: boolean) => {
   }
 }
 
-const confirmDelete = async (item: ProjectMaster) => {
-  if (!confirm(`حذف "${item.title_ar}" من مشاريع الموقع؟`)) return
+const deleteTarget = ref<ProjectMaster | null>(null)
+const deleteLoading = ref(false)
+
+const confirmDelete = (item: ProjectMaster) => {
+  deleteTarget.value = item
+}
+
+const doDelete = async () => {
+  if (!deleteTarget.value) return
+  deleteLoading.value = true
   try {
-    await api.delete(`/project-masters/${item.id}`)
-    items.value = items.value.filter((i) => i.id !== item.id)
+    await api.delete(`/project-masters/${deleteTarget.value.id}`)
+    items.value = items.value.filter((i) => i.id !== deleteTarget.value!.id)
+    deleteTarget.value = null
   } catch (e) {
     console.error(e)
     alert('تعذر الحذف')
+  } finally {
+    deleteLoading.value = false
   }
 }
 

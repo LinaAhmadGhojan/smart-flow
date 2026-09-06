@@ -12,7 +12,7 @@
       </div>
 
       <div v-else-if="!groups.length" class="text-center py-12 text-slate-500">
-        {{ isAr ? 'لا توجد مجموعات حالياً' : 'No groups yet' }}
+        لا توجد مجموعات حالياً
       </div>
 
       <div v-else class="sf-catalog-grid">
@@ -36,20 +36,16 @@
               {{ localized(group) }}
             </h3>
             <p class="text-sm text-slate-500 line-clamp-2 mb-4">
-              {{
-                isAr
-                  ? (group.description_ar || group.description || t('viewGroup'))
-                  : (group.description || group.description_ar || t('viewGroup'))
-              }}
+              {{ group.description_ar || group.description || t('viewGroup') }}
             </p>
             <div class="flex items-center justify-between gap-3 text-sm">
               <span class="text-slate-600">
                 {{ group.products_count || 0 }}
-                {{ isAr ? 'منتج' : 'products' }}
+                منتج
               </span>
               <span class="text-[var(--sf-accent)] font-medium inline-flex items-center gap-1">
                 {{ t('viewGroup') }}
-                <span aria-hidden="true">{{ isAr ? '←' : '→' }}</span>
+                <span aria-hidden="true">←</span>
               </span>
             </div>
           </div>

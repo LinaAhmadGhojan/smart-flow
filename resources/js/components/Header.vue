@@ -20,16 +20,6 @@
           <router-link to="/products" class="nav-link">{{ t('allProducts') }}</router-link>
           <router-link to="/projects" class="nav-link">{{ t('ourProjects') }}</router-link>
 
-          <button
-            type="button"
-            class="lang-toggle mx-2"
-            :aria-label="t('language')"
-            @click="toggleLocale"
-          >
-            <span class="lang-toggle__icon" aria-hidden="true">文A</span>
-            <span>{{ locale === 'ar' ? 'EN' : 'ع' }}</span>
-          </button>
-
           <router-link to="/project-study" class="btn-primary">
             {{ t('projectStudy') }}
           </router-link>
@@ -50,11 +40,7 @@
         </nav>
 
         <div class="flex items-center gap-2 lg:hidden">
-          <button type="button" class="lang-toggle" @click="toggleLocale">
-            <span class="lang-toggle__icon" aria-hidden="true">文A</span>
-            <span>{{ locale === 'ar' ? 'EN' : 'ع' }}</span>
-          </button>
-          <button type="button" class="p-2 text-white" @click="isMenuOpen = !isMenuOpen" aria-label="Menu">
+          <button type="button" class="p-2 text-white" @click="isMenuOpen = !isMenuOpen" aria-label="القائمة">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path v-if="!isMenuOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
               <path v-else stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -101,7 +87,7 @@ interface CompanyInfo {
   contact: { whatsapp: string }
 }
 
-const { t, locale, isAr, toggleLocale } = useLocale()
+const { t, isAr } = useLocale()
 const isMenuOpen = ref(false)
 const companyInfo = ref<CompanyInfo | null>(null)
 

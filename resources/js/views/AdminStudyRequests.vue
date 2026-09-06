@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1 class="text-2xl font-bold text-gray-900 mb-6">طلبات الدراسة | Study Requests</h1>
+    <h1 class="text-2xl font-bold text-gray-900 mb-6">طلبات الدراسة</h1>
 
     <div class="mb-4 flex flex-wrap gap-2">
       <button

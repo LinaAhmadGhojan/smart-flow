@@ -11,7 +11,7 @@
             />
             <div>
               <h3 class="text-xl font-bold">{{ companyInfo?.companyName || 'SMARTFLOW' }}</h3>
-              <p class="text-sm text-blue-200">{{ companyInfo?.tagline || 'Your Home is Safe With Us' }}</p>
+              <p class="text-sm text-blue-200">{{ companyInfo?.tagline_ar || companyInfo?.tagline || 'منزلك آمن معنا' }}</p>
             </div>
           </div>
           <p class="text-blue-100">
@@ -20,28 +20,28 @@
         </div>
 
         <div>
-          <h4 class="text-lg font-bold mb-1">روابط سريعة | Quick Links</h4>
+          <h4 class="text-lg font-bold mb-1">روابط سريعة</h4>
           <ul class="space-y-2">
             <li>
               <button @click="scrollToSection('home')" class="text-blue-100 hover:text-white transition-colors">
-                الرئيسية | Home
+                الرئيسية
               </button>
             </li>
             <li>
               <button @click="scrollToSection('products')" class="text-blue-100 hover:text-white transition-colors">
-                المنتجات | Products
+                المنتجات
               </button>
             </li>
             <li>
               <button @click="scrollToSection('contact')" class="text-blue-100 hover:text-white transition-colors">
-                اتصل بنا | Contact
+                اتصل بنا
               </button>
             </li>
           </ul>
         </div>
 
         <div>
-          <h4 class="text-lg font-bold mb-1">تواصل معنا | Contact Us</h4>
+          <h4 class="text-lg font-bold mb-1">تواصل معنا</h4>
           <div class="space-y-3 text-blue-100">
             <div class="flex items-center gap-2">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -64,8 +64,7 @@
       </div>
 
       <div class="border-t border-blue-800 mt-8 pt-8 text-center text-blue-200">
-        <p>© {{ currentYear }} {{ companyInfo?.companyName || 'SMARTFLOW' }}. All rights reserved.</p>
-        <p class="text-sm mt-2">جميع الحقوق محفوظة</p>
+        <p>© {{ currentYear }} {{ companyInfo?.companyName || 'SMARTFLOW' }}. جميع الحقوق محفوظة</p>
       </div>
     </div>
   </footer>
@@ -77,6 +76,7 @@ import { ref, computed, onMounted } from 'vue'
 interface CompanyInfo {
   companyName: string
   tagline: string
+  tagline_ar?: string
   footerDescAr?: string
   contact: {
     phone: string

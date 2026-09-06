@@ -49,6 +49,7 @@
         <div>
           <p class="text-xs text-gray-500">العميل</p>
           <p class="font-medium">{{ invoice.client_name }}</p>
+          <p v-if="invoice.trns" class="text-xs text-blue-700 mt-1 font-mono" dir="ltr">TRN: {{ invoice.trns }}</p>
         </div>
         <div>
           <p class="text-xs text-gray-500">المشروع</p>

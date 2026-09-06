@@ -7,11 +7,10 @@
         <div class="mb-10 max-w-3xl mx-auto">
           <router-link to="/" class="inline-flex items-center gap-2 text-[var(--sf-accent)] hover:text-[var(--sf-navy)] mb-6 text-sm font-semibold transition-colors">
             <span aria-hidden="true">→</span>
-            العودة للرئيسية | Back to Home
-          </router-link>
+            العودة للرئيسية</router-link>
 
           <div class="text-center">
-            <p class="sf-eyebrow">دراسة ماكينة باب | Gate Machine Study</p>
+            <p class="sf-eyebrow">دراسة ماكينة باب</p>
             <h1 class="sf-heading">طلب دراسة ماكينة باب — موقع خارجي</h1>
             <p class="sf-subheading mt-3">
               عبّي البيانات التالية لفريقنا يدرس موقع الباب ويقترح ماكينة مناسبة
@@ -106,7 +105,7 @@
 
           <div class="flex flex-col sm:flex-row gap-3">
             <button type="submit" :disabled="loading" class="flex-1 btn-primary justify-center py-3.5 text-base disabled:opacity-50">
-              {{ loading ? 'جاري الإرسال...' : 'إرسال الطلب | Submit' }}
+              {{ loading ? 'جاري الإرسال...' : 'إرسال الطلب' }}
             </button>
             <button type="button" class="flex-1 btn-whatsapp justify-center py-3.5 text-base" @click="openWhatsapp">
               أو تواصل عبر واتساب

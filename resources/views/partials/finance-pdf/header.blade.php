@@ -32,6 +32,12 @@
                     <td class="meta-lab">التاريخ</td>
                     <td class="meta-box"><span class="en">{{ $dateLabel }}</span></td>
                 </tr>
+                @if(!empty($trns))
+                <tr>
+                    <td class="meta-lab">الرقم الضريبي</td>
+                    <td class="meta-box"><span class="en">{{ $trns }}</span></td>
+                </tr>
+                @endif
             </table>
             @if(!empty($extraMetaRows))
             <table class="meta-extra">

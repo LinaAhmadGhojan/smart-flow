@@ -1,7 +1,7 @@
 <template>
   <div dir="rtl">
     <div class="sf-page-header mb-6">
-      <h1 class="text-2xl font-bold text-gray-900">مشاريع الموقع | Website Projects</h1>
+      <h1 class="text-2xl font-bold text-gray-900">مشاريع الموقع</h1>
       <RouterLink
         to="/admin/project-masters/new"
         class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg font-medium transition-colors"

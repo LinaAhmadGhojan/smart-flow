@@ -2,7 +2,7 @@
   <div class="w-full min-w-0">
     <div class="sf-page-header">
       <h1 class="text-2xl font-bold text-gray-900">
-        {{ isNew ? 'إضافة فئة | Add Category' : 'تعديل فئة | Edit Category' }}
+        {{ isNew ? 'إضافة فئة' : 'تعديل فئة' }}
       </h1>
       <RouterLink to="/admin/categories" class="text-sm text-gray-500 hover:text-blue-600">
         ← العودة للفئات
@@ -26,7 +26,7 @@
       </div>
 
       <div>
-        <label class="sf-label">Description | الوصف</label>
+        <label class="sf-label">الوصف</label>
         <textarea v-model="form.description" rows="4" class="sf-field"></textarea>
       </div>
 
@@ -35,14 +35,14 @@
           to="/admin/categories"
           class="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg text-center"
         >
-          Cancel | إلغاء
+          إلغاء
         </RouterLink>
         <button
           type="submit"
           :disabled="loading"
           class="px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-medium rounded-lg"
         >
-          {{ loading ? 'Saving...' : (isNew ? 'Create | إنشاء' : 'Update | تحديث') }}
+          {{ loading ? 'Saving...' : (isNew ? 'إنشاء' : 'تحديث') }}
         </button>
       </div>
     </form>

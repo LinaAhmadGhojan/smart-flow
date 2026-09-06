@@ -1,6 +1,6 @@
 ﻿<template>
   <div dir="rtl">
-    <h1 class="text-2xl font-bold text-gray-900 mb-6">إدارة التقييمات | Reviews Management</h1>
+    <h1 class="text-2xl font-bold text-gray-900 mb-6">إدارة التقييمات</h1>
     <div>
 
       <!-- إحصاء سريع -->
@@ -48,8 +48,7 @@
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
           </svg>
-          إضافة تقييم | Add Review
-        </button>
+          إضافة تقييم</button>
       </div>
 
       <!-- جدول التقييمات -->
@@ -175,7 +174,7 @@
       <div v-if="showAddModal" class="sf-modal-backdrop" dir="rtl">
         <div class="sf-modal-panel max-w-4xl max-h-[95vh]">
           <div class="flex justify-between items-center mb-6">
-            <h3 class="text-2xl font-bold text-gray-900">إضافة تقييم | Add Review</h3>
+            <h3 class="text-2xl font-bold text-gray-900">إضافة تقييم</h3>
             <button @click="closeModal" class="text-gray-400 hover:text-gray-600">
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>

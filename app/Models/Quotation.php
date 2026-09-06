@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Quotation extends Model
 {
     protected $fillable = [
-        'number', 'date', 'client_name', 'customer_id', 'project_id', 'status', 'comments',
+        'number', 'date', 'client_name', 'trns', 'customer_id', 'project_id', 'status', 'comments',
         'currency', 'tax_percent', 'withholding_tax_percent',
         'discount_type', 'discount_value', 'discount_amount',
         'subtotal', 'tax_amount', 'withholding_tax_amount', 'total',

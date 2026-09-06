@@ -1,7 +1,7 @@
 ﻿<template>
   <div dir="rtl">
     <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
-      <h1 class="text-2xl font-bold text-gray-900">الفواتير | Invoices</h1>
+      <h1 class="text-2xl font-bold text-gray-900">الفواتير</h1>
       <router-link to="/admin/quotations" class="text-sm text-blue-600 hover:text-blue-800">
         إنشاء فاتورة من عرض سعر ←
       </router-link>

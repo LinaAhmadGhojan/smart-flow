@@ -24,6 +24,7 @@ import GroupPage from '@/views/GroupPage.vue'
 import AdminAppointments from '@/views/AdminAppointments.vue'
 import AdminStudyRequests from '@/views/AdminStudyRequests.vue'
 import AdminCustomers from '@/views/AdminCustomers.vue'
+import AdminSuppliers from '@/views/AdminSuppliers.vue'
 import AdminEngineers from '@/views/AdminEngineers.vue'
 import AdminReports from '@/views/AdminReports.vue'
 import AdminReportEdit from '@/views/AdminReportEdit.vue'
@@ -217,6 +218,11 @@ const router = createRouter({
           path: 'customers',
           name: 'admin-customers',
           component: AdminCustomers,
+        },
+        {
+          path: 'suppliers',
+          name: 'admin-suppliers',
+          component: AdminSuppliers,
         },
         {
           path: 'engineers',

@@ -87,17 +87,21 @@ async function captureElementPng(el: HTMLElement): Promise<{ dataUrl: string; wi
 }
 
 function addPageImage(pdf: jsPDF, dataUrl: string, imgPxW: number, imgPxH: number, isFirst: boolean): void {
-  if (!isFirst) {
-    pdf.addPage()
-  }
-
   const pageW = pdf.internal.pageSize.getWidth()
   const pageH = pdf.internal.pageSize.getHeight()
+  // Keep full page width — never shrink when content is taller than one A4 page
   const imgHmm = (imgPxH / imgPxW) * pageW
-  const drawH = Math.min(imgHmm, pageH)
-  const drawW = (drawH / imgHmm) * pageW
 
-  pdf.addImage(dataUrl, 'PNG', 0, 0, drawW, drawH, undefined, 'FAST')
+  let yOffset = 0
+  let pageIndex = 0
+  while (yOffset < imgHmm - 0.5) {
+    if (!isFirst || pageIndex > 0) {
+      pdf.addPage()
+    }
+    pdf.addImage(dataUrl, 'PNG', 0, -yOffset, pageW, imgHmm, undefined, 'FAST')
+    yOffset += pageH
+    pageIndex += 1
+  }
 }
 
 async function captureHtmlToPdf(html: string, filename: string): Promise<void> {

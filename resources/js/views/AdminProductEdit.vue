@@ -1,8 +1,8 @@
-﻿<template>
+<template>
   <div class="w-full min-w-0">
     <div class="sf-page-header">
       <h1 class="text-2xl font-bold text-gray-900">
-        {{ isNew ? 'إضافة منتج | Add Product' : 'تعديل منتج | Edit Product' }}
+        {{ isNew ? 'إضافة منتج' : 'تعديل منتج' }}
       </h1>
       <RouterLink to="/admin/products" class="text-sm text-gray-500 hover:text-blue-600">
         ← العودة للمنتجات
@@ -39,7 +39,7 @@
 
       <div class="sf-form-grid">
         <div class="min-w-0">
-          <label class="sf-label">Category | الفئة</label>
+          <label class="sf-label">الفئة</label>
           <select v-model="form.category_id" required class="sf-field">
             <option value="">Select Category</option>
             <option v-for="cat in categories" :key="cat.id" :value="cat.id">
@@ -48,9 +48,9 @@
           </select>
         </div>
         <div class="min-w-0">
-          <label class="sf-label">Group | المجموعة</label>
+          <label class="sf-label">المجموعة</label>
           <select v-model="form.group_id" class="sf-field">
-            <option value="">No Group | بدون مجموعة</option>
+            <option value="">بدون مجموعة</option>
             <option v-for="group in groups" :key="group.id" :value="group.id">
               {{ group.name }} | {{ group.name_ar }}
             </option>
@@ -83,7 +83,7 @@
                   type="checkbox"
                   class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                 />
-                <span class="text-sm text-gray-700">In Stock | متوفر في المخزون</span>
+                <span class="text-sm text-gray-700">متوفر في المخزون</span>
               </label>
             </div>
           </div>
@@ -97,8 +97,7 @@
             />
             <div>
               <label for="is_visible" class="block text-sm font-medium text-gray-800">
-                إظهار للعملاء | Visible on website
-              </label>
+                إظهار للعملاء</label>
               <p class="text-xs text-gray-500 mt-1">
                 إذا ألغيت التحديد، المنتج يظهر في لوحة الإدارة فقط ولا يظهر للزوار في الموقع.
               </p>
@@ -106,7 +105,7 @@
           </div>
 
           <div>
-            <label class="sf-label">WhatsApp Message | رسالة واتساب</label>
+            <label class="sf-label">رسالة واتساب</label>
             <textarea
               v-model="form.whatsapp_message"
               rows="3"
@@ -118,7 +117,7 @@
         </div>
 
         <div class="min-w-0">
-          <label class="sf-label">Product Image | صورة المنتج</label>
+          <label class="sf-label">صورة المنتج</label>
           <div class="rounded-xl border border-dashed border-gray-300 bg-gray-50 p-4 text-center">
             <div v-if="imagePreview" class="mb-3 flex justify-center">
               <img :src="imagePreview" alt="Preview" class="h-40 w-40 object-cover rounded-lg border border-gray-200" @error="handleMediaError" />
@@ -129,11 +128,36 @@
             <input type="file" accept="image/*" @change="handleImageUpload" class="sf-field" />
             <p class="text-xs text-gray-500 mt-2">JPG, PNG, WebP — max 4MB (auto-compressed)</p>
           </div>
+
+          <label class="sf-label mt-4">ورقة البيانات (PDF)</label>
+          <div class="rounded-xl border border-dashed border-gray-300 bg-gray-50 p-4">
+            <div v-if="form.data_sheet && !removeDataSheet" class="mb-3 flex items-center justify-between gap-2 rounded-lg bg-white border border-gray-200 px-3 py-2">
+              <a
+                :href="mediaUrl(form.data_sheet, '#')"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-sm text-blue-600 hover:underline truncate"
+              >
+                عرض الملف الحالي</a>
+              <button
+                type="button"
+                class="text-xs text-red-600 hover:text-red-700 shrink-0"
+                @click="clearDataSheet"
+              >
+                إزالة
+              </button>
+            </div>
+            <p v-else-if="dataSheetFile" class="mb-2 text-sm text-emerald-700 truncate">
+              تم اختيار: {{ dataSheetFile.name }}
+            </p>
+            <input type="file" accept="application/pdf,.pdf" @change="handleDataSheetUpload" class="sf-field" />
+            <p class="text-xs text-gray-500 mt-2">PDF فقط — حتى 20MB — يظهر في صفحة المنتج بالموقع</p>
+          </div>
         </div>
       </div>
 
       <div>
-        <label class="sf-label">Features | الميزات</label>
+        <label class="sf-label">الميزات</label>
         <div class="space-y-2">
           <div v-for="(feature, index) in form.features" :key="index" class="flex flex-col sm:flex-row gap-2">
             <input
@@ -165,14 +189,14 @@
           to="/admin/products"
           class="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg text-center"
         >
-          Cancel | إلغاء
+          إلغاء
         </RouterLink>
         <button
           type="submit"
           :disabled="loading || pageLoading"
           class="px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-medium rounded-lg"
         >
-          {{ loading ? 'Saving...' : (isNew ? 'Create | إنشاء' : 'Update | تحديث') }}
+          {{ loading ? 'Saving...' : (isNew ? 'إنشاء' : 'تحديث') }}
         </button>
         <button
           v-if="nextProduct"
@@ -214,6 +238,8 @@ const categories = ref<any[]>([])
 const groups = ref<any[]>([])
 const imagePreview = ref<string | null>(null)
 const imageFile = ref<File | null>(null)
+const dataSheetFile = ref<File | null>(null)
+const removeDataSheet = ref(false)
 const productNavList = ref<ProductNavItem[]>(readProductNavList())
 
 const nextProduct = computed(() => {
@@ -230,6 +256,7 @@ const form = ref({
   description_ar: '',
   price: 0,
   image: '',
+  data_sheet: '',
   category_id: '',
   group_id: '',
   features: [] as string[],
@@ -262,6 +289,25 @@ const handleImageUpload = async (event: Event) => {
   }
 }
 
+const handleDataSheetUpload = (event: Event) => {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+  if (!file) return
+  if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+    alert('يرجى اختيار ملف PDF فقط')
+    target.value = ''
+    return
+  }
+  dataSheetFile.value = file
+  removeDataSheet.value = false
+}
+
+const clearDataSheet = () => {
+  dataSheetFile.value = null
+  removeDataSheet.value = true
+  form.value.data_sheet = ''
+}
+
 const addFeature = () => {
   form.value.features.push('')
 }
@@ -278,6 +324,7 @@ const applyProductToForm = (product: any) => {
     description_ar: product.description_ar || product.description,
     price: product.price,
     image: product.image || '',
+    data_sheet: product.data_sheet || '',
     category_id: product.category_id || product.categoryId,
     group_id: product.group_id || '',
     features: product.features || [],
@@ -291,6 +338,8 @@ const applyProductToForm = (product: any) => {
     imagePreview.value = null
   }
   imageFile.value = null
+  dataSheetFile.value = null
+  removeDataSheet.value = false
 }
 
 const goToNextProduct = async () => {
@@ -371,6 +420,12 @@ const handleSubmit = async () => {
     // Add image if uploaded
     if (imageFile.value) {
       formData.append('image', imageFile.value)
+    }
+    if (dataSheetFile.value) {
+      formData.append('data_sheet', dataSheetFile.value)
+    }
+    if (removeDataSheet.value && !dataSheetFile.value) {
+      formData.append('remove_data_sheet', '1')
     }
 
     if (isNew.value) {

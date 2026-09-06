@@ -6,8 +6,8 @@
       <div class="container mx-auto px-4">
         <div class="mb-12 max-w-3xl mx-auto">
           <router-link to="/" class="inline-flex items-center gap-2 text-[var(--sf-accent)] hover:text-[var(--sf-navy)] mb-6 text-sm font-semibold transition-colors">
-            <span aria-hidden="true">{{ isAr ? '→' : '←' }}</span>
-            {{ isAr ? 'العودة للرئيسية' : 'Back to Home' }}
+            <span aria-hidden="true">→</span>
+            العودة للرئيسية
           </router-link>
 
           <div class="text-center">
@@ -41,7 +41,7 @@
         <div v-else class="text-center py-16 rounded-2xl bg-white/70 border border-slate-200/80">
           <p class="text-xl font-semibold text-[var(--sf-navy)] mb-2">{{ t('noOffers') }}</p>
           <router-link to="/" class="btn-primary mt-4">
-            {{ isAr ? 'العودة للرئيسية' : 'Back to Home' }}
+            العودة للرئيسية
           </router-link>
         </div>
       </div>

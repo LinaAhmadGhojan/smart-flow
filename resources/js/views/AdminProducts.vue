@@ -1,14 +1,14 @@
 ﻿<template>
   <div>
-    <h1 class="text-2xl font-bold text-gray-900 mb-6">إدارة المنتجات | Products Management</h1>
+    <h1 class="text-2xl font-bold text-gray-900 mb-6">إدارة المنتجات</h1>
     <div>
       <div class="sf-page-header">
-        <h2 class="text-xl font-semibold">All Products | جميع المنتجات</h2>
+        <h2 class="text-xl font-semibold">جميع المنتجات</h2>
         <RouterLink
           to="/admin/products/new"
           class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors"
         >
-          + Add New Product | إضافة منتج جديد
+          + إضافة منتج جديد
         </RouterLink>
       </div>
 

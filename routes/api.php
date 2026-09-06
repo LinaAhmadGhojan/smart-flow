@@ -4,6 +4,7 @@ use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\EngineerController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\ProductController;
@@ -152,6 +153,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/admin/customers', [CustomerController::class, 'store']);
     Route::patch('/admin/customers/{customer}', [CustomerController::class, 'update']);
     Route::delete('/admin/customers/{customer}', [CustomerController::class, 'destroy']);
+
+    // Admin suppliers directory (جدول الموردين)
+    Route::get('/admin/suppliers', [SupplierController::class, 'index']);
+    Route::post('/admin/suppliers', [SupplierController::class, 'store']);
+    Route::patch('/admin/suppliers/{supplier}', [SupplierController::class, 'update']);
+    Route::delete('/admin/suppliers/{supplier}', [SupplierController::class, 'destroy']);
 
     // Admin engineers directory (جدول المهندسين)
     Route::get('/admin/engineers', [EngineerController::class, 'index']);

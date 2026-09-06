@@ -3,8 +3,7 @@
     <div class="container mx-auto px-4">
       <div class="text-center mb-12">
         <h2 class="text-4xl font-bold text-blue-900 mb-1">
-          مشاريعنا | Our Projects
-        </h2>
+          مشاريعنا</h2>
         <p class="text-xl text-gray-600">
           أعمالنا المميزة في مختلف المجالات
         </p>
@@ -129,7 +128,7 @@
                   class="border border-blue-200 text-blue-700 hover:bg-blue-50 text-sm px-4 py-2 rounded-lg font-medium transition-colors"
                   @click="openDetails(project)"
                 >
-                  {{ isAr ? 'عرض التفاصيل' : 'View Details' }}
+                  عرض التفاصيل
                 </button>
                 <a
                   :href="`https://wa.me/971562566232?text=${encodeURIComponent('مرحباً، أنا مهتم بمشروع: ' + (project.title_ar || project.title))}`"
@@ -137,7 +136,7 @@
                   rel="noopener noreferrer"
                   class="bg-green-600 hover:bg-green-700 text-white text-sm px-4 py-2 rounded-lg font-medium inline-flex items-center gap-2"
                 >
-                  {{ isAr ? 'استفسر' : 'Inquire' }}
+                  استفسر
                 </a>
               </div>
             </div>
@@ -150,7 +149,7 @@
       <div
         v-if="detailsProject"
         class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50"
-        :dir="isAr ? 'rtl' : 'ltr'"
+        dir="rtl"
         @click.self="closeDetails"
       >
         <div
@@ -202,35 +201,21 @@
             </div>
 
             <div v-if="detailsProject.is_featured" class="inline-flex items-center gap-1.5 text-amber-700 bg-amber-50 border border-amber-200 text-xs font-bold px-3 py-1 rounded-full">
-              ★ {{ isAr ? 'مشروع مميز' : 'Featured Project' }}
+              ★ مشروع مميز
             </div>
 
             <div>
               <h4 class="text-sm font-semibold text-gray-900 mb-2">
-                {{ isAr ? 'عن المشروع' : 'About this project' }}
+                عن المشروع
               </h4>
               <p class="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">
-                {{ (isAr ? detailsProject.description_ar : detailsProject.description) || detailsProject.description_ar || detailsProject.description || (isAr ? 'لا يوجد وصف.' : 'No description.') }}
-              </p>
-            </div>
-
-            <div v-if="!isAr && detailsProject.description_ar" class="border-t border-gray-100 pt-4">
-              <h4 class="text-sm font-semibold text-gray-900 mb-2" dir="rtl">الوصف (عربي)</h4>
-              <p class="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap" dir="rtl">
-                {{ detailsProject.description_ar }}
-              </p>
-            </div>
-
-            <div v-if="isAr && detailsProject.description && detailsProject.description !== detailsProject.description_ar" class="border-t border-gray-100 pt-4">
-              <h4 class="text-sm font-semibold text-gray-900 mb-2" dir="ltr">Description (English)</h4>
-              <p class="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap" dir="ltr">
-                {{ detailsProject.description }}
+                {{ detailsProject.description_ar || detailsProject.description || 'لا يوجد وصف.' }}
               </p>
             </div>
 
             <div v-if="galleryImages(detailsProject).length > 1" class="border-t border-gray-100 pt-4">
               <h4 class="text-sm font-semibold text-gray-900 mb-3">
-                {{ isAr ? 'صور المشروع' : 'Project Photos' }}
+                صور المشروع
               </h4>
               <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 <button
@@ -253,7 +238,7 @@
 
             <div v-if="docs(detailsProject).length" class="border-t border-gray-100 pt-4">
               <h4 class="text-sm font-semibold text-gray-900 mb-2">
-                {{ isAr ? 'ملفات' : 'Files' }}
+                ملفات
               </h4>
               <div class="flex flex-wrap gap-2">
                 <a
@@ -264,7 +249,7 @@
                   rel="noopener noreferrer"
                   class="text-xs px-3 py-1.5 rounded-lg bg-gray-50 border border-gray-200 text-gray-700 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-700"
                 >
-                  {{ doc.label || (isAr ? 'ملف' : 'File') }}
+                  {{ doc.label || 'ملف' }}
                 </a>
               </div>
             </div>
@@ -276,7 +261,7 @@
               class="px-4 py-2 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 text-sm font-medium"
               @click="closeDetails"
             >
-              {{ isAr ? 'إغلاق' : 'Close' }}
+              إغلاق
             </button>
             <a
               :href="whatsappLink(detailsProject)"
@@ -284,7 +269,7 @@
               rel="noopener noreferrer"
               class="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm font-medium"
             >
-              {{ isAr ? 'استفسر عبر واتساب' : 'Inquire on WhatsApp' }}
+              استفسر عبر واتساب
             </a>
           </div>
         </div>

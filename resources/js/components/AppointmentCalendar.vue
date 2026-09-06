@@ -21,25 +21,21 @@
     <div class="flex items-center gap-4 mb-4 text-sm">
       <span class="flex items-center gap-1.5">
         <span class="inline-block w-3.5 h-3.5 rounded bg-green-500"></span>
-        متاح | Available
-      </span>
+        متاح</span>
       <span class="flex items-center gap-1.5">
         <span class="inline-block w-3.5 h-3.5 rounded bg-gray-300"></span>
-        محجوز | Booked
-      </span>
+        محجوز</span>
     </div>
 
     <div v-if="loading" class="text-center py-8 text-gray-500">
-      جاري تحميل المواعيد... | Loading...
-    </div>
+      جاري تحميل المواعيد...</div>
 
     <div v-else-if="error" class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded text-sm">
       {{ error }}
     </div>
 
     <div v-else-if="days.length === 0" class="text-center py-8 text-gray-500 text-sm">
-      لا توجد مواعيد متاحة في هذا الشهر | No slots available this month
-    </div>
+      لا توجد مواعيد متاحة في هذا الشهر</div>
 
     <div v-else class="space-y-4 max-h-96 overflow-y-auto pe-1">
       <div v-for="day in days" :key="day.date" class="border border-gray-200 rounded-lg p-3">
@@ -133,7 +129,7 @@ const fetchSlots = async () => {
     const res = await api.get('/appointments', { params: { month: `${year}-${month}` } })
     slots.value = Array.isArray(res.data) ? res.data : []
   } catch (err: any) {
-    error.value = err.response?.data?.message || 'تعذر تحميل المواعيد | Failed to load appointments'
+    error.value = err.response?.data?.message || 'تعذر تحميل المواعيد'
   } finally {
     loading.value = false
   }

@@ -52,6 +52,7 @@ class QuotationController extends Controller
                 'number' => $data['number'] ?? $this->nextNumber('QUE'),
                 'date' => $data['date'],
                 'client_name' => $data['client_name'],
+                'trns' => $data['trns'] ?? null,
                 'customer_id' => $data['customer_id'] ?? null,
                 'project_id' => $data['project_id'] ?? null,
                 'status' => $data['status'] ?? 'draft',
@@ -81,6 +82,7 @@ class QuotationController extends Controller
                 'number' => $data['number'] ?? $quotation->number,
                 'date' => $data['date'],
                 'client_name' => $data['client_name'],
+                'trns' => $data['trns'] ?? null,
                 'customer_id' => $data['customer_id'] ?? null,
                 'project_id' => $data['project_id'] ?? null,
                 'status' => $data['status'] ?? $quotation->status,
@@ -129,6 +131,7 @@ class QuotationController extends Controller
             'project_id' => $quotation->project_id,
             'date' => $validated['date'] ?? now()->toDateString(),
             'client_name' => $quotation->client_name,
+            'trns' => $quotation->trns,
             'status' => $validated['status'] ?? 'draft',
             'notes' => $validated['notes'] ?? ('Invoice from ' . $quotation->number),
             'currency' => $quotation->currency,
@@ -193,6 +196,7 @@ class QuotationController extends Controller
             'number' => 'nullable|string|max:50|unique:quotations,number,' . ($ignoreId ?: 'NULL') . ',id',
             'date' => 'required|date',
             'client_name' => 'required|string|max:255',
+            'trns' => 'nullable|string|max:100',
             'customer_id' => 'nullable|exists:customers,id',
             'project_id' => 'nullable|exists:projects,id',
             'status' => 'nullable|in:draft,sent,accepted,cancelled',
@@ -235,6 +239,11 @@ class QuotationController extends Controller
             throw ValidationException::withMessages([
                 'items' => ['أضف منتجاً واحداً على الأقل تحت العناوين'],
             ]);
+        }
+
+        $data['trns'] = isset($data['trns']) ? trim((string) $data['trns']) : null;
+        if ($data['trns'] === '') {
+            $data['trns'] = null;
         }
 
         if (!empty($data['customer_id'])) {

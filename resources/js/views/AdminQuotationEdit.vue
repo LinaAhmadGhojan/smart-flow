@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div dir="rtl" class="w-full min-w-0 max-w-6xl mx-auto">
     <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
       <div class="flex items-center gap-3">
@@ -106,6 +106,8 @@
               </div>
             </div>
             <input v-model="form.client_name" type="text" class="sf-field mt-2" required placeholder="اسم العميل في PDF" />
+            <label class="block text-xs text-gray-500 mb-1 mt-2">الرقم الضريبي</label>
+            <input v-model="form.trns" type="text" class="sf-field" placeholder="مثال: 100XXXXXXXXX003" dir="ltr" />
           </div>
           <div>
             <label class="block text-xs text-gray-500 mb-1">المشروع</label>
@@ -470,6 +472,7 @@ const form = ref({
   customer_id: null as number | null,
   project_id: null as number | null,
   client_name: '',
+  trns: '',
   status: 'draft',
   currency: 'AED',
   tax_percent: 0,
@@ -807,6 +810,7 @@ const load = async () => {
       customer_id: q.customer_id ?? null,
       project_id: q.project_id ?? null,
       client_name: q.client_name || '',
+      trns: q.trns || '',
       status: q.status || 'draft',
       currency: q.currency || 'AED',
       tax_percent: Number(q.tax_percent || 0),
@@ -848,6 +852,7 @@ const save = async () => {
       customer_id: form.value.customer_id,
       project_id: form.value.project_id,
       client_name: form.value.client_name,
+      trns: form.value.trns?.trim() || null,
       status: form.value.status,
       currency: form.value.currency,
       tax_percent: form.value.tax_percent,

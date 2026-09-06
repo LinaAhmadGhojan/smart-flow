@@ -52,10 +52,15 @@ class InvoiceController extends Controller
         $validated = $request->validate([
             'date' => 'sometimes|date',
             'client_name' => 'sometimes|string|max:255',
+            'trns' => 'nullable|string|max:100',
             'status' => 'sometimes|in:draft,sent,paid,cancelled',
             'notes' => 'nullable|string|max:5000',
             'project_id' => 'nullable|exists:projects,id',
         ]);
+
+        if (array_key_exists('trns', $validated)) {
+            $validated['trns'] = trim((string) ($validated['trns'] ?? '')) ?: null;
+        }
 
         $invoice->update($validated);
 

@@ -2,7 +2,7 @@
   <div class="w-full min-w-0">
     <div class="sf-page-header">
       <h1 class="text-2xl font-bold text-gray-900">
-        {{ isNew ? 'إضافة مجموعة | Add Group' : 'تعديل مجموعة | Edit Group' }}
+        {{ isNew ? 'إضافة مجموعة' : 'تعديل مجموعة' }}
       </h1>
       <RouterLink to="/admin/groups" class="text-sm text-gray-500 hover:text-blue-600">
         ← العودة للمجموعات
@@ -36,13 +36,13 @@
             <textarea v-model="form.description_ar" rows="4" class="sf-field" dir="rtl"></textarea>
           </div>
           <div class="max-w-xs">
-            <label class="sf-label">Sort Order | الترتيب</label>
+            <label class="sf-label">الترتيب</label>
             <input v-model.number="form.sort_order" type="number" min="0" class="sf-field" />
           </div>
         </div>
 
         <div class="min-w-0">
-          <label class="sf-label">Group Image | صورة المجموعة</label>
+          <label class="sf-label">صورة المجموعة</label>
           <div class="rounded-xl border border-dashed border-gray-300 bg-gray-50 p-4">
             <div v-if="imagePreview" class="mb-3">
               <img :src="imagePreview" alt="Group preview" class="h-40 w-full object-cover rounded-xl border" />
@@ -60,14 +60,14 @@
           to="/admin/groups"
           class="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg text-center"
         >
-          Cancel | إلغاء
+          إلغاء
         </RouterLink>
         <button
           type="submit"
           :disabled="loading"
           class="px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-medium rounded-lg"
         >
-          {{ loading ? 'Saving...' : (isNew ? 'Create | إنشاء' : 'Update | تحديث') }}
+          {{ loading ? 'Saving...' : (isNew ? 'إنشاء' : 'تحديث') }}
         </button>
       </div>
     </form>

@@ -1,7 +1,7 @@
 ﻿<template>
   <div dir="rtl">
     <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
-      <h1 class="text-2xl font-bold text-gray-900">عروض الأسعار | Quotations</h1>
+      <h1 class="text-2xl font-bold text-gray-900">عروض الأسعار</h1>
       <router-link
         to="/admin/quotations/new"
         class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"

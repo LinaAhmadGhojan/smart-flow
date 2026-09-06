@@ -38,7 +38,7 @@
 
       <div class="sf-form-grid">
         <div class="min-w-0">
-          <label class="sf-label">الموقع | Location</label>
+          <label class="sf-label">الموقع</label>
           <input v-model="form.location" type="text" class="sf-field" />
         </div>
         <div class="min-w-0">

@@ -289,7 +289,8 @@
         font-size: 10.5px;
         line-height: 1.35;
         word-wrap: break-word;
-        overflow-wrap: anywhere;
+        overflow-wrap: break-word;
+        word-break: normal;
     }
     .items tbody tr:nth-child(even) td { background: #f8fbff; }
     .items tbody tr:last-child td { border-bottom: 1px solid #b8cce8; }
@@ -324,8 +325,34 @@
     .totals tr.disc-row .label,
     .totals tr.disc-row .val { color: #c0392b; font-weight: 700; }
 
-    .comments-h { font-weight: 700; font-size: 12px; margin: 14px 0 6px; color: #333; }
-    .comments { white-space: pre-wrap; font-size: 11px; color: #444; margin-bottom: 8px; }
+    .comments-h {
+        font-weight: 700;
+        font-size: 12px;
+        margin: 14px 0 6px;
+        color: #333;
+        width: 100%;
+        clear: both;
+    }
+    .comments {
+        display: block;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+        white-space: pre-line;
+        word-break: normal;
+        overflow-wrap: break-word;
+        font-size: 11px;
+        color: #444;
+        margin-bottom: 12px;
+        line-height: 1.65;
+        text-align: left;
+        direction: ltr;
+    }
+    .comments.ar {
+        direction: rtl;
+        text-align: right;
+        unicode-bidi: embed;
+    }
 
     .foot-company {
         margin-top: 28px;
@@ -336,6 +363,13 @@
         text-align: center;
         line-height: 1.5;
         letter-spacing: 0.15px;
+        width: 100%;
+        display: block;
+        direction: ltr;
+        unicode-bidi: embed;
+        white-space: normal;
+        word-break: normal;
+        overflow-wrap: break-word;
     }
 
     .sign-table { width: 100%; border-collapse: collapse; margin-top: 28px; table-layout: fixed; }
@@ -441,6 +475,9 @@
                     <div class="row"><img src="{{ $iconPhone }}" alt=""><span class="en">{{ $phone }}</span></div>
                     <div class="row"><img src="{{ $iconEmail }}" alt=""><span class="en">{{ $email }}</span></div>
                     <div class="row"><img src="{{ $iconLocation }}" alt=""><span class="ar">{{ $addressAr }}</span></div>
+                    @if(!empty($trn))
+                        <div class="row"><span class="en" style="font-weight:700;color:#2f5f9e;">TRN: {{ $trn }}</span></div>
+                    @endif
                 </div>
             </div>
         </td>
@@ -465,6 +502,12 @@
                         <span class="meta-lab">التاريخ / Date</span>
                         <span class="meta-val en">{{ $dateLabel }}</span>
                     </div>
+                    @if(!empty($trns))
+                    <div class="meta-line">
+                        <span class="meta-lab">الرقم الضريبي / TRN</span>
+                        <span class="meta-val en">{{ $trns }}</span>
+                    </div>
+                    @endif
                     @if(!empty($extraMetaRows))
                         @foreach($extraMetaRows as $row)
                         <div class="meta-line">
@@ -578,10 +621,10 @@
 
 @if(!empty($notes))
 <div class="comments-h">Comments</div>
-<div class="comments {{ !empty($notesIsArabic) ? 'ar' : '' }}">{!! nl2br(e($notes)) !!}</div>
+<div class="comments {{ !empty($notesIsArabic) ? 'ar' : '' }}">{{ $notes }}</div>
 @endif
 
-<div class="foot-company en">{{ $companyLegalName }}</div>
+<div class="foot-company">{{ $companyLegalName }}</div>
 
 <table class="sign-table">
     <tr>

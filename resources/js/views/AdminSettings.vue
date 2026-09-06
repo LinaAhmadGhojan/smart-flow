@@ -3,7 +3,7 @@
     <div>
       <!-- Header -->
       <div class="mb-8">
-        <h1 class="text-2xl font-bold text-gray-900">إعدادات الشركة | Company Settings</h1>
+        <h1 class="text-2xl font-bold text-gray-900">إعدادات الشركة</h1>
         <p class="text-gray-600 mt-2">تعديل معلومات التواصل وبيانات الشركة</p>
       </div>
 
@@ -29,8 +29,7 @@
           <!-- Company Info Section -->
           <div class="mb-8">
             <h2 class="text-2xl font-bold text-gray-900 mb-6 pb-3 border-b">
-              معلومات الشركة | Company Information
-            </h2>
+              معلومات الشركة</h2>
             
             <div class="grid md:grid-cols-2 gap-6">
               <!-- Company Name English -->
@@ -63,8 +62,7 @@
               <!-- TRN -->
               <div>
                 <label class="sf-label">
-                  الرقم الضريبي | TRN
-                </label>
+                  الرقم الضريبي</label>
                 <input
                   v-model="settings.trn"
                   type="text"
@@ -132,15 +130,13 @@
           <!-- Contact Info Section -->
           <div class="mb-8">
             <h2 class="text-2xl font-bold text-gray-900 mb-6 pb-3 border-b">
-              معلومات التواصل | Contact Information
-            </h2>
+              معلومات التواصل</h2>
             
             <div class="grid md:grid-cols-2 gap-6">
               <!-- Email -->
               <div>
                 <label class="sf-label">
-                  البريد الإلكتروني | Email
-                </label>
+                  البريد الإلكتروني</label>
                 <input
                   v-model="settings.contact.email"
                   type="email"
@@ -152,8 +148,7 @@
               <!-- Phone -->
               <div>
                 <label class="sf-label">
-                  رقم الهاتف | Phone
-                </label>
+                  رقم الهاتف</label>
                 <input
                   v-model="settings.contact.phone"
                   type="text"
@@ -166,8 +161,7 @@
               <!-- WhatsApp -->
               <div>
                 <label class="sf-label">
-                  واتساب | WhatsApp
-                  <span class="text-sm text-gray-500">(بدون +)</span>
+                  واتساب<span class="text-sm text-gray-500">(بدون +)</span>
                 </label>
                 <input
                   v-model="settings.contact.whatsapp"
@@ -210,8 +204,7 @@
           <!-- Working Hours Section -->
           <div class="mb-8">
             <h2 class="text-2xl font-bold text-gray-900 mb-6 pb-3 border-b">
-              ساعات العمل | Working Hours
-            </h2>
+              ساعات العمل</h2>
             
             <div class="grid md:grid-cols-2 gap-6">
               <!-- Working Hours English -->
@@ -248,8 +241,7 @@
           <!-- Social Media Section -->
           <div class="mb-8">
             <h2 class="text-2xl font-bold text-gray-900 mb-6 pb-3 border-b">
-              وسائل التواصل الاجتماعي | Social Media
-            </h2>
+              وسائل التواصل الاجتماعي</h2>
             
             <div class="grid md:grid-cols-2 gap-6">
               <!-- Facebook -->
@@ -309,8 +301,7 @@
           <!-- About Section -->
           <div class="mb-8">
             <h2 class="text-2xl font-bold text-gray-900 mb-6 pb-3 border-b">
-              عن الشركة | About Us
-            </h2>
+              عن الشركة</h2>
             
             <div class="grid md:grid-cols-1 gap-6">
               <!-- About English -->
@@ -355,7 +346,7 @@
               :disabled="saving"
               class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {{ saving ? 'جاري الحفظ...' : 'حفظ التعديلات | Save Changes' }}
+              {{ saving ? 'جاري الحفظ...' : 'حفظ التعديلات' }}
             </button>
           </div>
         </form>
@@ -364,8 +355,7 @@
       <!-- Logo & Signature Section (used on exported PDF reports) -->
       <div class="bg-white rounded-xl shadow-lg p-8 mt-8">
         <h2 class="text-2xl font-bold text-gray-900 mb-2 pb-3 border-b">
-          الشعار والتوقيع | Logo & Signature
-        </h2>
+          الشعار والتوقيع</h2>
           <p class="text-gray-500 text-sm mb-6">تظهر هذه العناصر تلقائياً في عروض الأسعار والفواتير وتقارير الزيارات المُصدّرة PDF.</p>
 
         <div v-if="brandingSuccess" class="mb-6 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg">

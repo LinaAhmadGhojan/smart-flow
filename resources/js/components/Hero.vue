@@ -91,24 +91,6 @@
                         :alt="offerTitle(currentOffer)"
                         @error="handleMediaError"
                       />
-                      <div class="hero-offer-slide__price">
-                        <span class="hero-offer-slide__price-value">
-                          {{ formatPrice(currentOffer.discounted_price) }}
-                        </span>
-                        <span class="hero-offer-slide__price-currency">AED</span>
-                        <span
-                          v-if="currentOffer.original_price"
-                          class="hero-offer-slide__price-old"
-                        >
-                          {{ formatPrice(currentOffer.original_price) }}
-                        </span>
-                      </div>
-                      <span
-                        v-if="currentOffer.discount_percentage"
-                        class="hero-offer-slide__badge"
-                      >
-                        −{{ currentOffer.discount_percentage }}%
-                      </span>
                     </div>
 
                     <div class="hero-offer-slide__body">

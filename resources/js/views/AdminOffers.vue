@@ -3,7 +3,7 @@
     <!-- Header -->
     <div class="sf-page-header">
       <div>
-        <h1 class="text-2xl font-bold text-gray-900">إدارة العروض | Manage Offers</h1>
+        <h1 class="text-2xl font-bold text-gray-900">إدارة العروض</h1>
         <p class="text-gray-600 mt-1">إضافة وتعديل وحذف العروض الخاصة</p>
       </div>
       <button
@@ -13,8 +13,7 @@
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
         </svg>
-        إضافة عرض جديد | Add Offer
-      </button>
+        إضافة عرض جديد</button>
     </div>
 
     <!-- Main Content -->
@@ -74,7 +73,7 @@
                         : 'bg-gray-100 text-gray-800'
                     ]"
                   >
-                    {{ offer.is_active ? 'مفعل | Active' : 'معطل | Inactive' }}
+                    {{ offer.is_active ? 'مفعل' : 'معطل' }}
                   </span>
                 </td>
                 <td class="px-6 py-4">
@@ -129,7 +128,7 @@
         <!-- Form Header -->
         <div class="sticky top-0 bg-white border-b border-gray-200 -mx-5 sm:-mx-6 md:-mx-8 px-5 sm:px-6 md:px-8 py-5 flex items-center justify-between mb-6 z-10">
           <h2 class="text-2xl font-bold text-gray-900">
-            {{ editingOffer ? 'تعديل عرض | Edit Offer' : 'إضافة عرض جديد | Add New Offer' }}
+            {{ editingOffer ? 'تعديل عرض' : 'إضافة عرض جديد' }}
           </h2>
           <button
             type="button"
@@ -147,7 +146,7 @@
           <!-- Product search picker -->
           <div>
             <label class="sf-label">
-              المنتج | Product <span class="text-red-500">*</span>
+              المنتج<span class="text-red-500">*</span>
             </label>
 
             <div
@@ -238,7 +237,7 @@
           <!-- Discount Percentage -->
           <div>
             <label class="sf-label">
-              نسبة الخصم | Discount Percentage <span class="text-red-500">*</span>
+              نسبة الخصم<span class="text-red-500">*</span>
             </label>
             <input
               v-model.number="formData.discount_percentage"
@@ -254,8 +253,7 @@
           <!-- Discount Price (Optional) -->
           <div>
             <label class="sf-label">
-              سعر الخصم (اختياري) | Discount Price
-            </label>
+              سعر الخصم (اختياري)</label>
             <input
               v-model.number="formData.discount_price"
               type="number"
@@ -269,8 +267,7 @@
             <!-- Start Date -->
             <div>
               <label class="sf-label">
-                تاريخ البداية | Start Date
-              </label>
+                تاريخ البداية</label>
               <input
                 v-model="formData.start_date"
                 type="datetime-local"
@@ -281,8 +278,7 @@
             <!-- End Date -->
             <div>
               <label class="sf-label">
-                تاريخ النهاية | End Date
-              </label>
+                تاريخ النهاية</label>
               <input
                 v-model="formData.end_date"
                 type="datetime-local"
@@ -294,8 +290,7 @@
           <!-- Description -->
           <div>
             <label class="sf-label">
-              وصف العرض | Offer Description
-            </label>
+              وصف العرض</label>
             <textarea
               v-model="formData.offer_description"
               rows="3"
@@ -307,8 +302,7 @@
           <!-- Description AR -->
           <div>
             <label class="sf-label">
-              وصف العرض | Offer Description AR
-            </label>
+              وصف العرض</label>
             <textarea
               v-model="formData.offer_description_ar"
               rows="3"
@@ -326,8 +320,7 @@
               class="w-4 h-4 text-blue-600 rounded focus:ring-2"
             />
             <label for="is_active" class="text-sm font-medium text-gray-900">
-              مفعل | Active
-            </label>
+              مفعل</label>
           </div>
 
           <!-- Buttons -->
@@ -337,15 +330,14 @@
               :disabled="saving"
               class="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-6 py-3 rounded-lg font-medium transition-colors"
             >
-              {{ saving ? 'جاري الحفظ...' : 'حفظ | Save' }}
+              {{ saving ? 'جاري الحفظ...' : 'حفظ' }}
             </button>
             <button
               type="button"
               @click="closeForm"
               class="bg-gray-200 hover:bg-gray-300 text-gray-900 px-6 py-3 rounded-lg font-medium transition-colors"
             >
-              إلغاء | Cancel
-            </button>
+              إلغاء</button>
           </div>
         </form>
       </div>

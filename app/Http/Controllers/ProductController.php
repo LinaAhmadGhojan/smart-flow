@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use App\Support\StorageUrl;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Http\UploadedFile;
 
 class ProductController extends Controller
 {
@@ -32,6 +32,7 @@ class ProductController extends Controller
             'description_ar' => 'nullable|string',
             'price' => 'required|numeric',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:4096',
+            'data_sheet' => 'nullable|file|mimes:pdf|max:20480',
             'category_id' => 'required|exists:categories,id',
             'group_id' => 'nullable|exists:product_groups,id',
             'features' => 'nullable|string',
@@ -40,17 +41,13 @@ class ProductController extends Controller
             'whatsapp_message' => 'nullable|string',
         ]);
 
-        $imagePath = null;
-        if ($request->hasFile('image')) {
-            $image = $request->file('image');
-            $filename = time() . '-' . uniqid() . '.' . $image->getClientOriginalExtension();
-            $destinationPath = public_path('storage/products');
-            if (!file_exists($destinationPath)) {
-                mkdir($destinationPath, 0755, true);
-            }
-            $image->move($destinationPath, $filename);
-            $imagePath = '/storage/products/' . $filename;
-        }
+        $imagePath = $request->hasFile('image')
+            ? $this->storeUpload($request->file('image'), 'products')
+            : null;
+
+        $dataSheetPath = $request->hasFile('data_sheet')
+            ? $this->storeUpload($request->file('data_sheet'), 'products/datasheets')
+            : null;
 
         $features = [];
         if ($request->features) {
@@ -66,6 +63,7 @@ class ProductController extends Controller
             'price' => $request->price,
             'price_number' => $request->price,
             'image' => $imagePath,
+            'data_sheet' => $dataSheetPath,
             'in_stock' => $request->boolean('in_stock', true),
             'is_visible' => $request->boolean('is_visible', true),
             'category_id' => $request->category_id,
@@ -93,6 +91,7 @@ class ProductController extends Controller
     {
         $data = $product->toArray();
         $data['image'] = StorageUrl::toPublicUrl($product->getRawOriginal('image'));
+        $data['data_sheet'] = StorageUrl::toPublicUrl($product->getRawOriginal('data_sheet'));
 
         return $data;
     }
@@ -108,6 +107,8 @@ class ProductController extends Controller
             'description_ar' => 'nullable|string',
             'price' => 'required|numeric',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:4096',
+            'data_sheet' => 'nullable|file|mimes:pdf|max:20480',
+            'remove_data_sheet' => 'nullable|boolean',
             'category_id' => 'required|exists:categories,id',
             'group_id' => 'nullable|exists:product_groups,id',
             'features' => 'nullable|string',
@@ -118,21 +119,18 @@ class ProductController extends Controller
 
         $imagePath = $product->getRawOriginal('image');
         if ($request->hasFile('image')) {
-            // Delete old image
-            if ($product->getRawOriginal('image')) {
-                $oldImagePath = StorageUrl::toFilesystemPath($product->getRawOriginal('image'));
-                if ($oldImagePath && file_exists($oldImagePath)) {
-                    @unlink($oldImagePath);
-                }
-            }
-            $image = $request->file('image');
-            $filename = time() . '-' . uniqid() . '.' . $image->getClientOriginalExtension();
-            $destinationPath = public_path('storage/products');
-            if (!file_exists($destinationPath)) {
-                mkdir($destinationPath, 0755, true);
-            }
-            $image->move($destinationPath, $filename);
-            $imagePath = '/storage/products/' . $filename;
+            $this->deleteStoredFile($imagePath);
+            $imagePath = $this->storeUpload($request->file('image'), 'products');
+        }
+
+        $dataSheetPath = $product->getRawOriginal('data_sheet');
+        if ($request->boolean('remove_data_sheet') && !$request->hasFile('data_sheet')) {
+            $this->deleteStoredFile($dataSheetPath);
+            $dataSheetPath = null;
+        }
+        if ($request->hasFile('data_sheet')) {
+            $this->deleteStoredFile($dataSheetPath);
+            $dataSheetPath = $this->storeUpload($request->file('data_sheet'), 'products/datasheets');
         }
 
         $features = $product->features;
@@ -148,12 +146,13 @@ class ProductController extends Controller
             'price' => $request->price,
             'price_number' => $request->price,
             'image' => $imagePath,
+            'data_sheet' => $dataSheetPath,
             'in_stock' => $request->boolean('in_stock', true),
             'is_visible' => $request->boolean('is_visible', true),
             'category_id' => $request->category_id,
             'group_id' => $request->group_id ?: null,
             'features' => $features,
-            'whatsapp_message' => $request->whatsapp_message??'',
+            'whatsapp_message' => $request->whatsapp_message ?? '',
         ]);
 
         return response()->json($this->productPayload($product->fresh(['category', 'group'])));
@@ -167,20 +166,15 @@ class ProductController extends Controller
     public function destroy($id)
     {
         $product = Product::findOrFail($id);
-        
-        // Delete image if exists
-        if ($product->getRawOriginal('image')) {
-            $imagePath = StorageUrl::toFilesystemPath($product->getRawOriginal('image'));
-            if ($imagePath && file_exists($imagePath)) {
-                @unlink($imagePath);
-            }
-        }
-        
+
+        $this->deleteStoredFile($product->getRawOriginal('image'));
+        $this->deleteStoredFile($product->getRawOriginal('data_sheet'));
+
         $product->delete();
 
         return response()->json([
             'success' => true,
-            'message' => 'Product deleted successfully'
+            'message' => 'Product deleted successfully',
         ]);
     }
 
@@ -191,19 +185,36 @@ class ProductController extends Controller
         ]);
 
         if ($request->hasFile('image')) {
-            $image = $request->file('image');
-            $filename = time() . '-' . uniqid() . '.' . $image->getClientOriginalExtension();
-            $destinationPath = public_path('storage/products');
-            if (!file_exists($destinationPath)) {
-                mkdir($destinationPath, 0755, true);
-            }
-            $image->move($destinationPath, $filename);
+            $path = $this->storeUpload($request->file('image'), 'products');
 
             return response()->json([
-                'image' => StorageUrl::toPublicUrl('/storage/products/' . $filename),
+                'image' => StorageUrl::toPublicUrl($path),
             ]);
         }
 
         return response()->json(['error' => 'No file uploaded'], 400);
+    }
+
+    private function storeUpload(UploadedFile $file, string $folder): string
+    {
+        $filename = time() . '-' . uniqid() . '.' . $file->getClientOriginalExtension();
+        $destinationPath = public_path('storage/' . $folder);
+        if (!file_exists($destinationPath)) {
+            mkdir($destinationPath, 0755, true);
+        }
+        $file->move($destinationPath, $filename);
+
+        return '/storage/' . $folder . '/' . $filename;
+    }
+
+    private function deleteStoredFile(?string $storedPath): void
+    {
+        if (!$storedPath) {
+            return;
+        }
+        $absolute = StorageUrl::toFilesystemPath($storedPath);
+        if ($absolute && file_exists($absolute)) {
+            @unlink($absolute);
+        }
     }
 }

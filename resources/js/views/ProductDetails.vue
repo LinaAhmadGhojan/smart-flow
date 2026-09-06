@@ -12,7 +12,7 @@
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
           </svg>
-          العودة للرئيسية | Back to Home
+          العودة للرئيسية
         </router-link>
 
         <!-- Loading State -->
@@ -53,7 +53,7 @@
                 </svg>
                 <div>
                   <p class="font-bold text-lg">
-                    {{ product.in_stock ? 'متوفر الآن | In Stock' : 'غير متوفر | Out of Stock' }}
+                    {{ product.in_stock ? 'متوفر الآن' : 'غير متوفر' }}
                   </p>
                   <p class="text-sm">
                     {{ product.in_stock 
@@ -69,12 +69,9 @@
           <!-- Right Column - Details -->
           <div>
             <!-- Title -->
-            <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-1">
-              {{ product.name }}
+            <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-6 font-arabic">
+              {{ product.name_ar || product.name }}
             </h1>
-            <h2 class="text-2xl text-gray-700 mb-6 font-arabic">
-              {{ product.name_ar }}
-            </h2>
 
             <!-- Category -->
             <div v-if="product.category_id && categoryMap[product.category_id]" class="mb-6">
@@ -82,29 +79,53 @@
                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"/>
                 </svg>
-                {{ categoryMap[product.category_id].name }}
+                {{ categoryMap[product.category_id].name_ar || categoryMap[product.category_id].name }}
               </span>
             </div>
 
             <!-- Price Section -->
             <div class="rounded-2xl p-8 mb-8" style="background: linear-gradient(to bottom right, #e8eef9, #d4dff5);">
-              <p class="text-gray-600 text-sm mb-1">السعر | Price</p>
-              <div class="text-5xl font-bold" style="color: #203c85;">
-                {{ formatPrice(product.price) }} <span class="text-2xl">AED</span>
-              </div>
+              <template v-if="activeOffer">
+                <div class="flex flex-wrap items-center gap-3 mb-3">
+                  <p class="text-gray-600 text-sm mb-0">السعر بعد الخصم</p>
+                  <span
+                    v-if="activeOffer.discount_percentage"
+                    class="inline-flex items-center rounded-full bg-red-600 text-white text-sm font-bold px-3 py-1"
+                  >
+                    −{{ activeOffer.discount_percentage }}%
+                  </span>
+                </div>
+                <div class="flex flex-wrap items-end gap-3">
+                  <div class="text-5xl font-bold" style="color: #203c85;">
+                    {{ formatPrice(activeOffer.discounted_price) }} <span class="text-2xl">AED</span>
+                  </div>
+                  <div
+                    v-if="activeOffer.original_price"
+                    class="text-xl text-gray-500 line-through mb-1"
+                  >
+                    {{ formatPrice(activeOffer.original_price) }} AED
+                  </div>
+                </div>
+              </template>
+              <template v-else>
+                <p class="text-gray-600 text-sm mb-1">السعر</p>
+                <div class="text-5xl font-bold" style="color: #203c85;">
+                  {{ formatPrice(product.price) }} <span class="text-2xl">AED</span>
+                </div>
+              </template>
             </div>
 
             <!-- Description -->
-            <div v-if="product.description" class="mb-8">
-              <h3 class="text-2xl font-bold text-gray-900 mb-1">الوصف | Description</h3>
-              <p class="text-gray-700 text-lg leading-relaxed">
-                {{ product.description }}
+            <div v-if="product.description_ar || product.description" class="mb-8">
+              <h3 class="text-2xl font-bold text-gray-900 mb-1">الوصف</h3>
+              <p class="text-gray-700 text-lg leading-relaxed whitespace-pre-line">
+                {{ product.description_ar || product.description }}
               </p>
             </div>
 
             <!-- Features -->
             <div v-if="product.features && product.features.length > 0" class="mb-8">
-              <h3 class="text-2xl font-bold text-gray-900 mb-1">المميزات | Features</h3>
+              <h3 class="text-2xl font-bold text-gray-900 mb-1">المميزات</h3>
               <div class="space-y-3">
                 <div
                   v-for="(feature, idx) in product.features"
@@ -121,8 +142,24 @@
 
             <!-- Brand Info -->
             <div v-if="product.brand" class="mb-8 p-6 bg-white rounded-xl border border-gray-200">
-              <p class="text-gray-600 text-sm mb-1">الماركة | Brand</p>
+              <p class="text-gray-600 text-sm mb-1">الماركة</p>
               <p class="text-2xl font-bold text-gray-900">{{ product.brand }}</p>
+            </div>
+
+            <!-- Data Sheet -->
+            <div v-if="dataSheetUrl" class="mb-8">
+              <a
+                :href="dataSheetUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="flex w-full items-center justify-center gap-3 rounded-xl border-2 border-[#203c85] bg-white px-6 py-4 text-lg font-bold text-[#203c85] transition-colors hover:bg-[#e8eef9]"
+              >
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 3v5a1 1 0 001 1h5"/>
+                </svg>
+                تحميل ملف الشيت (PDF)
+              </a>
             </div>
 
             <!-- Action Buttons -->
@@ -183,6 +220,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import Header from '@/components/Header.vue'
 import Footer from '@/components/Footer.vue'
+import { mediaUrl } from '@/lib/media'
 
 interface Product {
   id: number
@@ -191,12 +229,21 @@ interface Product {
   brand: string
   price: string | number
   image: string
+  data_sheet?: string | null
   in_stock: boolean
   category_id?: number
   features: string[]
   whatsapp_message: string
   description?: string
   description_ar?: string
+}
+
+interface ActiveOffer {
+  id: number
+  product_id?: number
+  original_price?: string | number
+  discounted_price: string | number
+  discount_percentage?: number
 }
 
 interface Category {
@@ -219,12 +266,19 @@ const formatPrice = (price: string | number): string => {
 }
 
 const product = ref<Product | null>(null)
+const activeOffer = ref<ActiveOffer | null>(null)
 const categories = ref<Category[]>([])
 const companyInfo = ref<CompanyInfo | null>(null)
 const loading = ref(true)
 
 const mainImage = computed(() => {
-  return product.value?.image || '/placeholder-product.jpg'
+  return mediaUrl(product.value?.image)
+})
+
+const dataSheetUrl = computed(() => {
+  const path = product.value?.data_sheet
+  if (!path) return null
+  return mediaUrl(path, '')
 })
 
 const categoryMap = computed(() => {
@@ -239,7 +293,12 @@ const whatsappNumber = computed(() => {
 })
 
 const getWhatsAppLink = (prod: Product) => {
-  const message = prod.whatsapp_message || 
+  if (activeOffer.value) {
+    const message = prod.whatsapp_message ||
+      `مرحباً، أرغب في الاستفسار عن العرض: ${prod.name_ar} (${prod.name}) - السعر: ${formatPrice(activeOffer.value.discounted_price)} AED`
+    return `https://wa.me/${whatsappNumber.value}?text=${encodeURIComponent(message)}`
+  }
+  const message = prod.whatsapp_message ||
     `مرحباً، أرغب في الاستفسار عن المنتج: ${prod.name_ar} (${prod.name}) - السعر: ${formatPrice(prod.price)} AED`
   return `https://wa.me/${whatsappNumber.value}?text=${encodeURIComponent(message)}`
 }
@@ -248,10 +307,11 @@ onMounted(async () => {
   try {
     const productId = route.params.id
 
-    const [categoriesRes, productRes, companyRes] = await Promise.all([
+    const [categoriesRes, productRes, companyRes, offersRes] = await Promise.all([
       fetch('/api/categories'),
       fetch(`/api/products/${productId}`),
-      fetch('/company-info.json')
+      fetch('/company-info.json'),
+      fetch('/api/offers'),
     ])
 
     const categoriesData = await categoriesRes.json()
@@ -262,7 +322,11 @@ onMounted(async () => {
 
     companyInfo.value = await companyRes.json()
 
-    // Scroll to top
+    const offersData = await offersRes.json()
+    const offersList = Array.isArray(offersData?.offers) ? offersData.offers : (Array.isArray(offersData) ? offersData : [])
+    const pid = Number(productId)
+    activeOffer.value = offersList.find((o: ActiveOffer) => Number(o.product_id) === pid || Number(o.id) === pid) || null
+
     window.scrollTo(0, 0)
 
     loading.value = false

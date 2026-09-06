@@ -7,14 +7,6 @@
         @error="handleMediaError"
       />
       <div class="offer-card__overlay" aria-hidden="true" />
-
-      <div class="offer-card__price-float">
-        <span class="offer-card__price-value">{{ formatPrice(offer.discounted_price) }}</span>
-        <span class="offer-card__price-currency">AED</span>
-        <span v-if="offer.original_price" class="offer-card__price-old">
-          {{ formatPrice(offer.original_price) }}
-        </span>
-      </div>
     </div>
 
     <div class="offer-card__body">

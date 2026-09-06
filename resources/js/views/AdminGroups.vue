@@ -1,14 +1,14 @@
 <template>
   <div>
-    <h1 class="text-2xl font-bold text-gray-900 mb-6">إدارة المجموعات | Groups Management</h1>
+    <h1 class="text-2xl font-bold text-gray-900 mb-6">إدارة المجموعات</h1>
     <div>
       <div class="mb-6 flex justify-between items-center">
-        <h2 class="text-xl font-semibold">All Groups | جميع المجموعات</h2>
+        <h2 class="text-xl font-semibold">جميع المجموعات</h2>
         <RouterLink
           to="/admin/groups/new"
           class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors"
         >
-          + Add New Group | إضافة مجموعة
+          + إضافة مجموعة
         </RouterLink>
       </div>
 

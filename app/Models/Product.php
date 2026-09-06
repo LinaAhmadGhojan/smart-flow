@@ -18,6 +18,7 @@ class Product extends Model
         'price',
         'price_number',
         'image',
+        'data_sheet',
         'in_stock',
         'is_visible',
         'category_id',
@@ -57,6 +58,11 @@ class Product extends Model
     }
 
     public function getImageAttribute(?string $value): ?string
+    {
+        return \App\Support\StorageUrl::toPublicUrl($value);
+    }
+
+    public function getDataSheetAttribute(?string $value): ?string
     {
         return \App\Support\StorageUrl::toPublicUrl($value);
     }

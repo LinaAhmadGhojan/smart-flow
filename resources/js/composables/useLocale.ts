@@ -5,9 +5,11 @@ export type Locale = 'ar' | 'en'
 const STORAGE_KEY = 'smartflow_locale'
 
 function readInitialLocale(): Locale {
-  if (typeof window === 'undefined') return 'ar'
-  const saved = localStorage.getItem(STORAGE_KEY)
-  return saved === 'en' || saved === 'ar' ? saved : 'ar'
+  // Site is Arabic-only for customers and dashboard UI for now
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(STORAGE_KEY, 'ar')
+  }
+  return 'ar'
 }
 
 const locale = ref<Locale>(readInitialLocale())
@@ -102,11 +104,12 @@ export function useLocale() {
   const t = (key: DictKey) => dict[key][locale.value]
 
   const toggleLocale = () => {
-    locale.value = locale.value === 'ar' ? 'en' : 'ar'
+    // Arabic-only: keep locale locked
+    locale.value = 'ar'
   }
 
-  const setLocale = (next: Locale) => {
-    locale.value = next
+  const setLocale = (_next: Locale) => {
+    locale.value = 'ar'
   }
 
   const localized = <T extends { name?: string; name_ar?: string }>(

@@ -188,8 +188,7 @@
         <form v-else @submit.prevent="submitReview" class="space-y-4">
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">
-              اسمك (اختياري) | Your name (optional)
-            </label>
+              اسمك (اختياري)</label>
             <input
               v-model="form.reviewer_name"
               type="text"
@@ -199,13 +198,13 @@
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">التقييم | Rating *</label>
+            <label class="block text-sm font-medium text-gray-700 mb-1">التقييم</label>
             <StarRating v-model:value="form.rating" />
             <p v-if="formErrors.rating" class="text-red-500 text-xs mt-1">{{ formErrors.rating }}</p>
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">تعليقك | Comment *</label>
+            <label class="block text-sm font-medium text-gray-700 mb-1">تعليقك</label>
             <textarea
               v-model="form.comment"
               rows="4"
@@ -216,7 +215,7 @@
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">صورتك (اختياري) | Your photo</label>
+            <label class="block text-sm font-medium text-gray-700 mb-1">صورتك (اختياري)</label>
             <input
               type="file"
               accept="image/jpeg,image/png,image/jpg,image/webp"
@@ -229,7 +228,7 @@
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">فيديو (اختياري) | Video — mp4, mov (max 50MB)</label>
+            <label class="block text-sm font-medium text-gray-700 mb-1">فيديو (اختياري)</label>
             <input
               type="file"
               accept="video/mp4,video/quicktime,video/avi,video/webm"
@@ -250,8 +249,7 @@
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
             </svg>
-            إرسال التقييم | Submit
-          </button>
+            إرسال التقييم</button>
         </form>
       </div>
 

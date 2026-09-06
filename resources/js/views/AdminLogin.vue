@@ -9,8 +9,7 @@
       <form @submit.prevent="handleLogin" class="space-y-6">
         <div>
           <label for="email" class="block text-sm font-medium text-gray-700 mb-1">
-            البريد الإلكتروني | Email
-          </label>
+            البريد الإلكتروني</label>
           <input
             id="email"
             v-model="email"
@@ -23,8 +22,7 @@
 
         <div>
           <label for="password" class="block text-sm font-medium text-gray-700 mb-1">
-            كلمة السر | Password
-          </label>
+            كلمة السر</label>
           <input
             id="password"
             v-model="password"
@@ -44,12 +42,12 @@
           :disabled="loading"
           class="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-medium py-3 rounded-lg transition-colors"
         >
-          {{ loading ? 'جاري التحميل...' : 'تسجيل الدخول | Login' }}
+          {{ loading ? 'جاري التحميل...' : 'تسجيل الدخول' }}
         </button>
       </form>
 
       <div class="mt-6 text-center text-sm text-gray-600">
-        <p>البيانات الافتراضية | Default credentials:</p>
+        <p>البيانات الافتراضية</p>
         <p class="font-mono mt-1">info@smartflow.ae / </p>
       </div>
     </div>
@@ -86,7 +84,7 @@ const handleLogin = async () => {
       router.push('/admin/dashboard')
     }
   } catch (err: any) {
-    error.value = err.response?.data?.error || 'فشل تسجيل الدخول | Login failed'
+    error.value = err.response?.data?.error || 'فشل تسجيل الدخول'
   } finally {
     loading.value = false
   }

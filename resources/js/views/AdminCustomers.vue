@@ -1,7 +1,14 @@
-﻿<template>
+<template>
   <div dir="rtl">
     <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
-      <h1 class="text-2xl font-bold text-gray-900">جدول العملاء | Customers</h1>
+      <div class="flex items-center gap-3 min-w-0">
+        <div class="w-11 h-11 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+          </svg>
+        </div>
+        <h1 class="text-2xl font-bold text-gray-900">جدول العملاء</h1>
+      </div>
       <button
         type="button"
         class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
@@ -33,7 +40,7 @@
 
       <div v-else-if="filteredCustomers.length === 0" class="p-12 text-center text-gray-400">
         <svg class="w-16 h-16 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m5-2.13a4 4 0 100-8 4 4 0 000 8zm6 0a4 4 0 10-3.998-4.318A4 4 0 0018 12.13z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
         </svg>
         لا يوجد عملاء بعد
       </div>
@@ -53,8 +60,10 @@
           <tr v-for="c in filteredCustomers" :key="c.id" class="hover:bg-gray-50">
             <td class="px-4 py-3">
               <div class="flex items-center gap-2">
-                <div class="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xs flex-shrink-0">
-                  {{ c.name.charAt(0).toUpperCase() }}
+                <div class="w-9 h-9 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                  </svg>
                 </div>
                 <span class="font-medium text-gray-800">{{ c.name }}</span>
               </div>
@@ -107,7 +116,6 @@
       </div>
     </div>
 
-    <!-- Add / edit modal -->
     <Teleport to="body">
       <div v-if="showModal" class="sf-modal-backdrop" dir="rtl">
         <div class="sf-modal-panel max-w-md">
@@ -153,7 +161,6 @@
       </div>
     </Teleport>
 
-    <!-- Delete confirm -->
     <Teleport to="body">
       <div v-if="deleteTarget" class="sf-modal-backdrop" dir="rtl">
         <div class="sf-modal-panel max-w-sm text-center">

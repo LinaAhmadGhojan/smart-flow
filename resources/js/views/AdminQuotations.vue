@@ -62,6 +62,11 @@
             </td>
             <td class="px-4 py-3">
               <div class="flex items-center justify-center gap-2">
+                <button type="button" @click="copyQuotation(q)" class="text-violet-600 hover:text-violet-800" title="نسخ العرض">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                  </svg>
+                </button>
                 <router-link :to="`/admin/quotations/${q.id}`" class="text-blue-500 hover:text-blue-700" title="تعديل">
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
@@ -98,6 +103,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import api from '@/lib/api'
 import ConfirmDeleteModal from '@/components/ConfirmDeleteModal.vue'
 import { exportQuotationPdf } from '@/lib/financePdf'
@@ -120,6 +126,7 @@ const loading = ref(true)
 const search = ref('')
 const deleteTarget = ref<Quotation | null>(null)
 const deleteLoading = ref(false)
+const router = useRouter()
 
 const filtered = computed(() => {
   const q = search.value.trim().toLowerCase()
@@ -167,6 +174,10 @@ const fetchList = async () => {
 }
 
 const confirmDelete = (q: Quotation) => { deleteTarget.value = q }
+
+const copyQuotation = (q: Quotation) => {
+  router.push({ path: '/admin/quotations/new', query: { copy: String(q.id) } })
+}
 
 const doDelete = async () => {
   if (!deleteTarget.value) return

@@ -753,4 +753,24 @@ html[dir='rtl'] body {
   .admin-content svg {
     max-width: 100%;
   }
+
+  .quote-items-table {
+    @apply w-full text-sm;
+    min-width: 1080px;
+    table-layout: fixed;
+  }
+
+  .quote-item-desc__title {
+    @apply font-semibold text-slate-900 text-sm leading-snug;
+  }
+
+  .quote-item-desc__detail {
+    @apply text-xs text-slate-500 mt-1.5 leading-relaxed;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    overflow-wrap: break-word;
+    word-break: normal;
+  }
 }

@@ -36,6 +36,14 @@
           تصدير PDF
         </button>
         <button
+          v-if="!isNew"
+          type="button"
+          @click="duplicateQuotation"
+          class="border border-slate-300 text-slate-700 hover:bg-slate-50 px-4 py-2 rounded-lg text-sm font-medium"
+        >
+          نسخ العرض
+        </button>
+        <button
           type="button"
           @click="save"
           :disabled="saving"
@@ -201,19 +209,11 @@
               class="flex-1 bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm font-bold text-slate-900"
               placeholder="مثال: الكاميرات / الأسلاك / التركيب..."
             />
-            <button
-              type="button"
-              class="text-xs px-3 py-1.5 rounded-lg font-medium shrink-0 transition-colors"
-              :class="sec.pickerOpen ? 'bg-blue-700 text-white ring-2 ring-blue-300' : 'bg-blue-600 text-white hover:bg-blue-700'"
-              @click="openSectionPicker(sIdx)"
-            >
-              إضافة هنا
-            </button>
             <button type="button" class="text-red-500 text-lg leading-none px-1" title="حذف المجموعة" @click="removeSection(sIdx)">×</button>
           </div>
 
           <div class="section-product-picker px-4 py-3 bg-blue-50/60 border-b border-blue-100 relative">
-            <label class="block text-xs text-gray-600 mb-1.5">
+            <label class="block text-xs text-gray-600 mb-1.5" :for="'section-search-' + sIdx">
               إضافة منتج
               <span class="text-blue-700 font-bold">→ {{ sectionTitleLabel(sec, sIdx) }}</span>
             </label>
@@ -224,8 +224,8 @@
               class="sf-field !bg-white"
               placeholder="ابحث بالاسم (عربي / English) أو الكود أو الوصف..."
               autocomplete="off"
-              @focus="openSectionPicker(sIdx)"
-              @input="openSectionPicker(sIdx)"
+              @focus="showSectionPicker(sIdx)"
+              @input="showSectionPicker(sIdx)"
               @keydown.escape="closeSectionPicker(sec)"
               @keydown.enter.prevent="pickFirstFiltered(sec, sIdx)"
             />
@@ -234,31 +234,67 @@
               class="absolute z-40 mt-1 left-4 right-4 max-h-72 overflow-auto bg-white border border-blue-200 rounded-xl shadow-xl"
             >
               <button
+                type="button"
+                class="w-full text-right px-3 py-3 hover:bg-emerald-50 border-b border-emerald-100 flex items-center gap-2 font-semibold text-emerald-800 sticky top-0 bg-emerald-50/95 backdrop-blur-sm z-10"
+                @click="openAddProductModal(sIdx)"
+              >
+                <span class="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-600 text-white text-lg leading-none">+</span>
+                إضافة منتج جديد
+              </button>
+              <div
                 v-for="p in filteredProductsForSection(sec)"
                 :key="'pick-' + sIdx + '-' + p.id"
-                type="button"
-                class="w-full text-right px-3 py-2.5 hover:bg-blue-50 border-b flex items-center gap-3"
-                @click="addProduct(p, sIdx)"
+                class="border-b flex items-center gap-1 hover:bg-blue-50/80"
               >
-                <img :src="mediaUrl(p.image, '/logo.jpeg')" class="w-10 h-10 rounded-lg object-cover border" @error="handleMediaError" />
-                <div class="min-w-0 flex-1">
-                  <div class="flex items-baseline gap-2 flex-wrap">
-                    <span class="text-sm font-medium">{{ productDisplayName(p) }}</span>
-                    <span class="font-mono text-[11px] text-gray-400">{{ productCode(p) }}</span>
+                <button
+                  type="button"
+                  class="flex-1 min-w-0 text-right px-3 py-2.5 flex items-center gap-3"
+                  @click="addProduct(p, sIdx)"
+                >
+                  <img :src="mediaUrl(p.image, '/logo.jpeg')" class="w-10 h-10 rounded-lg object-cover border shrink-0" @error="handleMediaError" />
+                  <div class="min-w-0 flex-1 text-right">
+                    <div class="flex items-baseline gap-2 flex-wrap justify-end">
+                      <span class="text-sm font-medium">{{ productDisplayName(p) }}</span>
+                      <span class="font-mono text-[11px] text-gray-400">{{ productCode(p) }}</span>
+                    </div>
+                    <p v-if="productEnglishSubtitle(p)" class="text-xs text-gray-500 truncate">{{ productEnglishSubtitle(p) }}</p>
                   </div>
-                  <p v-if="productEnglishSubtitle(p)" class="text-xs text-gray-500 truncate">{{ productEnglishSubtitle(p) }}</p>
-                </div>
-                <span class="text-sm font-semibold text-blue-700">{{ money(productPrice(p)) }}</span>
-              </button>
-              <p v-if="!filteredProductsForSection(sec).length" class="p-3 text-sm text-gray-400 text-center">لا نتائج</p>
+                  <span class="text-sm font-semibold text-blue-700 shrink-0">{{ money(productPrice(p)) }}</span>
+                </button>
+                <button
+                  type="button"
+                  class="shrink-0 px-2 py-2 text-blue-500 hover:text-blue-700 transition-colors"
+                  title="تعديل المنتج"
+                  @click.stop="openEditProductModal(p.id, sIdx)"
+                >
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                  </svg>
+                </button>
+              </div>
+              <p v-if="!filteredProductsForSection(sec).length" class="p-3 text-sm text-gray-400 text-center">لا نتائج — جرّب كلمة بحث أخرى</p>
             </div>
           </div>
 
           <div class="overflow-x-auto">
-            <table class="w-full text-sm min-w-[980px]">
+            <table class="quote-items-table">
+              <colgroup>
+                <col style="width: 88px" />
+                <col style="width: 96px" />
+                <col style="width: 34%" />
+                <col style="width: 96px" />
+                <col style="width: 80px" />
+                <col style="width: 96px" />
+                <col style="width: 112px" />
+                <col style="width: 120px" />
+                <col style="width: 112px" />
+                <col style="width: 48px" />
+                <col style="width: 48px" />
+              </colgroup>
               <thead>
                 <tr class="text-gray-500 border-b bg-gray-50">
-                  <th class="py-2 px-3 text-right font-medium w-24">الكود</th>
+                  <th class="py-2 px-2 text-center font-medium">ترتيب</th>
+                  <th class="py-2 px-3 text-right font-medium">الكود</th>
                   <th class="py-2 px-3 text-right font-medium">الاسم / الوصف</th>
                   <th class="py-2 px-3 text-right font-medium w-28">صورة</th>
                   <th class="py-2 px-3 text-right font-medium w-24">Qty</th>
@@ -266,16 +302,49 @@
                   <th class="py-2 px-3 text-right font-medium w-32">خصم خاص</th>
                   <th class="py-2 px-3 text-right font-medium w-36">من الخصم الكلي</th>
                   <th class="py-2 px-3 text-right font-medium w-32">Amount</th>
-                  <th class="py-2 px-3 w-10"></th>
+                  <th class="py-2 px-2 text-center font-medium w-10">حذف</th>
+                  <th class="py-2 px-2 text-center font-medium w-10">تعديل</th>
                 </tr>
               </thead>
               <tbody>
                 <tr v-if="!sec.items.length">
-                  <td colspan="9" class="py-6 text-center text-gray-400 text-xs">لا منتجات في هذه المجموعة بعد</td>
+                  <td colspan="11" class="py-6 text-center text-gray-400 text-xs">لا منتجات في هذه المجموعة بعد</td>
                 </tr>
-                <tr v-for="(item, idx) in sec.items" :key="'s' + sIdx + '-i' + idx" class="border-b border-gray-50 align-top">
-                  <td class="py-2 px-3 font-mono text-xs">{{ item.code }}</td>
-                  <td class="py-2 px-3"><div class="font-medium whitespace-pre-line leading-relaxed">{{ item.description }}</div></td>
+                <tr
+                  v-for="(item, idx) in sec.items"
+                  :key="'s' + sIdx + '-i' + idx + '-' + item.product_id"
+                  class="border-b border-gray-50 align-top"
+                >
+                  <td class="py-2 px-2 text-center">
+                    <div class="inline-flex flex-col items-stretch gap-1 min-w-[72px]">
+                      <span class="text-sm font-bold text-slate-700">{{ idx + 1 }}</span>
+                      <button
+                        type="button"
+                        class="text-[11px] leading-tight px-2 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-blue-50 hover:border-blue-200 disabled:opacity-35 disabled:hover:bg-white"
+                        :disabled="idx === 0"
+                        title="انقل هذا البند للأعلى"
+                        @click="moveItem(sIdx, idx, -1)"
+                      >
+                        ↑ أعلى
+                      </button>
+                      <button
+                        type="button"
+                        class="text-[11px] leading-tight px-2 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-blue-50 hover:border-blue-200 disabled:opacity-35 disabled:hover:bg-white"
+                        :disabled="idx === sec.items.length - 1"
+                        title="انقل هذا البند للأسفل"
+                        @click="moveItem(sIdx, idx, 1)"
+                      >
+                        ↓ أسفل
+                      </button>
+                    </div>
+                  </td>
+                  <td class="py-2 px-3 font-mono text-xs align-top">{{ item.code }}</td>
+                  <td class="py-2 px-3 align-top">
+                    <div class="quote-item-desc">
+                      <div class="quote-item-desc__title">{{ itemLineTitle(item) }}</div>
+                      <p v-if="itemLineDetail(item)" class="quote-item-desc__detail">{{ itemLineDetail(item) }}</p>
+                    </div>
+                  </td>
                   <td class="py-2 px-3">
                     <div class="w-20 h-20 rounded-lg overflow-hidden bg-gray-100 border">
                       <img v-if="itemImage(item)" :src="mediaUrl(itemImage(item), '/logo.jpeg')" alt="" class="w-full h-full object-cover" @error="handleMediaError" />
@@ -317,8 +386,20 @@
                     </div>
                     <span v-else>{{ money(lineAmount(item)) }}</span>
                   </td>
-                  <td class="py-2 px-3">
-                    <button type="button" class="text-red-400 hover:text-red-600" @click="sec.items.splice(idx, 1)">×</button>
+                  <td class="py-2 px-2 text-center">
+                    <button type="button" class="p-1.5 rounded-lg text-red-400 hover:bg-red-50 hover:text-red-600" title="حذف من العرض" @click="sec.items.splice(idx, 1)">×</button>
+                  </td>
+                  <td class="py-2 px-2 text-center">
+                    <button
+                      type="button"
+                      class="text-blue-500 hover:text-blue-700 transition-colors inline-flex"
+                      title="تعديل المنتج"
+                      @click="openEditProductModal(item.product_id, sIdx, idx)"
+                    >
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                      </svg>
+                    </button>
                   </td>
                 </tr>
               </tbody>
@@ -360,6 +441,13 @@
       </div>
     </template>
 
+    <QuotationProductModal
+      :open="productModalOpen"
+      :product-id="productModalId"
+      @cancel="closeProductModal"
+      @saved="onProductModalSaved"
+    />
+
     <Teleport to="body">
       <div v-if="showInvoiceModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" dir="rtl">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
@@ -390,7 +478,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import api from '@/lib/api'
 import { mediaUrl, handleMediaError } from '@/lib/media'
@@ -405,6 +493,7 @@ import {
 import { exportInvoicePdf, exportQuotationPdf } from '@/lib/financePdf'
 import { allocateGlobalDiscount, computeGlobalDiscount } from '@/lib/quotationDiscount'
 import RichTextEditor from '@/components/RichTextEditor.vue'
+import QuotationProductModal, { type SavedQuotationProduct } from '@/components/QuotationProductModal.vue'
 
 interface LineItem {
   code: string
@@ -485,6 +574,9 @@ const form = ref({
 
 const sections = ref<SectionBlock[]>([])
 const activeSection = ref(0)
+const productModalOpen = ref(false)
+const productModalId = ref<number | null>(null)
+const productModalContext = ref<{ sIdx: number; lineIdx?: number; addAfterSave?: boolean } | null>(null)
 
 const showInvoiceModal = ref(false)
 const invoiceSaving = ref(false)
@@ -512,6 +604,33 @@ const itemImage = (item: LineItem) => {
   return products.value.find((p) => p.id === item.product_id)?.image || null
 }
 
+const splitItemDescription = (item: LineItem) => {
+  const raw = (item.description || '').trim()
+  const nl = raw.indexOf('\n')
+  if (nl === -1) return { title: raw, detail: '' }
+  const title = raw.slice(0, nl).trim()
+  const detail = raw
+    .slice(nl + 1)
+    .trim()
+    .replace(/\s*\n+\s*/g, ' ')
+  return { title, detail }
+}
+
+const itemLineTitle = (item: LineItem) => {
+  const linked = products.value.find((p) => p.id === item.product_id)
+  if (linked) return productDisplayName(linked)
+  return splitItemDescription(item).title || item.code
+}
+
+const itemLineDetail = (item: LineItem) => {
+  const parts = splitItemDescription(item)
+  if (parts.detail) return parts.detail
+  const linked = products.value.find((p) => p.id === item.product_id)
+  if (!linked) return ''
+  const detail = productDesc(linked)
+  return detail.replace(/\s*\n+\s*/g, ' ').trim()
+}
+
 const lineFromProduct = (p: ProductOption): LineItem => {
   const title = (p.name_ar || p.name || '').trim()
   const detail = productDesc(p)
@@ -526,23 +645,26 @@ const lineFromProduct = (p: ProductOption): LineItem => {
   }
 }
 
-const closeSectionPicker = (sec: SectionBlock) => {
+function closeSectionPicker(sec: SectionBlock) {
   sec.pickerOpen = false
 }
 
-const openSectionPicker = (sIdx: number) => {
+function showSectionPicker(sIdx: number) {
   activeSection.value = sIdx
   sections.value.forEach((sec, i) => {
     sec.pickerOpen = i === sIdx
   })
-  setTimeout(() => {
-    document.getElementById(`section-search-${sIdx}`)?.focus()
-  }, 0)
+}
+
+const pickFirstFiltered = (sec: SectionBlock, sIdx: number) => {
+  const first = filteredProductsForSection(sec)[0]
+  if (first) addProduct(first, sIdx)
 }
 
 const addSection = () => {
   sections.value.push({ title: '', items: [], productQuery: '', pickerOpen: false })
-  openSectionPicker(sections.value.length - 1)
+  activeSection.value = sections.value.length - 1
+  showSectionPicker(sections.value.length - 1)
 }
 
 const removeSection = (idx: number) => {
@@ -566,9 +688,101 @@ const addProduct = (p: ProductOption, sIdx: number) => {
   closeSectionPicker(sec)
 }
 
-const pickFirstFiltered = (sec: SectionBlock, sIdx: number) => {
-  const first = filteredProductsForSection(sec)[0]
-  if (first) addProduct(first, sIdx)
+const moveItem = (sIdx: number, idx: number, delta: number) => {
+  const sec = sections.value[sIdx]
+  if (!sec) return
+  const target = idx + delta
+  if (target < 0 || target >= sec.items.length) return
+  const [row] = sec.items.splice(idx, 1)
+  sec.items.splice(target, 0, row)
+}
+
+const openAddProductModal = (sIdx: number) => {
+  productModalId.value = null
+  productModalContext.value = { sIdx, addAfterSave: true }
+  productModalOpen.value = true
+  const sec = sections.value[sIdx]
+  if (sec) closeSectionPicker(sec)
+}
+
+const openEditProductModal = (productId: number, sIdx: number, lineIdx?: number) => {
+  productModalId.value = productId
+  productModalContext.value = lineIdx != null ? { sIdx, lineIdx } : { sIdx }
+  productModalOpen.value = true
+  const sec = sections.value[sIdx]
+  if (sec) closeSectionPicker(sec)
+}
+
+const closeProductModal = () => {
+  productModalOpen.value = false
+  productModalId.value = null
+  productModalContext.value = null
+}
+
+const upsertProductInList = (product: SavedQuotationProduct) => {
+  const idx = products.value.findIndex((p) => p.id === product.id)
+  const row = { ...product } as ProductOption
+  if (idx >= 0) products.value[idx] = { ...products.value[idx], ...row }
+  else products.value.unshift(row)
+  return row
+}
+
+const onProductModalSaved = async (product: SavedQuotationProduct) => {
+  const p = upsertProductInList(product)
+  const ctx = productModalContext.value
+  if (ctx?.addAfterSave) {
+    addProduct(p, ctx.sIdx)
+  } else if (ctx && ctx.lineIdx != null) {
+    const item = sections.value[ctx.sIdx]?.items[ctx.lineIdx]
+    if (item) {
+      const qty = item.quantity
+      const discountType = item.discount_type
+      const discountValue = item.discount_value
+      Object.assign(item, lineFromProduct(p))
+      item.quantity = qty
+      item.discount_type = discountType
+      item.discount_value = discountValue
+    }
+  }
+  closeProductModal()
+  await loadProducts()
+}
+
+const applyQuotationToForm = (q: any, { asCopy }: { asCopy?: boolean } = {}) => {
+  form.value = {
+    number: asCopy ? '' : (q.number || ''),
+    date: asCopy ? today() : (q.date || '').toString().slice(0, 10),
+    customer_id: q.customer_id ?? null,
+    project_id: asCopy ? null : (q.project_id ?? null),
+    client_name: q.client_name || '',
+    trns: q.trns || '',
+    status: asCopy ? 'draft' : (q.status || 'draft'),
+    currency: q.currency || 'AED',
+    tax_percent: Number(q.tax_percent || 0),
+    withholding_tax_percent: Number(q.withholding_tax_percent || 0),
+    discount_type: q.discount_type === 'percent' || q.discount_type === 'fixed' ? q.discount_type : '',
+    discount_value: q.discount_value != null ? Number(q.discount_value) : null,
+    comments: q.comments || '',
+  }
+  hydrateSectionsFromItems(q.items || [])
+}
+
+const loadCopySource = async (sourceId: string) => {
+  loading.value = true
+  try {
+    const res = await api.get(`/admin/quotations/${sourceId}`)
+    applyQuotationToForm(res.data, { asCopy: true })
+  } catch {
+    alert('تعذر نسخ عرض السعر')
+    router.push('/admin/quotations')
+  } finally {
+    loading.value = false
+  }
+}
+
+const duplicateQuotation = () => {
+  if (isNew.value) return
+  router.push({ path: '/admin/quotations/new', query: { copy: String(route.params.id) } })
 }
 
 const flattenItemsForSave = () => {
@@ -620,7 +834,11 @@ const hydrateSectionsFromItems = (raw: any[]) => {
       discount_value: row.discount_value != null ? Number(row.discount_value) : null,
     })
   }
-  sections.value = blocks
+  sections.value = blocks.map((sec) => ({
+    ...sec,
+    productQuery: sec.productQuery ?? '',
+    pickerOpen: false,
+  }))
   activeSection.value = 0
 }
 
@@ -676,14 +894,14 @@ const clearProject = () => {
 }
 
 const onDocClick = (e: MouseEvent) => {
+  if (!customerWrap.value?.contains(e.target as Node)) customerOpen.value = false
+  if (!projectWrap.value?.contains(e.target as Node)) projectOpen.value = false
   const target = e.target as Element | null
   if (!target?.closest?.('.section-product-picker')) {
     sections.value.forEach((sec) => {
       sec.pickerOpen = false
     })
   }
-  if (!customerWrap.value?.contains(e.target as Node)) customerOpen.value = false
-  if (!projectWrap.value?.contains(e.target as Node)) projectOpen.value = false
 }
 
 const loadCustomers = async () => {
@@ -798,6 +1016,11 @@ const money = (n: number, currency = form.value.currency || 'AED') =>
 
 const load = async () => {
   if (isNew.value) {
+    const copyId = route.query.copy
+    if (copyId) {
+      await loadCopySource(String(copyId))
+      return
+    }
     if (!sections.value.length) addSection()
     return
   }
@@ -805,22 +1028,7 @@ const load = async () => {
   try {
     const res = await api.get(`/admin/quotations/${route.params.id}`)
     const q = res.data
-    form.value = {
-      number: q.number || '',
-      date: (q.date || '').toString().slice(0, 10),
-      customer_id: q.customer_id ?? null,
-      project_id: q.project_id ?? null,
-      client_name: q.client_name || '',
-      trns: q.trns || '',
-      status: q.status || 'draft',
-      currency: q.currency || 'AED',
-      tax_percent: Number(q.tax_percent || 0),
-      withholding_tax_percent: Number(q.withholding_tax_percent || 0),
-      discount_type: q.discount_type === 'percent' || q.discount_type === 'fixed' ? q.discount_type : '',
-      discount_value: q.discount_value != null ? Number(q.discount_value) : null,
-      comments: q.comments || '',
-    }
-    hydrateSectionsFromItems(q.items || [])
+    applyQuotationToForm(q)
     invoices.value = q.invoices || []
     savedTotal.value = Number(q.total || 0)
     invoiced.value = Number(q.invoiced_amount || 0)
@@ -918,6 +1126,14 @@ const downloadInvoicePdf = async (inv: InvoiceRow) => {
     alert('تعذر تصدير فاتورة PDF')
   }
 }
+
+watch(
+  () => route.query.copy,
+  async (copyId, prev) => {
+    if (!isNew.value || !copyId || copyId === prev) return
+    await loadCopySource(String(copyId))
+  },
+)
 
 onMounted(async () => {
   document.addEventListener('click', onDocClick)
